@@ -7,7 +7,7 @@ This repository contains the code of the backend used by the io-web-profile web 
 
 This is Node.js Azure Function.
 ## Prerequisites
-In order to run the ``io-web-profile-backend`` front-end locally you need the following tool installed on your machine.
+In order to run the ``io-web-profile-backend`` locally you need the following tool installed on your machine.
 
 - ``Azure functions core tools``
 - ``Node.js``
