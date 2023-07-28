@@ -81,4 +81,5 @@ The following table contains the required ENV variables that the function requir
 
 | Variable name                   | Description                                  | type   |
 |---------------------------------|----------------------------------------------|--------|
-| VAR_NAME_EXAMPLE                | var example                                  | string |
+| FF_API_ENABLED                  | Api Auth Mode (NONE, BETA, CANARY, ALL)      | string |
+| BETA_TESTERS                    | Beta tester fiscal code separated by comma   | string,string,string,... |
