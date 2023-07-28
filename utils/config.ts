@@ -9,24 +9,37 @@ import * as t from "io-ts";
 
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
+import { withFallback } from "io-ts-types";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { FeatureFlag, FeatureFlagEnum } from "./featureFlags";
+import { CommaSeparatedListOf } from "./separated-list";
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const IConfig = t.interface({
+export const IConfig = t.type({
   AzureWebJobsStorage: NonEmptyString,
 
   COSMOSDB_KEY: NonEmptyString,
   COSMOSDB_NAME: NonEmptyString,
   COSMOSDB_URI: NonEmptyString,
 
+  FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
+
   QueueStorageConnection: NonEmptyString,
 
   isProduction: t.boolean
 });
+
+export const BETA_TESTERS = pipe(
+  process.env.BETA_TESTERS,
+  CommaSeparatedListOf(FiscalCode).decode,
+  E.getOrElseW(err => {
+    throw new Error(`Invalid LV_TEST_USERS value: ${readableReport(err)}`);
+  })
+);
 
 export const envConfig = {
   ...process.env,
