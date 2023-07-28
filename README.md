@@ -2,6 +2,19 @@
 
 This repository contains the code of the backend used by the io-web-profile web platform.
 
+## Technologies
+[![My Skills](https://skillicons.dev/icons?i=azure,nodejs,ts)](https://skillicons.dev)
+
+This is Node.js Azure Function.
+## Prerequisites
+In order to run the ``io-web-profile-backend`` locally you need the following tool installed on your machine.
+
+- ``Azure functions core tools``
+- ``Node.js``
+- ``yarn``
+
+The preferred way to set up the local environment is using nodenv to manage Node.js installation and corepack (included with Node.js) to manage the installation of yarn.
+
 ## Structure
 
 The project is structured as follows:
