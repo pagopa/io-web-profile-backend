@@ -3,12 +3,15 @@ import * as express from "express";
 import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/express";
 import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
+import { getConfigOrThrow } from "../utils/config";
 import { Info } from "./handler";
+
+const config = getConfigOrThrow();
 
 const app = express();
 secureExpressApp(app);
 
-app.get("/api/v1/info", Info());
+app.get("/api/v1/info", Info(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
