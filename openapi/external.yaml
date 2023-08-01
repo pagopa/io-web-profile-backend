@@ -1,26 +1,43 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
-  version: $npm_package_version
-  title: IO Web Profile Function Consumer API
+  version: 1.0.0
+  title: IO Web Profile Function API
   x-logo:
     url: https://io.italia.it/assets/img/io-logo-blue.svg
   description: |
-    Documentation of the IO Web Profile Function API exposed to Web Profile Consumer.
+    Documentation of the IO Fast Login Function API here.
 servers:
-  - url: https://api.io.pagopa.it/
+  - url: https://api.io.pagopa.it
 security:
   - ApiKeyAuth: []
 paths:
+  /info:
+    get:
+      operationId: getApplicationInfo
+      summary: GetApplicationInfo
+      description: >-
+        Retrieve current application info to confirm the application is up and
+        able to serve requests. Errors mean the application is broken.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+        '500':
+          description: Generic server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
   /ping:
     get:
       operationId: getServiceStatus
-      summary: Get Service status and test Auth Bearer Token 
-      parameters:
-        - name: x-pagopa-webprofile-auth
-          required: true
-          in: header
-          schema:
-            $ref: '#/components/schemas/AuthBearer'
+      summary: GetServiceStatus
+      description: Get Service status and test Auth Bearer Token
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Service is running
@@ -28,21 +45,327 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceStatus'
+  /lock-session:
+    post:
+      operationId: lockUserSession
+      summary: LockUserSession
+      description: Lock user session on IO App
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/LockSessionData'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+        '502':
+          description: Bad Gateway
+        '504':
+          description: Gateway Timeout
+  /unlock-session:
+    delete:
+      operationId: unlockUserSession
+      summary: UnlockUserSession
+      description: Unlock user session on IO App
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/LockSessionData'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+        '502':
+          description: Bad Gateway
+        '504':
+          description: Gateway Timeout
+  /logout:
+    post:
+      operationId: logoutFromIOApp
+      summary: LogoutFromIOApp
+      description: Logout User from IO App
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+        '502':
+          description: Bad Gateway
+        '504':
+          description: Gateway Timeout
+  /sessions:
+    get:
+      operationId: getSessionsList
+      summary: GetSessionsList
+      description: Retrieve a user active sessions list
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+        '404':
+          description: Not Found
+  /profile:
+    get:
+      operationId: getProfile
+      summary: GetProfile
+      description: Retrieve a user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+  /session-state:
+    post:
+      operationId: getUserSessionState
+      summary: GetUserSessionState
+      description: Get User Session State on IO App
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionState'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+        '502':
+          description: Bad Gateway
+        '504':
+          description: Gateway Timeout
+  /exchange:
+    post:
+      operationId: exchangeToken
+      summary: ExchangeToken
+      description: Exchange Magic Link Token with JWT
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeToken'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
+        '502':
+          description: Bad Gateway
+        '504':
+          description: Gateway Timeout
 components:
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: Ocp-Apim-Subscription-Key
+      name: X-Functions-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    InternalServerError:
+      description: InternalServerError
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InternalServerError'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequest'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Unauthorized'
+  requestBodies:
+    LockSessionData:
+      content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockSessionData'
   schemas:
+    InternalServerError:
+      allOf:
+        - $ref: '#/components/schemas/ProblemJson'
+        - type: object
+          properties:
+            status:
+              type: integer
+              enum:
+                - 500
+              example: 500
+              description: >-
+                The HTTP status code generated by the origin server for this
+                occurrence of the problem.
+          required:
+            - status
+    BadRequest:
+      allOf:
+        - $ref: '#/components/schemas/ProblemJson'
+        - type: object
+          properties:
+            status:
+              type: integer
+              enum:
+                - 400
+              example: 400
+              description: >-
+                The HTTP status code generated by the origin server for this
+                occurrence of the problem.
+          required:
+            - status
+    Unauthorized:
+      allOf:
+        - $ref: '#/components/schemas/ProblemJson'
+        - type: object
+          properties:
+            status:
+              type: integer
+              enum:
+                - 401
+              example: 401
+              description: >-
+                The HTTP status code generated by the origin server for this
+                occurrence of the problem.
+          required:
+            - status
     AuthBearer:
-      type: string
-      pattern: ^Bearer [a-zA-Z0-9-_].+
-      description: A JWT auth custom header as `Bearer <JWT Token>`
-      example: >-
-        Bearer
-        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-        AuthBearer:
+        type: string
+        pattern: ^Bearer [a-zA-Z0-9-_].+
+        description: A JWT auth custom header as `Bearer <JWT Token>`
+        example: >-
+          Bearer
+          eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    ApplicationInfo:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
     ServiceStatus:
       type: object
       properties:
@@ -50,4 +373,110 @@ components:
           type: string
       required:
         - message
-
+    LockSessionData:
+      type: object
+      properties:
+        unlockCode:
+          type: string
+          minLength: 9
+      required:
+        - unlock_code
+    Profile:
+      description: |-
+        Describes the citizen's profile.
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: foobar@example.com
+    SessionInfo:
+      description: Info about an user session
+      oneOf:
+        - type: object
+          description: Inactive session
+          properties:
+            active:
+              type: boolean
+              enum:
+                - false
+          required:
+            - active
+        - type: object
+          description: Active session
+          properties:
+            active:
+              type: boolean
+              enum:
+                - true
+            expiration_date:
+              type: string
+              format: date
+          required:
+            - active
+            - expiration_date
+    SessionState:
+      description: The state of the user' session
+      type: object
+      properties:
+        access_enabled:
+          type: boolean
+        session_info:
+          $ref: '#/components/schemas/SessionInfo'
+      required:
+        - access_enabled
+        - session_info
+    ExchangeToken:
+      description: Exchanged token
+      type: object
+      properties:
+        token:
+          type: string
+          format: JWT
+    ProblemJson:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: |-
+            An absolute URI that identifies the problem type. When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type
+            (e.g., using HTML).
+          default: about:blank
+          example: https://example.com/problem/constraint-violation
+        title:
+          type: string
+          description: >-
+            A short, summary of the problem type. Written in english and
+            readable
+  
+            for engineers (usually not suited for non technical stakeholders and
+  
+            not localized); example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: >-
+            The HTTP status code generated by the origin server for this
+            occurrence
+  
+            of the problem.
+          minimum: 100
+          maximum: 600
+          exclusiveMaximum: true
+          example: 200
+        detail:
+          type: string
+          description: |-
+            A human readable explanation specific to this occurrence of the
+            problem.
+          example: There was an error processing the request
+        instance:
+          type: string
+          format: uri
+          description: >-
+            An absolute URI that identifies the specific occurrence of the
+            problem.
+  
+            It may or may not yield further information if dereferenced.
