@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import * as express from "express";
-import {
-  withRequestMiddlewares,
-  wrapRequestHandler
-} from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
+import { wrapRequestHandler } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import * as healthcheck from "@pagopa/io-functions-commons/dist/src/utils/healthcheck";
 import {
   IResponseErrorInternal,
@@ -18,9 +15,7 @@ import * as TE from "fp-ts/lib/TaskEither";
 import * as packageJson from "../package.json";
 
 import { envConfig, IConfig } from "../utils/config";
-import { ApplicationInfo } from "../generated/definitions/web-profile/ApplicationInfo";
-import { verifyTesterJWTMiddleware } from "../utils/auth_jwt_tester";
-import { JWTConfig } from "../utils/config";
+import { ApplicationInfo } from "../generated/definitions/internal/ApplicationInfo";
 
 type InfoHandler = () => Promise<
   IResponseSuccessJson<ApplicationInfo> | IResponseErrorInternal
@@ -48,16 +43,13 @@ export const InfoHandler = (
     TE.toUnion
   )();
 
-export const Info = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const Info = (): express.RequestHandler => {
   const handler = InfoHandler(
     healthcheck.checkApplicationHealth(IConfig, [
       c => healthcheck.checkAzureCosmosDbHealth(c.COSMOSDB_URI, c.COSMOSDB_KEY),
       c => healthcheck.checkAzureStorageHealth(c.QueueStorageConnection)
     ])
   );
-  const middlewaresWrap = withRequestMiddlewares(
-    verifyTesterJWTMiddleware(jwtConfig)
-  );
 
-  return wrapRequestHandler(middlewaresWrap(handler));
+  return wrapRequestHandler(handler);
 };
