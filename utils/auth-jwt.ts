@@ -14,7 +14,7 @@ import {
 
 import { AuthBearer } from "../generated/definitions/external/AuthBearer";
 import { JWTConfig } from "./config";
-import { getValidateTesterJWT } from "./jwt_with_key_rotation";
+import { getValidateSpidJWT } from "./jwt-utils";
 
 /**
  * Type Definitions
@@ -30,21 +30,22 @@ export type ValidateAuthJWT = (
   token: NonEmptyString
 ) => TE.TaskEither<Error, AuthJWT>;
 
-export const getValidateAuthJWT = ({
-  ISSUER,
-  PRIMARY_PUBLIC_KEY,
-  SECONDARY_PUBLIC_KEY
-}: JWTConfig): ValidateAuthJWT =>
+export const getValidateAuthJWT = (): //   {
+//   ISSUER,
+//   PRIMARY_PUBLIC_KEY,
+//   SECONDARY_PUBLIC_KEY
+// }: JWTConfig
+ValidateAuthJWT =>
   pipe(
-    getValidateTesterJWT(ISSUER, PRIMARY_PUBLIC_KEY, SECONDARY_PUBLIC_KEY),
+    getValidateSpidJWT,
+    // getValidateJWT(ISSUER, PRIMARY_PUBLIC_KEY, SECONDARY_PUBLIC_KEY),
     validateJWTFunction => (token): ReturnType<ValidateAuthJWT> =>
       pipe(
         validateJWTFunction(token),
         TE.filterOrElse(AuthJWT.is, () => E.toError("Invalid AuthJWT payload"))
       )
   );
-
-export const verifyTesterJWTMiddleware = (
+export const verifyJWTMiddleware = (
   jwtConfig: JWTConfig
 ): IRequestMiddleware<"IResponseErrorForbiddenNotAuthorized", AuthJWT> => (
   req
@@ -62,7 +63,8 @@ export const verifyTesterJWTMiddleware = (
     TE.chain(token =>
       pipe(
         token,
-        getValidateAuthJWT(jwtConfig),
+        // getValidateAuthJWT(jwtConfig),
+        getValidateAuthJWT(),
         TE.mapLeft(_ =>
           getResponseErrorForbiddenNotAuthorized("Invalid or expired JWT")
         )

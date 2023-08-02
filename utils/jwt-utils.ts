@@ -10,6 +10,7 @@ import * as O from "fp-ts/Option";
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { isUserElegible } from "./userElegible";
+import { AuthJWT } from "./auth-jwt";
 
 // --------------------
 
@@ -63,10 +64,6 @@ export type GetValidateJWT = (
   secondaryPublicKey?: NonEmptyString
 ) => (token: NonEmptyString) => TE.TaskEither<Error, jwt.JwtPayload>;
 
-export type GetValidateTesterJWT = (
-  token: NonEmptyString
-) => TE.TaskEither<Error, jwt.JwtPayload>;
-
 export const getValidateJWT: GetValidateJWT = (
   issuer,
   primaryPublicKey,
@@ -86,9 +83,9 @@ export const getValidateJWT: GetValidateJWT = (
     )
   );
 
-export const getValidateTesterJWT: GetValidateJWT = () => (
-  token
-): TE.TaskEither<Error, jwt.JwtPayload> => pipe(token, validateJWTTester);
+export type GetValidateSpidJWT = (
+  token: NonEmptyString
+) => TE.TaskEither<Error, jwt.JwtPayload>;
 
 // -----------------------
 // Private methods
@@ -123,18 +120,41 @@ export const validateJWTWithKey: (
     )
   );
 
-export const validateJWTTester = (
+export const getValidateSpidJWT: GetValidateSpidJWT = (
+  token
+): TE.TaskEither<Error, jwt.JwtPayload> => pipe(token, validateSpidJWT);
+
+export const checkTokenType = (
   token: NonEmptyString
-): TE.TaskEither<Error, jwt.JwtPayload> =>
+): TE.TaskEither<Error, AuthJWT> =>
   pipe(
     TE.tryCatch(
       () =>
-        new Promise<jwt.JwtPayload>((resolve, reject) => {
+        new Promise<AuthJWT>(resolve => {
+          const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
+          if (jwtDecoded?.token_type) {
+            resolve(jwtDecoded as AuthJWT);
+            return jwtDecoded;
+          } else {
+            throw new Error("A");
+          }
+        }),
+      E.toError
+    )
+  );
+
+export const validateSpidJWT = (
+  token: NonEmptyString
+): TE.TaskEither<Error, AuthJWT> =>
+  pipe(
+    TE.tryCatch(
+      () =>
+        new Promise<AuthJWT>((resolve, reject) => {
           const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
           if (isUserElegible(jwtDecoded.fiscal_number)) {
-            resolve(jwtDecoded);
+            resolve(jwtDecoded as AuthJWT);
           } else {
-            reject("Errore");
+            reject("Error");
           }
         }),
       E.toError

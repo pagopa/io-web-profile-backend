@@ -11,7 +11,7 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import { verifyTesterJWTMiddleware } from "../utils/auth_jwt_tester";
+import { verifyJWTMiddleware } from "../utils/auth-jwt";
 import { JWTConfig } from "../utils/config";
 
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
@@ -34,7 +34,7 @@ export const PingHandler = (): InfoHandler => (): Promise<
 export const getPing = (jwtConfig: JWTConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyTesterJWTMiddleware(jwtConfig)
+    verifyJWTMiddleware(jwtConfig)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));
