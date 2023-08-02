@@ -8,7 +8,7 @@ import { Info } from "./handler";
 const app = express();
 secureExpressApp(app);
 
-app.get("/api/v1/info", Info());
+app.get("/v1/info", Info());
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

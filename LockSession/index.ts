@@ -4,14 +4,14 @@ import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/ex
 import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 import { getConfigOrThrow } from "../utils/config";
-import { getProfile } from "./handler";
+import { getSessionState } from "./handler";
 
 const config = getConfigOrThrow();
 
 const app = express();
 secureExpressApp(app);
 
-app.get("/v1/profile", getProfile(config));
+app.post("/v1/session-state", getSessionState(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

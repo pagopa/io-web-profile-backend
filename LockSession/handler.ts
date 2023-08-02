@@ -11,27 +11,29 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { Profile } from "../generated/definitions/external/Profile";
 import { verifyJWTMiddleware } from "../utils/auth-jwt";
 import { JWTConfig } from "../utils/config";
 import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
+import { SessionState } from "../generated/definitions/external/SessionState";
 
 type InfoHandler = () => Promise<
-  IResponseSuccessJson<Profile> | IResponseErrorInternal
+  IResponseSuccessJson<> | IResponseErrorInternal
 >;
 
-export const ProfileHandler = (): InfoHandler => (): Promise<
-  IResponseSuccessJson<Profile> | IResponseErrorInternal
+export const LockSessionHandler = (): InfoHandler => (): Promise<
+  IResponseSuccessJson<void> | IResponseErrorInternal
 > =>
   new Promise(resolve => {
     /* TODO: real logic */
-    resolve(
-      ResponseSuccessJson<Profile>(isMockedApi ? MOCK_RESPONSES.profile : {})
-    );
+    if (isMockedApi) {
+      resolve(ResponseSuccessJson<void>());
+    }
   });
 
-export const getProfile = (jwtConfig: JWTConfig): express.RequestHandler => {
-  const handler = ProfileHandler();
+export const getSessionState = (
+  jwtConfig: JWTConfig
+): express.RequestHandler => {
+  const handler = LockSessionHandler();
   const middlewaresWrap = withRequestMiddlewares(
     verifyJWTMiddleware(jwtConfig)
   );

@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "api/v1/ping",
+      "route": "v1/ping",
       "methods": [
         "get"
       ]

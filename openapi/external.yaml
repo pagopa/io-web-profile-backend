@@ -5,11 +5,9 @@ info:
   x-logo:
     url: https://io.italia.it/assets/img/io-logo-blue.svg
   description: |
-    Documentation of the IO Fast Login Function API here.
+    Documentation of the IO Web Profile Function API here.
 servers:
   - url: https://api.io.pagopa.it
-security:
-  - ApiKeyAuth: []
 paths:
   /info:
     get:
@@ -273,10 +271,6 @@ paths:
           description: Gateway Timeout
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-Functions-Key
     bearerAuth:
       type: http
       scheme: bearer

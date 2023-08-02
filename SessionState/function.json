@@ -5,9 +5,9 @@
             "type": "httpTrigger",
             "direction": "in",
             "name": "req",
-            "route": "v1/profile",
+            "route": "v1/session-state",
             "methods": [
-                "get"
+                "post"
             ]
         },
         {
@@ -16,5 +16,5 @@
             "name": "res"
         }
     ],
-    "scriptFile": "../dist/Profile/index.js"
+    "scriptFile": "../dist/SessionState/index.js"
 }

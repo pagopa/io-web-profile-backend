@@ -11,7 +11,7 @@ const config = getConfigOrThrow();
 const app = express();
 secureExpressApp(app);
 
-app.get("/api/v1/ping", getPing(config));
+app.get("/v1/ping", getPing(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
