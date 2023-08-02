@@ -3,6 +3,7 @@ import * as t from "io-ts";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
+import * as jwt from "jsonwebtoken";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
@@ -13,8 +14,8 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import { AuthBearer } from "../generated/definitions/external/AuthBearer";
-import { JWTConfig } from "./config";
-import { getValidateJWT } from "./jwt-utils";
+import { IConfig } from "./config";
+import { getIsUserElegibleIoWebProfile } from "./userElegible";
 
 /**
  * Type Definitions
@@ -26,34 +27,36 @@ export const AuthJWT = t.interface({
   fiscal_number: t.string
 });
 
-export type ValidateAuthJWT = (
-  token: NonEmptyString
-) => TE.TaskEither<Error, AuthJWT>;
+export type UserEligibleJWT = () => TE.TaskEither<Error, AuthJWT>;
 
-export const getValidateAuthJWT = ({
-  ISSUER,
-  PRIMARY_PUBLIC_KEY,
-  SECONDARY_PUBLIC_KEY
-}: JWTConfig): ValidateAuthJWT =>
-  pipe(
-    getValidateJWT(ISSUER, PRIMARY_PUBLIC_KEY, SECONDARY_PUBLIC_KEY),
-    validateJWTFunction => (token): ReturnType<ValidateAuthJWT> =>
-      pipe(
-        validateJWTFunction(token),
-        TE.filterOrElse(AuthJWT.is, () => E.toError("Invalid AuthJWT payload"))
-      )
+export const userIsEligible = (
+  token: NonEmptyString,
+  config: IConfig
+): UserEligibleJWT => {
+  const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
+  const isUserEligible = getIsUserElegibleIoWebProfile(
+    config.BETA_TESTERS,
+    config.FF_API_ENABLED
+  )(jwtDecoded.fiscal_code);
+  return pipe(
+    E.fromPredicate(
+      () => isUserEligible,
+      () => new Error("Error")
+    )
   );
-export const verifyJWTMiddleware = (
-  jwtConfig: JWTConfig
+};
+
+export const verifyUserEligibilityMiddleware = (
+  config: IConfig
 ): IRequestMiddleware<"IResponseErrorForbiddenNotAuthorized", AuthJWT> => (
   req
 ): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, AuthJWT>> =>
   pipe(
-    req.headers[jwtConfig.BEARER_AUTH_HEADER],
+    req.headers[config.BEARER_AUTH_HEADER],
     AuthBearer.decode,
     E.mapLeft(_ =>
       getResponseErrorForbiddenNotAuthorized(
-        `Invalid or missing JWT in header ${jwtConfig.BEARER_AUTH_HEADER}`
+        `Invalid or missing JWT in header ${config.BEARER_AUTH_HEADER}`
       )
     ),
     E.map(authBearer => authBearer.replace("Bearer ", "") as NonEmptyString),
@@ -61,7 +64,7 @@ export const verifyJWTMiddleware = (
     TE.chain(token =>
       pipe(
         token,
-        getValidateAuthJWT(jwtConfig),
+        userIsEligible(token, config),
         TE.mapLeft(_ =>
           getResponseErrorForbiddenNotAuthorized("Invalid or expired JWT")
         )

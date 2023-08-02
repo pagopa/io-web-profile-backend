@@ -9,8 +9,6 @@ import * as O from "fp-ts/Option";
 
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { isUserElegible } from "./userElegible";
-import { AuthJWT } from "./auth-jwt";
 
 // --------------------
 
@@ -20,44 +18,13 @@ const alg = "RS256";
 // Public methods
 // -----------------------
 
-/**
- * JWT Generation
- */
-export type GetGenerateJWT = <T extends Record<string, unknown>>(
-  issuer: NonEmptyString,
-  primaryPrivateKey: NonEmptyString
-) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
-
-export const getGenerateJWT: GetGenerateJWT = (issuer, primaryPrivateKey) => (
-  payload,
-  ttl
-): TE.TaskEither<Error, NonEmptyString> =>
-  pipe(
-    TE.taskify<Error, string>(cb =>
-      jwt.sign(
-        payload,
-        primaryPrivateKey,
-        {
-          algorithm: alg,
-          expiresIn: `${ttl} seconds`,
-          issuer,
-          jwtid: ulid()
-        },
-        cb
-      )
-    )(),
-    TE.mapLeft(E.toError),
-    TE.chain(
-      TE.fromPredicate(NonEmptyString.is, () => E.toError("Token is empty."))
-    )
-  );
-
 export const errorIsInvalidSignatureError = (error: Error): boolean =>
   error.message === "JsonWebTokenError - invalid signature";
 
 /**
  * JWT Validation
  */
+
 export type GetValidateJWT = (
   issuer: NonEmptyString,
   primaryPublicKey: NonEmptyString,
@@ -83,13 +50,6 @@ export const getValidateJWT: GetValidateJWT = (
     )
   );
 
-export type GetValidateSpidJWT = (
-  token: NonEmptyString
-) => TE.TaskEither<Error, jwt.JwtPayload>;
-
-// -----------------------
-// Private methods
-// -----------------------
 export const validateJWTWithKey: (
   issuer: NonEmptyString,
   key: NonEmptyString
@@ -120,43 +80,34 @@ export const validateJWTWithKey: (
     )
   );
 
-export const getValidateSpidJWT: GetValidateSpidJWT = (
-  token
-): TE.TaskEither<Error, jwt.JwtPayload> => pipe(token, validateSpidJWT);
+/**
+ * JWT Generation
+ */
+export type GetGenerateJWT = <T extends Record<string, unknown>>(
+  issuer: NonEmptyString,
+  primaryPrivateKey: NonEmptyString
+) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-export const checkTokenType = (
-  token: NonEmptyString
-): TE.TaskEither<Error, AuthJWT> =>
+export const getGenerateJWT: GetGenerateJWT = (issuer, primaryPrivateKey) => (
+  payload,
+  ttl
+): TE.TaskEither<Error, NonEmptyString> =>
   pipe(
-    TE.tryCatch(
-      () =>
-        new Promise<AuthJWT>(resolve => {
-          const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
-          if (jwtDecoded?.token_type) {
-            resolve(jwtDecoded as AuthJWT);
-            return jwtDecoded;
-          } else {
-            throw new Error("A");
-          }
-        }),
-      E.toError
-    )
-  );
-
-export const validateSpidJWT = (
-  token: NonEmptyString
-): TE.TaskEither<Error, AuthJWT> =>
-  pipe(
-    TE.tryCatch(
-      () =>
-        new Promise<AuthJWT>((resolve, reject) => {
-          const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
-          if (isUserElegible(jwtDecoded.fiscal_number)) {
-            resolve(jwtDecoded as AuthJWT);
-          } else {
-            reject("Error");
-          }
-        }),
-      E.toError
+    TE.taskify<Error, string>(cb =>
+      jwt.sign(
+        payload,
+        primaryPrivateKey,
+        {
+          algorithm: alg,
+          expiresIn: `${ttl} seconds`,
+          issuer,
+          jwtid: ulid()
+        },
+        cb
+      )
+    )(),
+    TE.mapLeft(E.toError),
+    TE.chain(
+      TE.fromPredicate(NonEmptyString.is, () => E.toError("Token is empty."))
     )
   );
