@@ -11,10 +11,10 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
-import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 import { SessionState } from "../generated/definitions/external/SessionState";
+import { IConfig } from "../utils/config";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
+import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 
 type InfoHandler = () => Promise<
   IResponseSuccessJson<SessionState> | IResponseErrorInternal
@@ -30,12 +30,10 @@ export const SessionStateHandler = (): InfoHandler => (): Promise<
     }
   });
 
-export const getSessionState = (
-  jwtConfig: JWTConfig
-): express.RequestHandler => {
+export const getSessionState = (config: IConfig): express.RequestHandler => {
   const handler = SessionStateHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

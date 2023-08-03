@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
+import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
-import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   IResponseErrorInternal,
   IResponseSuccessJson,
-  ResponseSuccessJson,
-  ResponseErrorInternal
+  ResponseErrorInternal,
+  ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
-import { isMockedApi } from "../utils/mockapi_utils";
 import { LockSessionData } from "../generated/definitions/external/LockSessionData";
+import { IConfig } from "../utils/config";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
+import { isMockedApi } from "../utils/mockapi_utils";
 
 type ILockSessionHandler = (
   payload: LockSessionData
@@ -36,11 +36,11 @@ export const LockSessionHandler = (): ILockSessionHandler => (
     }
   });
 
-export const lockSession = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const lockSession = (config: IConfig): express.RequestHandler => {
   const handler = LockSessionHandler();
   const middlewaresWrap = withRequestMiddlewares(
     RequiredBodyPayloadMiddleware(LockSessionData),
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

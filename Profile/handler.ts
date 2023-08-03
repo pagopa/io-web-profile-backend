@@ -12,8 +12,8 @@ import {
 import * as express from "express";
 
 import { Profile } from "../generated/definitions/external/Profile";
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
+import { IConfig } from "../utils/config";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 
 type InfoHandler = () => Promise<
@@ -30,10 +30,10 @@ export const ProfileHandler = (): InfoHandler => (): Promise<
     );
   });
 
-export const getProfile = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const getProfile = (config: IConfig): express.RequestHandler => {
   const handler = ProfileHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

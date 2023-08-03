@@ -12,8 +12,8 @@ import {
 import * as express from "express";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
+import { IConfig } from "../utils/config";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 
 type IExchangeHandler = () => Promise<
@@ -30,10 +30,10 @@ export const ExchangeHandler = (): IExchangeHandler => (): Promise<
     }
   });
 
-export const exchangeToken = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const exchangeToken = (config: IConfig): express.RequestHandler => {
   const handler = ExchangeHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

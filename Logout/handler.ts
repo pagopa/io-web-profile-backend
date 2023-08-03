@@ -11,8 +11,8 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
+import { IConfig } from "../utils/config";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { isMockedApi } from "../utils/mockapi_utils";
 
 type ILogoutHandler = () => Promise<
@@ -29,10 +29,10 @@ export const LogoutHandler = (): ILogoutHandler => (): Promise<
     }
   });
 
-export const logoutSession = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const logoutSession = (config: IConfig): express.RequestHandler => {
   const handler = LogoutHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));
