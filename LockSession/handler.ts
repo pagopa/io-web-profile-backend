@@ -31,7 +31,7 @@ export const LockSessionHandler = (): ILockSessionHandler => (
       if (payload.unlockCode === "123456789") {
         resolve(ResponseSuccessJson<LockSessionData>(payload));
       } else {
-        resolve(ResponseErrorInternal("Ciao"));
+        resolve(ResponseErrorInternal("LockSession failed"));
       }
     }
   });
