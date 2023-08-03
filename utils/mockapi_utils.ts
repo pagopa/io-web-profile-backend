@@ -46,7 +46,9 @@ export const MOCK_RESPONSES = {
     jwt: exchangeToken
   },
   profile: {
-    email: "test@io.pagopa.it" as EmailString
+    email: "test@io.pagopa.it" as EmailString,
+    family_name: "pluto",
+    name: "pippo"
   },
   sessionState: SESSION_STATE[sessionStateKey]
 };

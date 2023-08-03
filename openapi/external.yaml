@@ -390,6 +390,12 @@ components:
           type: string
           format: email
           example: foobar@example.com
+        family_name:
+          type: string
+          example: Rossi
+        name:
+          type: string
+          example: Mario
     SessionInfo:
       description: Info about an user session
       oneOf:
