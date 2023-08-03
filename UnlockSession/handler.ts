@@ -22,7 +22,7 @@ type ILockSessionHandler = (
   payload: LockSessionData
 ) => Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal>;
 
-export const LockSessionHandler = (): ILockSessionHandler => (
+export const UnlockSessionHandler = (): ILockSessionHandler => (
   payload
 ): Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal> =>
   new Promise(resolve => {
@@ -36,8 +36,8 @@ export const LockSessionHandler = (): ILockSessionHandler => (
     }
   });
 
-export const lockSession = (jwtConfig: JWTConfig): express.RequestHandler => {
-  const handler = LockSessionHandler();
+export const unlockSession = (jwtConfig: JWTConfig): express.RequestHandler => {
+  const handler = UnlockSessionHandler();
   const middlewaresWrap = withRequestMiddlewares(
     RequiredBodyPayloadMiddleware(LockSessionData),
     verifyJWTMiddleware(jwtConfig)

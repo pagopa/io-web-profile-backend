@@ -11,7 +11,7 @@ const config = getConfigOrThrow();
 const app = express();
 secureExpressApp(app);
 
-app.get("/v1/profile", getProfile(config));
+app.get("/api/v1/profile", getProfile(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

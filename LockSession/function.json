@@ -1,11 +1,11 @@
 {
     "bindings": [
         {
-            "authLevel": "anonymous",
+            "authLevel": "function",
             "type": "httpTrigger",
             "direction": "in",
             "name": "req",
-            "route": "v1/lock-session",
+            "route": "api/v1/lock-session",
             "methods": [
                 "post"
             ]

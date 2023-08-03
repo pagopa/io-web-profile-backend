@@ -1,30 +1,52 @@
 import { EmailString } from "@pagopa/ts-commons/lib/strings";
-import { SessionState } from "../generated/definitions/external/SessionState";
 import { SessionInfo } from "../generated/definitions/external/SessionInfo";
+import { SessionState } from "../generated/definitions/external/SessionState";
 
 export const isMockedApi: boolean = process.env.MOCK_API === "true";
 
-const sessionInfo: SessionInfo = {
+// #region sessionState
+const activeSessionInfo: SessionInfo = {
   active: true,
   expiration_date: new Date("2023-08-31")
 };
-const sessionState: SessionState = {
+const activeSessionState: SessionState = {
   access_enabled: true,
-  session_info: sessionInfo
+  session_info: activeSessionInfo
 };
+const inactiveSessionInfo: SessionInfo = {
+  active: false
+};
+const inactiveSessionState: SessionState = {
+  access_enabled: true,
+  session_info: inactiveSessionInfo
+};
+const lockedSessionInfo: SessionInfo = {
+  active: false
+};
+const lockedSessionState: SessionState = {
+  access_enabled: false,
+  session_info: lockedSessionInfo
+};
+
+const SESSION_STATE: { readonly [index: string]: SessionState } = {
+  ACTIVE: activeSessionState,
+  INACTIVE: inactiveSessionState,
+  LOCKED: lockedSessionState
+};
+
+const sessionStateKey = process.env.SESSION_STATE || "ACTIVE";
+// #endregion
+
+// #region exchange
+const exchangeToken = process.env.MOCKED_EXCHANGE_JWT;
+// #endregion
+
 export const MOCK_RESPONSES = {
+  exchange: {
+    jwt: exchangeToken
+  },
   profile: {
     email: "test@io.pagopa.it" as EmailString
   },
-  sessionState
+  sessionState: SESSION_STATE[sessionStateKey]
 };
-
-// type ObjectKey = keyof typeof MOCK_RESPONSES;
-// /**
-//  * Middleware that checks if a given endpoint is mocked and returns the mocked response
-//  */
-// export const mockMiddleware = (endpoint: ObjectKey): unknown => {
-//   if (isMockedApi) {
-//     return MOCK_RESPONSES[endpoint];
-//   }
-// };

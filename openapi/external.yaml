@@ -7,7 +7,7 @@ info:
   description: |
     Documentation of the IO Web Profile Function API here.
 servers:
-  - url: https://api.io.pagopa.it
+  - url: https://api.io.pagopa.it/api/v1
 paths:
   /info:
     get:
@@ -51,7 +51,10 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        $ref: '#/components/requestBodies/LockSessionData'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockSessionData'
       responses:
         '201':
           description: Created
@@ -80,14 +83,17 @@ paths:
         '504':
           description: Gateway Timeout
   /unlock-session:
-    delete:
+    post:
       operationId: unlockUserSession
       summary: UnlockUserSession
       description: Unlock user session on IO App
       security:
         - bearerAuth: []
       requestBody:
-        $ref: '#/components/requestBodies/LockSessionData'
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LockSessionData'
       responses:
         '200':
           description: Success
@@ -206,7 +212,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: Created
+          description: Success
           content:
             application/json:
               schema:
@@ -242,7 +248,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: Created
+          description: Success
           content:
             application/json:
               schema:
@@ -277,7 +283,7 @@ components:
       bearerFormat: JWT
   responses:
     InternalServerError:
-      description: InternalServerError
+      description: Internal Server Error
       content:
         application/json:
           schema:
@@ -424,7 +430,7 @@ components:
       description: Exchanged token
       type: object
       properties:
-        token:
+        jwt:
           type: string
           format: JWT
     ProblemJson:
