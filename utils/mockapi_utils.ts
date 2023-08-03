@@ -47,8 +47,8 @@ export const MOCK_RESPONSES = {
   },
   profile: {
     email: "test@io.pagopa.it" as EmailString,
-    family_name: "pluto",
-    name: "pippo"
+    family_name: "Rossi",
+    name: "Carla"
   },
   sessionState: SESSION_STATE[sessionStateKey]
 };

@@ -11,22 +11,26 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { Profile } from "../generated/definitions/external/Profile";
+import { ProfileData } from "../generated/definitions/external/ProfileData";
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 
 type InfoHandler = () => Promise<
-  IResponseSuccessJson<Profile> | IResponseErrorInternal
+  IResponseSuccessJson<ProfileData> | IResponseErrorInternal
 >;
 
 export const ProfileHandler = (): InfoHandler => (): Promise<
-  IResponseSuccessJson<Profile> | IResponseErrorInternal
+  IResponseSuccessJson<ProfileData> | IResponseErrorInternal
 > =>
   new Promise(resolve => {
     /* TODO: real logic */
     resolve(
-      ResponseSuccessJson<Profile>(isMockedApi ? MOCK_RESPONSES.profile : {})
+      ResponseSuccessJson<ProfileData>(
+        isMockedApi
+          ? MOCK_RESPONSES.profile
+          : { family_name: "pluto", name: "pippo" }
+      )
     );
   });
 

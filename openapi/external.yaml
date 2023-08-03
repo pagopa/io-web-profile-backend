@@ -180,7 +180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Profile'
+                $ref: '#/components/schemas/ProfileData'
         '400':
           description: Invalid request.
           content:
@@ -381,7 +381,7 @@ components:
           minLength: 9
       required:
         - unlock_code
-    Profile:
+    ProfileData:
       description: |-
         Describes the citizen's profile.
       type: object
@@ -396,6 +396,9 @@ components:
         name:
           type: string
           example: Mario
+      required:
+        - name
+        - family_name
     SessionInfo:
       description: Info about an user session
       oneOf:
