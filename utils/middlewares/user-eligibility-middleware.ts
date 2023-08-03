@@ -17,7 +17,7 @@ import { IConfig } from "../config";
 import { getIsUserElegibleIoWebProfile } from "../featureFlags/userEligibleForIoWebProfile";
 
 const JWTWithFiscalCode = t.type({
-  fiscal_code: FiscalCode
+  fiscal_number: FiscalCode
 });
 
 /**
@@ -44,7 +44,7 @@ export const userIsEligible = (
           getIsUserElegibleIoWebProfile(
             config.BETA_TESTERS,
             config.FF_API_ENABLED
-          )(jwtDecoded.fiscal_code),
+          )(jwtDecoded.fiscal_number),
         TE.fromPredicate(identity, () => new Error("User is not eligible"))
       )
     )
