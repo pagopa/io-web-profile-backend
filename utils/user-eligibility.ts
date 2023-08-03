@@ -1,5 +1,3 @@
-import * as t from "io-ts";
-
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
@@ -21,14 +19,17 @@ import { getIsUserElegibleIoWebProfile } from "./userElegible";
  * Type Definitions
  */
 
-export type AuthJWT = t.TypeOf<typeof AuthJWT>;
+export type UserEligibleJWT = () => TE.TaskEither<Error, boolean>;
 
-export const AuthJWT = t.interface({
-  fiscal_number: t.string
-});
-
-export type UserEligibleJWT = () => TE.TaskEither<Error, AuthJWT>;
-
+export const createOptionValue = (
+  value: boolean
+): E.Either<boolean, boolean> => {
+  if (value) {
+    return E.right(true);
+  } else {
+    return E.left(false);
+  }
+};
 export const userIsEligible = (
   token: NonEmptyString,
   config: IConfig
@@ -39,18 +40,16 @@ export const userIsEligible = (
     config.FF_API_ENABLED
   )(jwtDecoded.fiscal_code);
   return pipe(
-    E.fromPredicate(
-      () => isUserEligible,
-      () => new Error("Error")
-    )
+    createOptionValue(isUserEligible),
+    TE.mapLeft(() => new Error("User is not eligible"))
   );
 };
 
 export const verifyUserEligibilityMiddleware = (
   config: IConfig
-): IRequestMiddleware<"IResponseErrorForbiddenNotAuthorized", AuthJWT> => (
+): IRequestMiddleware<"IResponseErrorForbiddenNotAuthorized", boolean> => (
   req
-): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, AuthJWT>> =>
+): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, boolean>> =>
   pipe(
     req.headers[config.BEARER_AUTH_HEADER],
     AuthBearer.decode,
