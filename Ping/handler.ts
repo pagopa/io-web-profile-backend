@@ -12,7 +12,7 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import * as T from "fp-ts/Task";
-import { verifyUserEligibilityMiddleware } from "../utils/user-eligibility";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
 

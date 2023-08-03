@@ -16,7 +16,7 @@ import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-lis
 
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withDefault } from "@pagopa/ts-commons/lib/types";
-import { FeatureFlag, FeatureFlagEnum } from "./featureFlags";
+import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;

@@ -1,9 +1,9 @@
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
-import { pipe } from "fp-ts/lib/function";
+import { flow, identity, pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
@@ -11,39 +11,44 @@ import {
   IResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
 
-import { AuthBearer } from "../generated/definitions/external/AuthBearer";
-import { IConfig } from "./config";
-import { getIsUserElegibleIoWebProfile } from "./userElegible";
+import * as t from "io-ts";
+import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
+import { IConfig } from "../config";
+import { getIsUserElegibleIoWebProfile } from "../featureFlags/userEligibleForIoWebProfile";
+
+const JWTWithFiscalCode = t.type({
+  fiscal_code: FiscalCode
+});
 
 /**
  * Type Definitions
  */
 
-export type UserEligibleJWT = () => TE.TaskEither<Error, boolean>;
+export type UserEligibleJWT = (
+  token: NonEmptyString
+) => TE.TaskEither<Error, boolean>;
 
-export const createOptionValue = (
-  value: boolean
-): E.Either<boolean, boolean> => {
-  if (value) {
-    return E.right(true);
-  } else {
-    return E.left(false);
-  }
-};
 export const userIsEligible = (
   token: NonEmptyString,
   config: IConfig
-): UserEligibleJWT => {
-  const jwtDecoded = jwt.decode(token) as jwt.JwtPayload;
-  const isUserEligible = getIsUserElegibleIoWebProfile(
-    config.BETA_TESTERS,
-    config.FF_API_ENABLED
-  )(jwtDecoded.fiscal_code);
-  return pipe(
-    createOptionValue(isUserEligible),
-    TE.mapLeft(() => new Error("User is not eligible"))
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+): UserEligibleJWT => () =>
+  pipe(
+    jwt.decode(token),
+    JWTWithFiscalCode.decode,
+    TE.fromEither,
+    TE.mapLeft(() => new Error("Unable to decode JWT")),
+    TE.chainW(
+      flow(
+        jwtDecoded =>
+          getIsUserElegibleIoWebProfile(
+            config.BETA_TESTERS,
+            config.FF_API_ENABLED
+          )(jwtDecoded.fiscal_code),
+        TE.fromPredicate(identity, () => new Error("User is not eligible"))
+      )
+    )
   );
-};
 
 export const verifyUserEligibilityMiddleware = (
   config: IConfig
