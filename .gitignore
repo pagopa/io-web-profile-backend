@@ -9,6 +9,7 @@ Publish
 *.suo
 *.cscfg
 *.Cache
+
 project.lock.json
 
 /packages
@@ -23,6 +24,7 @@ appsettings.json
 
 node_modules
 dist
+.env
 
 # Local python packages
 .python_packages/

@@ -12,10 +12,11 @@ import { pipe } from "fp-ts/lib/function";
 import { NumberFromString, withFallback } from "io-ts-types";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
+import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
+
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withDefault } from "@pagopa/ts-commons/lib/types";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags";
-import { CommaSeparatedListOf } from "./separated-list";
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
@@ -40,6 +41,7 @@ export const JWTConfig = t.intersection([
 export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
+    BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
 
     COSMOSDB_KEY: NonEmptyString,
     COSMOSDB_NAME: NonEmptyString,
@@ -53,14 +55,6 @@ export const IConfig = t.intersection([
   }),
   JWTConfig
 ]);
-
-export const BETA_TESTERS = pipe(
-  process.env.BETA_TESTERS,
-  CommaSeparatedListOf(FiscalCode).decode,
-  E.getOrElseW(err => {
-    throw new Error(`Invalid LV_TEST_USERS value: ${readableReport(err)}`);
-  })
-);
 
 export const envConfig = {
   ...process.env,

@@ -11,9 +11,9 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 
-import { verifyJWTMiddleware } from "../utils/auth-jwt";
-import { JWTConfig } from "../utils/config";
-
+import * as T from "fp-ts/Task";
+import { verifyUserEligibilityMiddleware } from "../utils/user-eligibility";
+import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
 
 type InfoHandler = () => Promise<
@@ -23,18 +23,16 @@ type InfoHandler = () => Promise<
 export const PingHandler = (): InfoHandler => (): Promise<
   IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
 > =>
-  new Promise(resolve => {
-    resolve(
-      ResponseSuccessJson<ServiceStatus>({
-        message: "Function IO Web Profile is up and running"
-      })
-    );
-  });
+  T.of(
+    ResponseSuccessJson<ServiceStatus>({
+      message: "Function IO Web Profile is up and running"
+    })
+  )();
 
-export const getPing = (jwtConfig: JWTConfig): express.RequestHandler => {
+export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyJWTMiddleware(jwtConfig)
+    verifyUserEligibilityMiddleware(config)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));
