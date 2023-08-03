@@ -16,7 +16,7 @@ paths:
       operationId: getServiceStatus
       summary: Get Service status and test Auth Bearer Token 
       parameters:
-        - name: x-pagopa-webprofile-auth
+        - name: authorization
           required: true
           in: header
           schema:
