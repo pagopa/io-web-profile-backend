@@ -79,6 +79,8 @@ io-web-profile-backend
 
 The following table contains the required ENV variables that the function require
 
-| Variable name                   | Description                                  | type   |
-|---------------------------------|----------------------------------------------|--------|
-| VAR_NAME_EXAMPLE                | var example                                  | string |
+| Variable name                   | Description                                         | type   |
+|---------------------------------|-----------------------------------------------------|--------|
+| FF_API_ENABLED                  | Api Auth Mode (NONE, BETA, CANARY, ALL)             | string |
+| BETA_TESTERS                    | Beta tester fiscal code separated by comma          | string,string,string,... |
+| BEARER_AUTH_HEADER              | Req Auth Header Param where Bearer token is sotored | string|

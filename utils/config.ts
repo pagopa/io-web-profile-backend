@@ -9,24 +9,52 @@ import * as t from "io-ts";
 
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
+import { NumberFromString, withFallback } from "io-ts-types";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
+
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { withDefault } from "@pagopa/ts-commons/lib/types";
+import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
 // eslint-disable-next-line @typescript-eslint/ban-types
-export const IConfig = t.interface({
-  AzureWebJobsStorage: NonEmptyString,
 
-  COSMOSDB_KEY: NonEmptyString,
-  COSMOSDB_NAME: NonEmptyString,
-  COSMOSDB_URI: NonEmptyString,
+export type JWTConfig = t.TypeOf<typeof JWTConfig>;
+export const JWTConfig = t.intersection([
+  t.type({
+    BEARER_AUTH_HEADER: NonEmptyString,
+    ISSUER: NonEmptyString,
 
-  QueueStorageConnection: NonEmptyString,
+    JWT_TTL: withDefault(t.string, "900").pipe(NumberFromString),
 
-  isProduction: t.boolean
-});
+    PRIMARY_PRIVATE_KEY: NonEmptyString,
+    PRIMARY_PUBLIC_KEY: NonEmptyString
+  }),
+  t.partial({
+    SECONDARY_PUBLIC_KEY: NonEmptyString
+  })
+]);
+
+export const IConfig = t.intersection([
+  t.interface({
+    AzureWebJobsStorage: NonEmptyString,
+    BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
+
+    COSMOSDB_KEY: NonEmptyString,
+    COSMOSDB_NAME: NonEmptyString,
+    COSMOSDB_URI: NonEmptyString,
+
+    FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
+
+    QueueStorageConnection: NonEmptyString,
+
+    isProduction: t.boolean
+  }),
+  JWTConfig
+]);
 
 export const envConfig = {
   ...process.env,

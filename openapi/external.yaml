@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  version: $npm_package_version
+  title: IO Web Profile Function Consumer API
+  x-logo:
+    url: https://io.italia.it/assets/img/io-logo-blue.svg
+  description: |
+    Documentation of the IO Web Profile Function API exposed to Web Profile Consumer.
+servers:
+  - url: https://api.io.pagopa.it/
+security:
+  - ApiKeyAuth: []
+paths:
+  /ping:
+    get:
+      operationId: getServiceStatus
+      summary: Get Service status and test Auth Bearer Token 
+      parameters:
+        - name: authorization
+          required: true
+          in: header
+          schema:
+            $ref: '#/components/schemas/AuthBearer'
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceStatus'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Ocp-Apim-Subscription-Key
+  schemas:
+    AuthBearer:
+      type: string
+      pattern: ^Bearer [a-zA-Z0-9-_].+
+      description: A JWT auth custom header as `Bearer <JWT Token>`
+      example: >-
+        Bearer
+        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        AuthBearer:
+    ServiceStatus:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
