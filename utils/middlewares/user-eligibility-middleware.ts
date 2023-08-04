@@ -70,7 +70,7 @@ export const verifyUserEligibilityMiddleware = (
         token,
         userIsEligible(token, config),
         TE.mapLeft(_ =>
-          getResponseErrorForbiddenNotAuthorized("Invalid or expired JWT")
+          getResponseErrorForbiddenNotAuthorized("API are now on Closed Beta")
         )
       )
     )
