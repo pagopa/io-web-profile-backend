@@ -28,7 +28,7 @@ export const LockSessionHandler = (): ILockSessionHandler => (
   new Promise(resolve => {
     /* TODO: real logic */
     if (isMockedApi) {
-      if (payload.unlockCode === "123456789") {
+      if (payload.unlock_code === "123456789") {
         resolve(ResponseSuccessJson<LockSessionData>(payload));
       } else {
         resolve(ResponseErrorInternal("LockSession failed"));

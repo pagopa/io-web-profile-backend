@@ -17,19 +17,20 @@ import { LockSessionData } from "../generated/definitions/external/LockSessionDa
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { isMockedApi } from "../utils/mockapi_utils";
+import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
 
 type ILockSessionHandler = (
-  payload: LockSessionData
-) => Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal>;
+  payload: UnlockSessionData
+) => Promise<IResponseSuccessJson<void> | IResponseErrorInternal>;
 
 export const UnlockSessionHandler = (): ILockSessionHandler => (
   payload
-): Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal> =>
+): Promise<IResponseSuccessJson<void> | IResponseErrorInternal> =>
   new Promise(resolve => {
     /* TODO: real logic */
     if (isMockedApi) {
-      if (payload.unlockCode === "123456789") {
-        resolve(ResponseSuccessJson<LockSessionData>(payload));
+      if (payload.unlock_code === "123456789") {
+        resolve(ResponseSuccessJson(void 0));
       } else {
         resolve(ResponseErrorInternal("UnlockSession failed"));
       }

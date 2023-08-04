@@ -27,9 +27,7 @@ export const ProfileHandler = (): IProfileHandler => (): Promise<
     /* TODO: real logic */
     resolve(
       ResponseSuccessJson<ProfileData>(
-        isMockedApi
-          ? MOCK_RESPONSES.profile
-          : { family_name: "pluto", name: "pippo" }
+        isMockedApi ? MOCK_RESPONSES.profile : {}
       )
     );
   });
