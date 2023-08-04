@@ -7,9 +7,9 @@ import {
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   IResponseErrorInternal,
-  IResponseSuccessJson,
+  IResponseSuccessNoContent,
   ResponseErrorInternal,
-  ResponseSuccessJson
+  ResponseSuccessNoContent
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
@@ -20,16 +20,16 @@ import { isMockedApi } from "../utils/mockapi_utils";
 
 type ILockSessionHandler = (
   payload: LockSessionData
-) => Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal>;
+) => Promise<IResponseSuccessNoContent | IResponseErrorInternal>;
 
 export const LockSessionHandler = (): ILockSessionHandler => (
   payload
-): Promise<IResponseSuccessJson<LockSessionData> | IResponseErrorInternal> =>
+): Promise<IResponseSuccessNoContent | IResponseErrorInternal> =>
   new Promise(resolve => {
     /* TODO: real logic */
     if (isMockedApi) {
       if (payload.unlock_code === "123456789") {
-        resolve(ResponseSuccessJson<LockSessionData>(payload));
+        resolve(ResponseSuccessNoContent());
       } else {
         resolve(ResponseErrorInternal("LockSession failed"));
       }

@@ -11,7 +11,7 @@ const config = getConfigOrThrow();
 const app = express();
 secureExpressApp(app);
 
-app.post("/api/v1/session-state", getSessionState(config));
+app.get("/api/v1/session-state", getSessionState(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

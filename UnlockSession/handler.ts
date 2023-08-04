@@ -14,10 +14,10 @@ import {
 import * as express from "express";
 
 import { LockSessionData } from "../generated/definitions/external/LockSessionData";
+import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { isMockedApi } from "../utils/mockapi_utils";
-import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
 
 type ILockSessionHandler = (
   payload: UnlockSessionData
