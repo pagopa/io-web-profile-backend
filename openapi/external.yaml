@@ -192,7 +192,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionStateData'
+                $ref: '#/components/schemas/SessionState'
         '400':
           description: Bad Request
           content:
@@ -338,8 +338,8 @@ components:
           type: string
           format: email
           example: foobar@example.com
-    SessionStateData:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/GetSessionStateData'
+    SessionState:
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/SessionState'
     ExchangeToken:
       description: Exchanged token
       type: object
