@@ -7,28 +7,8 @@ info:
   description: |
     Documentation of the IO Web Profile Function API here.
 servers:
-  - url: https://api.io.pagopa.it/api/v1
+  - url: https://api-web.io.pagopa.it/ioweb/backend/api/v1
 paths:
-  /info:
-    get:
-      operationId: getApplicationInfo
-      summary: GetApplicationInfo
-      description: >-
-        Retrieve current application info to confirm the application is up and
-        able to serve requests. Errors mean the application is broken.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationInfo'
-        '500':
-          description: Generic server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
   /ping:
     get:
       operationId: getServiceStatus
@@ -63,13 +43,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/Unauthorized'
+        '403':
+          description: Forbidden
         '409':
           description: Conflict
         '500':
@@ -77,7 +59,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
         '502':
           description: Bad Gateway
         '504':
@@ -93,7 +75,7 @@ paths:
         content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LockSessionData'
+                $ref: '#/components/schemas/UnlockSessionData'
       responses:
         '200':
           description: Success
@@ -102,13 +84,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/Unauthorized'
         '403':
           description: Forbidden
         '409':
@@ -118,7 +100,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
         '502':
           description: Bad Gateway
         '504':
@@ -138,35 +120,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/Unauthorized'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
         '502':
           description: Bad Gateway
         '504':
           description: Gateway Timeout
-  /sessions:
-    get:
-      operationId: getSessionsList
-      summary: GetSessionsList
-      description: Retrieve a user active sessions list
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Success
-        '404':
-          description: Not Found
   /profile:
     get:
       operationId: getProfile
@@ -186,9 +156,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '403':
+          description: Forbidden
         '404':
           description: Not Found
           content:
@@ -202,9 +178,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
   /session-state:
-    post:
+    get:
       operationId: getUserSessionState
       summary: GetUserSessionState
       description: Get User Session State on IO App
@@ -216,25 +192,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionState'
+                $ref: '#/components/schemas/SessionStateData'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/Unauthorized'
+        '403':
+          description: Forbidden
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
         '502':
           description: Bad Gateway
         '504':
@@ -258,19 +236,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/Unauthorized'
+                $ref: '#/components/schemas/Unauthorized'
+        '403':
+          description: Forbidden
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/responses/InternalServerError'
+                $ref: '#/components/schemas/InternalServerError'
         '502':
           description: Bad Gateway
         '504':
@@ -281,31 +261,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  responses:
-    InternalServerError:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InternalServerError'
-    BadRequest:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/BadRequest'
-    Unauthorized:
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Unauthorized'
-  requestBodies:
-    LockSessionData:
-      content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LockSessionData'
   schemas:
     InternalServerError:
       allOf:
@@ -359,28 +314,21 @@ components:
         example: >-
           Bearer
           eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-    ApplicationInfo:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
-    ServiceStatus:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
+    UnlockCode:
+      type: string
+      minLength: 9
     LockSessionData:
       type: object
       properties:
-        unlockCode:
-          type: string
-          minLength: 9
+        unlock_code:
+          $ref: '#/components/schemas/UnlockCode'
       required:
         - unlock_code
+    UnlockSessionData:
+      type: object
+      properties:
+        unlock_code:
+          $ref: '#/components/schemas/UnlockCode'
     ProfileData:
       description: |-
         Describes the citizen's profile.
@@ -390,51 +338,8 @@ components:
           type: string
           format: email
           example: foobar@example.com
-        family_name:
-          type: string
-          example: Rossi
-        name:
-          type: string
-          example: Mario
-      required:
-        - name
-        - family_name
-    SessionInfo:
-      description: Info about an user session
-      oneOf:
-        - type: object
-          description: Inactive session
-          properties:
-            active:
-              type: boolean
-              enum:
-                - false
-          required:
-            - active
-        - type: object
-          description: Active session
-          properties:
-            active:
-              type: boolean
-              enum:
-                - true
-            expiration_date:
-              type: string
-              format: date
-          required:
-            - active
-            - expiration_date
-    SessionState:
-      description: The state of the user' session
-      type: object
-      properties:
-        access_enabled:
-          type: boolean
-        session_info:
-          $ref: '#/components/schemas/SessionInfo'
-      required:
-        - access_enabled
-        - session_info
+    SessionStateData:
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/GetSessionStateData'
     ExchangeToken:
       description: Exchanged token
       type: object
@@ -442,6 +347,13 @@ components:
         jwt:
           type: string
           format: JWT
+    ServiceStatus:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
     ProblemJson:
       type: object
       properties:

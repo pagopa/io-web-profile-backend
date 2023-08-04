@@ -37,6 +37,11 @@ paths:
       summary: GetMagicLinkToken
       description: >-
         Post User info to generate and return a temporary JWT token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagicLinkData'
       responses:
         '200':
           description: Success
@@ -143,6 +148,19 @@ components:
                 occurrence of the problem.
           required:
             - status
+    MagicLinkData:
+      type: object
+      properties:
+        family_name:
+          type: string
+        fiscal_code:
+          type: string
+        name:
+          type: string
+      required:
+        - family_name
+        - fiscal_code
+        - name
     MagicLinkToken:
       type: object
       properties:
