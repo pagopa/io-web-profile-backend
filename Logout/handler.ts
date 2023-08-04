@@ -6,8 +6,8 @@ import {
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   IResponseErrorInternal,
-  IResponseSuccessNoContent,
-  ResponseSuccessNoContent
+  IResponseSuccessJson,
+  ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
@@ -16,16 +16,16 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { isMockedApi } from "../utils/mockapi_utils";
 
 type ILogoutHandler = () => Promise<
-  IResponseSuccessNoContent | IResponseErrorInternal
+  IResponseSuccessJson<void> | IResponseErrorInternal
 >;
 
 export const LogoutHandler = (): ILogoutHandler => (): Promise<
-  IResponseSuccessNoContent | IResponseErrorInternal
+  IResponseSuccessJson<void> | IResponseErrorInternal
 > =>
   new Promise(resolve => {
     /* TODO: real logic */
     if (isMockedApi) {
-      resolve(ResponseSuccessNoContent());
+      resolve(ResponseSuccessJson(void 0));
     }
   });
 
