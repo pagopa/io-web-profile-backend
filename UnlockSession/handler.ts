@@ -13,23 +13,25 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
-import { LockSessionData } from "../generated/definitions/external/LockSessionData";
 import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { isMockedApi } from "../utils/mockapi_utils";
 
-type ILockSessionHandler = (
+type IUnlockSessionHandler = (
   payload: UnlockSessionData
 ) => Promise<IResponseSuccessNoContent | IResponseErrorInternal>;
 
-export const UnlockSessionHandler = (): ILockSessionHandler => (
+export const UnlockSessionHandler = (): IUnlockSessionHandler => (
   payload
 ): Promise<IResponseSuccessNoContent | IResponseErrorInternal> =>
   new Promise(resolve => {
     /* TODO: real logic */
     if (isMockedApi) {
-      if (payload.unlock_code === "123456789") {
+      if (
+        payload.unlock_code === "123456789" ||
+        payload.unlock_code === undefined
+      ) {
         resolve(ResponseSuccessNoContent());
       } else {
         resolve(ResponseErrorInternal("UnlockSession failed"));
@@ -40,7 +42,7 @@ export const UnlockSessionHandler = (): ILockSessionHandler => (
 export const unlockSession = (config: IConfig): express.RequestHandler => {
   const handler = UnlockSessionHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    RequiredBodyPayloadMiddleware(LockSessionData),
+    RequiredBodyPayloadMiddleware(UnlockSessionData),
     verifyUserEligibilityMiddleware(config)
   );
 
