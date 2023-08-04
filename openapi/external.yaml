@@ -338,6 +338,8 @@ components:
           type: string
           format: email
           example: foobar@example.com
+    SessionInfo:
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionInfo'
     SessionState:
       $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionState'
     ExchangeToken:
