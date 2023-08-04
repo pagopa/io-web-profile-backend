@@ -16,11 +16,11 @@ import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { MOCK_RESPONSES, isMockedApi } from "../utils/mockapi_utils";
 
-type InfoHandler = () => Promise<
+type IProfileHandler = () => Promise<
   IResponseSuccessJson<ProfileData> | IResponseErrorInternal
 >;
 
-export const ProfileHandler = (): InfoHandler => (): Promise<
+export const ProfileHandler = (): IProfileHandler => (): Promise<
   IResponseSuccessJson<ProfileData> | IResponseErrorInternal
 > =>
   new Promise(resolve => {
