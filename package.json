@@ -20,7 +20,7 @@
     "lint-api": "oval validate -p openapi/index.yaml",
     "generate": "npm-run-all generate:*",
     "generate:definitions-internal": "rimraf ./generated/definitions/internal && shx mkdir -p ./generated/definitions/internal && gen-api-models --api-spec ./openapi/internal.yaml --no-strict --out-dir ./generated/definitions/internal",
-    "generate:definitions-external": "rimraf ./generated/definitions/external && shx mkdir -p ./generated/definitions/external && gen-api-models --api-spec ./openapi/external.yaml --no-strict --out-dir ./generated/definitions/external",
+    "generate:definitions-external": "rimraf ./generated/definitions/external && shx mkdir -p ./generated/definitions/external && gen-api-models --api-spec ./openapi/external.yaml --no-strict --out-dir ./generated/definitions/external --request-types --response-decoders --client",
     "dist:modules": "modclean -r -n default:safe && yarn install --production",
     "predeploy": "npm-run-all build dist:*",
     "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",

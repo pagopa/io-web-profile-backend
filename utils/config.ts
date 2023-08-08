@@ -11,11 +11,12 @@ import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import { NumberFromString, withFallback } from "io-ts-types";
 
-import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
+import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withDefault } from "@pagopa/ts-commons/lib/types";
+import { UrlFromString } from "@pagopa/ts-commons/lib/url";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
@@ -38,6 +39,24 @@ export const JWTConfig = t.intersection([
   })
 ]);
 
+// Lock Session Client Configuration
+export const LockSessionClientConfig = t.type({
+  // EXPECTED_LOCK_SESSION_ORIGINAL_METHOD: withDefault(t.string, "POST"),
+  // EXPECTED_LOCK_SESSION_ORIGINAL_URL: withDefault(
+  //   t.string,
+  //   "TODO/fast/login/lock/session/path"
+  // ).pipe(UrlFromString),
+
+  // FIRST_LOCK_SESSION_CLIENT_BASE_URL: NonEmptyString,
+  // FIRST_LOCK_SESSION_CLIENT_SUBSCRIPTION_KEY: NonEmptyString,
+
+  // IDP_KEYS_BASE_URL: withDefault(
+  //   t.string,
+  //   "https://api.is.eng.pagopa.it/idp-keys"
+  // ).pipe(UrlFromString)
+});
+export type LockSessionClientConfig = t.TypeOf<typeof LockSessionClientConfig>;
+
 export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
@@ -53,7 +72,8 @@ export const IConfig = t.intersection([
 
     isProduction: t.boolean
   }),
-  JWTConfig
+  JWTConfig,
+  LockSessionClientConfig
 ]);
 
 export const envConfig = {
