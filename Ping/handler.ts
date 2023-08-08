@@ -16,7 +16,7 @@ import * as jwt from "jsonwebtoken";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
-import { verifyHSLTokenValidationMiddleware } from "../utils/middlewares/hsl-token-validation";
+import { jwtValidationMiddleware } from "../utils/middlewares/jwt-validation-middleware";
 
 type PingHandler = (
   tokenPayload: jwt.JwtPayload
@@ -25,6 +25,7 @@ type PingHandler = (
 export const PingHandler = (): PingHandler => (
   tokenPayload: jwt.JwtPayload
 ): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> => {
+  // eslint-disable-next-line no-console
   console.log("tokenPayload -> ", tokenPayload);
   return T.of(
     ResponseSuccessJson<ServiceStatus>({
@@ -37,7 +38,7 @@ export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
     verifyUserEligibilityMiddleware(config),
-    verifyHSLTokenValidationMiddleware(config)
+    jwtValidationMiddleware(config)
   );
 
   return wrapRequestHandler(

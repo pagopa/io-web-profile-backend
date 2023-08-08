@@ -1,6 +1,6 @@
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
-import { flow, identity, pipe } from "fp-ts/lib/function";
+import { pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
 
@@ -19,14 +19,14 @@ export type HslJWTValid = (
   token: NonEmptyString
 ) => TE.TaskEither<Error, jwt.JwtPayload>;
 
-export const tokenValidation = (
+export const jwtValidation = (
   token: NonEmptyString,
   config: IConfig
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ): HslJWTValid => () => {
   const validateJWT = getValidateJWT(
-    config.HUB_SPID_LOGIN_ISSUER,
-    config.HUB_SPID_LOGIN_PUB_KEY
+    config.HUB_SPID_LOGIN_JWT_ISSUER,
+    config.HUB_SPID_LOGIN_JWT_KEY
   );
   return pipe(
     validateJWT(token),
@@ -35,7 +35,7 @@ export const tokenValidation = (
   );
 };
 
-export const verifyHSLTokenValidationMiddleware = (
+export const jwtValidationMiddleware = (
   config: IConfig
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
@@ -56,7 +56,7 @@ export const verifyHSLTokenValidationMiddleware = (
     TE.chain(token =>
       pipe(
         token,
-        tokenValidation(token, config),
+        jwtValidation(token, config),
         TE.mapLeft(_ =>
           getResponseErrorForbiddenNotAuthorized("Token not valid")
         )
