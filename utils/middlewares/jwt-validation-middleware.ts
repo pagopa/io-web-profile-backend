@@ -23,17 +23,15 @@ export const jwtValidation = (
   token: NonEmptyString,
   config: IConfig
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-): HslJWTValid => () => {
-  const validateJWT = getValidateJWT(
-    config.HUB_SPID_LOGIN_JWT_ISSUER,
-    config.HUB_SPID_LOGIN_JWT_KEY
-  );
-  return pipe(
-    validateJWT(token),
-    TE.mapLeft(() => new Error("Token not valid")),
+): HslJWTValid => () =>
+  pipe(
+    getValidateJWT(
+      config.HUB_SPID_LOGIN_JWT_ISSUER,
+      config.HUB_SPID_LOGIN_JWT_KEY
+    )(token),
+    TE.mapLeft(error => new Error(error.message)),
     TE.map(tokenPayload => tokenPayload)
   );
-};
 
 export const jwtValidationMiddleware = (
   config: IConfig
@@ -57,8 +55,8 @@ export const jwtValidationMiddleware = (
       pipe(
         token,
         jwtValidation(token, config),
-        TE.mapLeft(_ =>
-          getResponseErrorForbiddenNotAuthorized("Token not valid")
+        TE.mapLeft(error =>
+          getResponseErrorForbiddenNotAuthorized(error.message)
         )
       )
     )
