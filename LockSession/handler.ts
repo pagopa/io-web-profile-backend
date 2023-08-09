@@ -10,7 +10,6 @@ import {
   IResponseErrorNotFound,
   IResponseSuccessNoContent,
   ResponseErrorInternal,
-  ResponseErrorNotFound,
   ResponseSuccessNoContent
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
@@ -18,19 +17,20 @@ import * as express from "express";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 
+import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import { flow, pipe } from "fp-ts/lib/function";
-import { JwtPayload } from "jsonwebtoken";
 import { LockSessionData } from "../generated/definitions/external/LockSessionData";
-import { FiscalCode } from "../generated/definitions/fast-login/FiscalCode";
 import { IConfig } from "../utils/config";
-import { jwtValidationMiddleware } from "../utils/middlewares/jwt-validation-middleware";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
-import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import { Client } from "../generated/definitions/fast-login/client";
+import {
+  IHslJwtPayloadExtended,
+  hslJwtValidationMiddleware
+} from "../utils/middlewares/hsl-jwt-validation-middleware";
 
 type ILockSessionHandler = (
-  user: JwtPayload,
+  user: IHslJwtPayloadExtended,
   payload: LockSessionData
 ) => Promise<
   IResponseSuccessNoContent | IResponseErrorNotFound | IResponseErrorInternal
@@ -47,30 +47,27 @@ export const lockSessionHandler = (
         client.lockUserSession({
           body: {
             // eslint-disable-next-line sonarjs/no-duplicate-string
-            fiscal_code: user.fiscal_number as FiscalCode,
+            fiscal_code: user.fiscal_number,
             unlock_code: payload.unlock_code
           }
         }),
-      flow(E.toError, e => {
-        console.log("TRYCATCH ======> ", e);
-        return ResponseErrorInternal(`TRYCATCH`);
-      })
+      flow(E.toError, () =>
+        ResponseErrorInternal(`Something gone wrong calling fast-login`)
+      )
     ),
     TE.chain(
       flow(
         TE.fromEither,
-        TE.mapLeft(errors => {
-          console.log(readableReportSimplified(errors));
-          return ResponseErrorInternal(`ERRORE VALIDATION`);
-        }),
+        TE.mapLeft(errors =>
+          ResponseErrorInternal(readableReportSimplified(errors))
+        ),
         TE.map(response => {
           switch (response.status) {
             case 204:
+            case 409:
               return ResponseSuccessNoContent();
-            case 502:
-              return ResponseErrorNotFound("not found", "errore");
             default:
-              return ResponseErrorInternal(`Generic error`);
+              return ResponseErrorInternal(`Something gone wrong`);
           }
         })
       )
@@ -85,7 +82,7 @@ export const getLockSessionHandler = (
   const handler = lockSessionHandler(client);
   const middlewaresWrap = withRequestMiddlewares(
     verifyUserEligibilityMiddleware(config),
-    jwtValidationMiddleware(config),
+    hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(LockSessionData)
   );
 
