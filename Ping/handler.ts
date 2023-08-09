@@ -16,16 +16,16 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
 import {
-  IJwtPayloadExtended,
-  jwtValidationMiddleware
-} from "../utils/middlewares/jwt-validation-middleware";
+  hslJwtValidationMiddleware,
+  IHslJwtPayloadExtended
+} from "../utils/middlewares/hsl-jwt-validation-middleware";
 
 type PingHandler = (
-  tokenPayload: IJwtPayloadExtended
+  tokenPayload: IHslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
 export const PingHandler = (): PingHandler => (
-  tokenPayload: IJwtPayloadExtended
+  tokenPayload: IHslJwtPayloadExtended
 ): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> => {
   // eslint-disable-next-line no-console
   console.log("fiscal_code from jwt -> ", tokenPayload.fiscal_number);
@@ -40,7 +40,7 @@ export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
     verifyUserEligibilityMiddleware(config),
-    jwtValidationMiddleware(config)
+    hslJwtValidationMiddleware(config)
   );
 
   return wrapRequestHandler(
