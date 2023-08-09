@@ -3,9 +3,7 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
-
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   getResponseErrorForbiddenNotAuthorized,
@@ -15,11 +13,17 @@ import {
 import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
 import { IConfig } from "../config";
 
+export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
+  readonly name: string;
+  readonly family_name: string;
+  readonly fiscal_number: FiscalCode;
+}
+
 export type HslJWTValid = (
   token: NonEmptyString
-) => TE.TaskEither<Error, jwt.JwtPayload>;
+) => TE.TaskEither<Error, IHslJwtPayloadExtended>;
 
-export const jwtValidation = (
+export const hslJwtValidation = (
   token: NonEmptyString,
   config: IConfig
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -30,17 +34,19 @@ export const jwtValidation = (
       config.HUB_SPID_LOGIN_JWT_KEY
     )(token),
     TE.mapLeft(error => new Error(error.message)),
-    TE.map(tokenPayload => tokenPayload)
+    TE.map(tokenPayload => tokenPayload as IHslJwtPayloadExtended)
   );
 
-export const jwtValidationMiddleware = (
+export const hslJwtValidationMiddleware = (
   config: IConfig
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
-  jwt.JwtPayload
+  IHslJwtPayloadExtended
 > => (
   req
-): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, jwt.JwtPayload>> =>
+): Promise<
+  E.Either<IResponseErrorForbiddenNotAuthorized, IHslJwtPayloadExtended>
+> =>
   pipe(
     req.headers[config.BEARER_AUTH_HEADER],
     AuthBearer.decode,
@@ -54,7 +60,7 @@ export const jwtValidationMiddleware = (
     TE.chain(token =>
       pipe(
         token,
-        jwtValidation(token, config),
+        hslJwtValidation(token, config),
         TE.mapLeft(error =>
           getResponseErrorForbiddenNotAuthorized(error.message)
         )
