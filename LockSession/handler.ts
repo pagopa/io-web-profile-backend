@@ -7,8 +7,10 @@ import {
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   IResponseErrorInternal,
+  IResponseErrorNotFound,
   IResponseSuccessNoContent,
   ResponseErrorInternal,
+  ResponseErrorNotFound,
   ResponseSuccessNoContent
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
@@ -20,15 +22,19 @@ import { flow, pipe } from "fp-ts/lib/function";
 import { JwtPayload } from "jsonwebtoken";
 import { LockSessionData } from "../generated/definitions/external/LockSessionData";
 import { FiscalCode } from "../generated/definitions/fast-login/FiscalCode";
-import { Client } from "../generated/definitions/fast-login/client";
 import { IConfig } from "../utils/config";
 import { jwtValidationMiddleware } from "../utils/middlewares/jwt-validation-middleware";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
+import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
+import { Client } from "../generated/definitions/fast-login/client";
+
 type ILockSessionHandler = (
   user: JwtPayload,
   payload: LockSessionData
-) => Promise<IResponseSuccessNoContent | IResponseErrorInternal>;
+) => Promise<
+  IResponseSuccessNoContent | IResponseErrorNotFound | IResponseErrorInternal
+>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
@@ -54,12 +60,21 @@ export const lockSessionHandler = (
       flow(
         TE.fromEither,
         TE.mapLeft(errors => {
-          console.log("ERRORE ======> ", errors);
+          console.log(readableReportSimplified(errors));
           return ResponseErrorInternal(`ERRORE VALIDATION`);
+        }),
+        TE.map(response => {
+          switch (response.status) {
+            case 204:
+              return ResponseSuccessNoContent();
+            case 502:
+              return ResponseErrorNotFound("not found", "errore");
+            default:
+              return ResponseErrorInternal(`Generic error`);
+          }
         })
       )
     ),
-    TE.map(() => ResponseSuccessNoContent()),
     TE.toUnion
   )();
 

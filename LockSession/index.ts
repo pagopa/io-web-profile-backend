@@ -17,8 +17,7 @@ app.post(
   getLockSessionHandler(
     getFastLoginClient(
       config.FAST_LOGIN_API_KEY,
-      config.FAST_LOGIN_CLIENT_BASE_URL,
-      "/lock-session"
+      config.FAST_LOGIN_CLIENT_BASE_URL
     ),
     config
   )
