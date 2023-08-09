@@ -12,28 +12,36 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import * as T from "fp-ts/Task";
+import * as jwt from "jsonwebtoken";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
+import { jwtValidationMiddleware } from "../utils/middlewares/jwt-validation-middleware";
 
-type InfoHandler = () => Promise<
-  IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
->;
+type PingHandler = (
+  tokenPayload: jwt.JwtPayload
+) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
-export const PingHandler = (): InfoHandler => (): Promise<
-  IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
-> =>
-  T.of(
+export const PingHandler = (): PingHandler => (
+  tokenPayload: jwt.JwtPayload
+): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> => {
+  // eslint-disable-next-line no-console
+  console.log("tokenPayload -> ", tokenPayload);
+  return T.of(
     ResponseSuccessJson<ServiceStatus>({
       message: "Function IO Web Profile is up and running"
     })
   )();
+};
 
 export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyUserEligibilityMiddleware(config)
+    verifyUserEligibilityMiddleware(config),
+    jwtValidationMiddleware(config)
   );
 
-  return wrapRequestHandler(middlewaresWrap(handler));
+  return wrapRequestHandler(
+    middlewaresWrap((_, tokenPayload) => handler(tokenPayload))
+  );
 };

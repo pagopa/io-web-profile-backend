@@ -27,10 +27,10 @@ export type JWTConfig = t.TypeOf<typeof JWTConfig>;
 export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
+    HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
+    HUB_SPID_LOGIN_JWT_KEY: NonEmptyString,
     ISSUER: NonEmptyString,
-
     JWT_TTL: withDefault(t.string, "900").pipe(NumberFromString),
-
     PRIMARY_PRIVATE_KEY: NonEmptyString,
     PRIMARY_PUBLIC_KEY: NonEmptyString
   }),
@@ -61,15 +61,11 @@ export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
     BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
-
     COSMOSDB_KEY: NonEmptyString,
     COSMOSDB_NAME: NonEmptyString,
     COSMOSDB_URI: NonEmptyString,
-
     FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
-
     QueueStorageConnection: NonEmptyString,
-
     isProduction: t.boolean
   }),
   JWTConfig,

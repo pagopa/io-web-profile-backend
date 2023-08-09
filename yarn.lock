@@ -1253,10 +1253,10 @@
     semver "^7.3.7"
     validator "^13.7.0"
 
-"@pagopa/ts-commons@^12.0.0":
-  version "12.0.0"
-  resolved "https://registry.yarnpkg.com/@pagopa/ts-commons/-/ts-commons-12.0.0.tgz#913ef473f15df9fd594e51394bf12d17a72d6f29"
-  integrity sha512-h+RlSWBgBld/ij1rePH0oGaxYm097dUiIwxxhQwD2AVz9iMpeVPzbneoOzKt4Irwra8+IcSOExEX4rW15xyggQ==
+"@pagopa/ts-commons@^12.1.0":
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/@pagopa/ts-commons/-/ts-commons-12.1.0.tgz#50a54a213d05a709061f58b74c9a7ea252fef729"
+  integrity sha512-vWMS8MSSf1nEpHXXnVyaxLylZOibJeSpR+D7+tHr1hDC+MHLyh1qbByIYI+M5sZByPVAQwL11rlC3zHSGx+ysA==
   dependencies:
     abort-controller "^3.0.0"
     agentkeepalive "^4.1.4"
@@ -1265,8 +1265,10 @@
     io-ts "2.2.20"
     jose "^4.11.2"
     json-set-map "^1.1.2"
+    jsonwebtoken "^9.0.1"
     node-fetch "^2.6.0"
     semver "^7.3.7"
+    ulid "^2.3.0"
     validator "^13.7.0"
 
 "@pkgjs/parseargs@^0.11.0":
