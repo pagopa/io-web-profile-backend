@@ -12,21 +12,23 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import * as T from "fp-ts/Task";
-import * as jwt from "jsonwebtoken";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
-import { jwtValidationMiddleware } from "../utils/middlewares/jwt-validation-middleware";
+import {
+  IJwtPayloadExtended,
+  jwtValidationMiddleware
+} from "../utils/middlewares/jwt-validation-middleware";
 
 type PingHandler = (
-  tokenPayload: jwt.JwtPayload
+  tokenPayload: IJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
 export const PingHandler = (): PingHandler => (
-  tokenPayload: jwt.JwtPayload
+  tokenPayload: IJwtPayloadExtended
 ): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> => {
   // eslint-disable-next-line no-console
-  console.log("tokenPayload -> ", tokenPayload);
+  console.log("fiscal_code from jwt -> ", tokenPayload.fiscal_number);
   return T.of(
     ResponseSuccessJson<ServiceStatus>({
       message: "Function IO Web Profile is up and running"

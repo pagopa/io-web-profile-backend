@@ -3,9 +3,7 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
-
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-
 import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   getResponseErrorForbiddenNotAuthorized,
@@ -15,9 +13,15 @@ import {
 import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
 import { IConfig } from "../config";
 
+export interface IJwtPayloadExtended extends jwt.JwtPayload {
+  readonly name: string;
+  readonly family_name: string;
+  readonly fiscal_number: string;
+}
+
 export type HslJWTValid = (
   token: NonEmptyString
-) => TE.TaskEither<Error, jwt.JwtPayload>;
+) => TE.TaskEither<Error, IJwtPayloadExtended>;
 
 export const jwtValidation = (
   token: NonEmptyString,
@@ -30,17 +34,19 @@ export const jwtValidation = (
       config.HUB_SPID_LOGIN_JWT_KEY
     )(token),
     TE.mapLeft(error => new Error(error.message)),
-    TE.map(tokenPayload => tokenPayload)
+    TE.map(tokenPayload => tokenPayload as IJwtPayloadExtended)
   );
 
 export const jwtValidationMiddleware = (
   config: IConfig
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
-  jwt.JwtPayload
+  IJwtPayloadExtended
 > => (
   req
-): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, jwt.JwtPayload>> =>
+): Promise<
+  E.Either<IResponseErrorForbiddenNotAuthorized, IJwtPayloadExtended>
+> =>
   pipe(
     req.headers[config.BEARER_AUTH_HEADER],
     AuthBearer.decode,
