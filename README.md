@@ -84,3 +84,6 @@ The following table contains the required ENV variables that the function requir
 | FF_API_ENABLED                  | Api Auth Mode (NONE, BETA, CANARY, ALL)             | string |
 | BETA_TESTERS                    | Beta tester fiscal code separated by comma          | string,string,string,... |
 | BEARER_AUTH_HEADER              | Req Auth Header Param where Bearer token is sotored | string|
+| HUB_SPID_LOGIN_JWT_PUB_KEY      | Hub Spid Login JWT Public Key (token validation)    | string|
+| HUB_SPID_LOGIN_JWT_ISSUER       | Hub Spid Login ISSUER                               | string|
+| HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login basepath                             | string|
