@@ -86,4 +86,4 @@ The following table contains the required ENV variables that the function requir
 | BEARER_AUTH_HEADER              | Req Auth Header Param where Bearer token is sotored | string|
 | HUB_SPID_LOGIN_JWT_PUB_KEY      | Hub Spid Login JWT Public Key (token validation)    | string|
 | HUB_SPID_LOGIN_JWT_ISSUER       | Hub Spid Login ISSUER                               | string|
-| HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login basepath                             | string|
+| HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login baseUrl                              | string|

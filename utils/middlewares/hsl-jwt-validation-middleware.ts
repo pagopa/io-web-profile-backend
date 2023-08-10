@@ -3,11 +3,7 @@ import * as TE from "fp-ts/TaskEither";
 import { flow, pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
-import {
-  FiscalCode,
-  INonEmptyStringTag,
-  NonEmptyString
-} from "@pagopa/ts-commons/lib/strings";
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
   getResponseErrorForbiddenNotAuthorized,
@@ -32,7 +28,7 @@ export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
 }
 
 type IjwtIntrospectionCall = (
-  token: string & INonEmptyStringTag,
+  token: NonEmptyString,
   config: IConfig
 ) => Promise<
   | IResponseSuccessJson<IntrospectSuccessResponse>
@@ -40,7 +36,7 @@ type IjwtIntrospectionCall = (
   | IResponseErrorForbiddenNotAuthorized
 >;
 export const introspectionCall: IjwtIntrospectionCall = (
-  token: string & INonEmptyStringTag,
+  token: NonEmptyString,
   config: IConfig
 ) =>
   pipe(
@@ -85,7 +81,7 @@ export type HslJWTValid = (
 ) => TE.TaskEither<Error, IHslJwtPayloadExtended>;
 
 export const hslJwtValidation = (
-  token: string & INonEmptyStringTag,
+  token: NonEmptyString,
   config: IConfig
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ): HslJWTValid => () =>

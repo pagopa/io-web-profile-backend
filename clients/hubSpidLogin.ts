@@ -4,7 +4,6 @@ import {
   createClient
 } from "../generated/definitions/hub-spid-login/client";
 
-// const tokenX: string & INonEmptyStringTag = "A" as string & INonEmptyStringTag;
 export const getHubSpidLoginClient = (
   baseUrl: string,
   basePath?: string,
