@@ -10,7 +10,8 @@ import {
   IResponseErrorInternal,
   IResponseSuccessNoContent,
   ResponseErrorInternal,
-  ResponseSuccessNoContent
+  ResponseSuccessNoContent,
+  getResponseErrorForbiddenNotAuthorized
   // getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
@@ -69,10 +70,12 @@ export const unlockSessionHandler = (
     toUnlockSessionPayload(user, payload),
     TE.fromPredicate(
       o => canUnlock(o),
-      // TODO: change to 403
-      () => ResponseErrorInternal("errore")
+      o =>
+        getResponseErrorForbiddenNotAuthorized(
+          `Could not perform unlock-session. SpidLevel: {${o.user.spid_level}}, UnlockCode: {${o.payload.unlock_code}}`
+        )
     ),
-    TE.chain(x =>
+    TE.chainW(x =>
       TE.tryCatch(
         () =>
           client.unlockUserSession({
@@ -82,12 +85,14 @@ export const unlockSessionHandler = (
               unlock_code: x.payload.unlock_code
             }
           }),
-        flow(E.toError, () =>
-          ResponseErrorInternal(`Something gone wrong calling fast-login`)
+        flow(E.toError, e =>
+          ResponseErrorInternal(
+            `Something gone wrong calling fast-login: ${e.message}`
+          )
         )
       )
     ),
-    TE.chain(
+    TE.chainW(
       flow(
         TE.fromEither,
         TE.mapLeft(errors =>
@@ -99,7 +104,9 @@ export const unlockSessionHandler = (
             case 409:
               return ResponseSuccessNoContent();
             default:
-              return ResponseErrorInternal(`Something gone wrong`);
+              return ResponseErrorInternal(
+                `Something gone wrong. Response Status: {${response.status}}`
+              );
           }
         })
       )

@@ -5,6 +5,7 @@ import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validati
 import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
+import { UnlockSessionData } from "../../generated/definitions/external/UnlockSessionData";
 
 // #region mocks
 const unlockSessionMock = jest.fn(async () =>
@@ -16,26 +17,47 @@ const fastLoginClientMock = ({
   unlockUserSession: unlockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidUser: IHslJwtPayloadExtended = {
+const aValidL2User: IHslJwtPayloadExtended = {
   family_name: "family_name",
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name",
   spid_level: SpidLevel.L2
 };
 
-const aValidPayload = {
+const aValidL2Payload = {
   unlock_code: "123456789" as UnlockCode
 };
+
+const aValidL3User: IHslJwtPayloadExtended = {
+  family_name: "family_name",
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name",
+  spid_level: SpidLevel.L3
+};
+
+const aValidL3Payload: UnlockSessionData = {};
 // #endregion
 
 // #region tests
 describe("UnlockSession", () => {
-  test(`GIVEN a valid payload and a valid user decoded from JWT
+  test(`GIVEN a valid payload and a valid L2 user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
     const handler = unlockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidL2Payload);
+
+    expect(res).toMatchObject({
+      kind: "IResponseSuccessNoContent"
+    });
+  });
+
+  test(`GIVEN a valid payload and a valid L3 user decoded from JWT
+        WHEN all checks passed
+        THEN the response is 204`, async () => {
+    const handler = unlockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aValidL3User, aValidL3Payload);
 
     expect(res).toMatchObject({
       kind: "IResponseSuccessNoContent"

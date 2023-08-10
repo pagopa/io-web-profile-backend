@@ -6,11 +6,12 @@ import {
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
+  IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
-  IResponseErrorNotFound,
   IResponseSuccessNoContent,
   ResponseErrorInternal,
-  ResponseSuccessNoContent
+  ResponseSuccessNoContent,
+  getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
@@ -23,18 +24,20 @@ import { LockSessionData } from "../generated/definitions/external/LockSessionDa
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
+import { Client } from "../generated/definitions/fast-login/client";
+import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
-import { SpidLevel, gte } from "../utils/enums/SpidLevels";
-import { Client } from "../generated/definitions/fast-login/client";
 
 type ILockSessionHandler = (
   user: IHslJwtPayloadExtended,
   payload: LockSessionData
 ) => Promise<
-  IResponseSuccessNoContent | IResponseErrorNotFound | IResponseErrorInternal
+  | IResponseSuccessNoContent
+  | IResponseErrorForbiddenNotAuthorized
+  | IResponseErrorInternal
 >;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
@@ -62,10 +65,12 @@ export const lockSessionHandler = (
     toLockSessionPayload(user, payload),
     TE.fromPredicate(
       o => canLock(o.user),
-      // TODO: change to 403
-      () => ResponseErrorInternal("errore")
+      o =>
+        getResponseErrorForbiddenNotAuthorized(
+          `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${o.user.spid_level}}`
+        )
     ),
-    TE.chain(x =>
+    TE.chainW(x =>
       TE.tryCatch(
         () =>
           client.lockUserSession({
@@ -75,12 +80,14 @@ export const lockSessionHandler = (
               unlock_code: x.payload.unlock_code
             }
           }),
-        flow(E.toError, () =>
-          ResponseErrorInternal(`Something gone wrong calling fast-login`)
+        flow(E.toError, e =>
+          ResponseErrorInternal(
+            `Something gone wrong calling fast-login: ${e.message}`
+          )
         )
       )
     ),
-    TE.chain(
+    TE.chainW(
       flow(
         TE.fromEither,
         TE.mapLeft(errors =>
@@ -92,7 +99,9 @@ export const lockSessionHandler = (
             case 409:
               return ResponseSuccessNoContent();
             default:
-              return ResponseErrorInternal(`Something gone wrong`);
+              return ResponseErrorInternal(
+                `Something gone wrong. Response Status: {${response.status}}`
+              );
           }
         })
       )
