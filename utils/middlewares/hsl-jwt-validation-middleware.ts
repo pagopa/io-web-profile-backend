@@ -29,6 +29,7 @@ export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
   readonly name: string;
   readonly family_name: string;
   readonly fiscal_number: FiscalCode;
+  readonly spid_level: string;
 }
 
 type IjwtIntrospectionCall = (
