@@ -28,6 +28,7 @@ import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 
 type ILockSessionHandler = (
   user: IHslJwtPayloadExtended,
@@ -38,21 +39,45 @@ type ILockSessionHandler = (
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
+interface ILockSessionPayload {
+  readonly user: IHslJwtPayloadExtended;
+  readonly payload: LockSessionData;
+}
+
+const toLockSessionPayload = (
+  user: IHslJwtPayloadExtended,
+  payload: LockSessionData
+): ILockSessionPayload => ({
+  payload,
+  user
+});
+
+const canLock = (user: IHslJwtPayloadExtended): boolean =>
+  gte(user.spid_level, SpidLevel.L2);
+
 export const lockSessionHandler = (
   client: LockSessionClient
 ): ILockSessionHandler => (user, payload): ReturnType<ILockSessionHandler> =>
   pipe(
-    TE.tryCatch(
-      () =>
-        client.lockUserSession({
-          body: {
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            fiscal_code: user.fiscal_number,
-            unlock_code: payload.unlock_code
-          }
-        }),
-      flow(E.toError, () =>
-        ResponseErrorInternal(`Something gone wrong calling fast-login`)
+    toLockSessionPayload(user, payload),
+    TE.fromPredicate(
+      o => canLock(o.user),
+      // TODO: change to 403
+      () => ResponseErrorInternal("errore")
+    ),
+    TE.chain(() =>
+      TE.tryCatch(
+        () =>
+          client.lockUserSession({
+            body: {
+              // eslint-disable-next-line sonarjs/no-duplicate-string
+              fiscal_code: user.fiscal_number,
+              unlock_code: payload.unlock_code
+            }
+          }),
+        flow(E.toError, () =>
+          ResponseErrorInternal(`Something gone wrong calling fast-login`)
+        )
       )
     ),
     TE.chain(
