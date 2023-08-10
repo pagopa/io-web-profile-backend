@@ -4,6 +4,7 @@ import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { lockSessionHandler } from "../handler";
+import { SpidLevel } from "../../utils/enums/SpidLevels";
 
 // #region mocks
 const lockSessionMock = jest.fn(async () =>
@@ -18,7 +19,8 @@ const fastLoginClientMock = ({
 const aValidUser: IHslJwtPayloadExtended = {
   family_name: "family_name",
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name"
+  name: "name",
+  spid_level: SpidLevel.L2
 };
 
 const aValidPayload = {
