@@ -27,7 +27,7 @@ export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
-    HUB_SPID_LOGIN_JWT_KEY: NonEmptyString,
+    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString,
     ISSUER: NonEmptyString,
     JWT_TTL: withDefault(t.string, "900").pipe(NumberFromString),
     PRIMARY_PRIVATE_KEY: NonEmptyString,
@@ -45,6 +45,15 @@ export const FastLoginClientConfig = t.type({
 });
 export type FastLoginClientConfig = t.TypeOf<typeof FastLoginClientConfig>;
 
+export type HSLConfig = t.TypeOf<typeof HSLConfig>;
+export const HSLConfig = t.intersection([
+  t.type({
+    HUB_SPID_LOGIN_API_KEY: NonEmptyString,
+    HUB_SPID_LOGIN_CLIENT_BASE_URL: NonEmptyString
+  }),
+  t.partial({})
+]);
+
 export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
@@ -57,7 +66,8 @@ export const IConfig = t.intersection([
     isProduction: t.boolean
   }),
   JWTConfig,
-  FastLoginClientConfig
+  FastLoginClientConfig,
+  HSLConfig
 ]);
 
 export const envConfig = {
