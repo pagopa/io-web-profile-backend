@@ -23,12 +23,12 @@ import { LockSessionData } from "../generated/definitions/external/LockSessionDa
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
-import { Client } from "../generated/definitions/fast-login/client";
 import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
+import { Client } from "../generated/definitions/fast-login/client";
 
 type ILockSessionHandler = (
   user: IHslJwtPayloadExtended,
@@ -65,14 +65,14 @@ export const lockSessionHandler = (
       // TODO: change to 403
       () => ResponseErrorInternal("errore")
     ),
-    TE.chain(() =>
+    TE.chain(x =>
       TE.tryCatch(
         () =>
           client.lockUserSession({
             body: {
               // eslint-disable-next-line sonarjs/no-duplicate-string
-              fiscal_code: user.fiscal_number,
-              unlock_code: payload.unlock_code
+              fiscal_code: x.user.fiscal_number,
+              unlock_code: x.payload.unlock_code
             }
           }),
         flow(E.toError, () =>

@@ -1,10 +1,10 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { Client } from "../../generated/definitions/fast-login/client";
 import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { lockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
+import { Client } from "../../generated/definitions/fast-login/client";
 
 // #region mocks
 const lockSessionMock = jest.fn(async () =>

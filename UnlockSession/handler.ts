@@ -10,8 +10,8 @@ import {
   IResponseErrorInternal,
   IResponseSuccessNoContent,
   ResponseErrorInternal,
-  ResponseSuccessNoContent,
-  getResponseErrorForbiddenNotAuthorized
+  ResponseSuccessNoContent
+  // getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
@@ -24,12 +24,12 @@ import { UnlockSessionData } from "../generated/definitions/external/UnlockSessi
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
-import { Client } from "../generated/definitions/fast-login/client";
 import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 import { SpidLevel } from "../utils/enums/SpidLevels";
+import { Client } from "../generated/definitions/fast-login/client";
 
 type IUnlockSessionHandler = (
   user: IHslJwtPayloadExtended,
@@ -55,11 +55,11 @@ const toUnlockSessionPayload = (
   user
 });
 
-const checkUnlockCodeL2 = ({ user, payload }: IUnlockSessionPayload): boolean =>
+const canUnlock = ({ user, payload }: IUnlockSessionPayload): boolean =>
   user.spid_level === SpidLevel.L3 ||
   (user.spid_level === SpidLevel.L2 && payload.unlock_code !== undefined);
 
-export const lockSessionHandler = (
+export const unlockSessionHandler = (
   client: UnlockSessionClient
 ): IUnlockSessionHandler => (
   user,
@@ -68,8 +68,8 @@ export const lockSessionHandler = (
   pipe(
     toUnlockSessionPayload(user, payload),
     TE.fromPredicate(
-      o => checkUnlockCodeL2(o),
-      // TODO change to 403
+      o => canUnlock(o),
+      // TODO: change to 403
       () => ResponseErrorInternal("errore")
     ),
     TE.chain(x =>
@@ -111,7 +111,7 @@ export const getUnlockSessionHandler = (
   client: UnlockSessionClient,
   config: IConfig
 ): express.RequestHandler => {
-  const handler = lockSessionHandler(client);
+  const handler = unlockSessionHandler(client);
   const middlewaresWrap = withRequestMiddlewares(
     verifyUserEligibilityMiddleware(config),
     hslJwtValidationMiddleware(config),

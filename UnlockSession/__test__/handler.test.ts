@@ -1,19 +1,19 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { Client } from "../../generated/definitions/fast-login/client";
 import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
-import { lockSessionHandler } from "../handler";
+import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
+import { Client } from "../../generated/definitions/fast-login/client";
 
 // #region mocks
-const lockSessionMock = jest.fn(async () =>
+const unlockSessionMock = jest.fn(async () =>
   E.right({
     status: 204
   })
 );
 const fastLoginClientMock = ({
-  lockUserSession: lockSessionMock
+  unlockUserSession: unlockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
 const aValidUser: IHslJwtPayloadExtended = {
@@ -29,11 +29,11 @@ const aValidPayload = {
 // #endregion
 
 // #region tests
-describe("LockSession", () => {
-  test(`GIVEN a valid unlock_code in payload and a valid user decoded from JWT
+describe("UnlockSession", () => {
+  test(`GIVEN a valid payload and a valid user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
-    const handler = lockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock);
 
     const res = await handler(aValidUser, aValidPayload);
 

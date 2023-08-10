@@ -12,5 +12,12 @@ const spidComparison: SpidComparison = {
   [SpidLevel.L3]: new Set([SpidLevel.L1, SpidLevel.L2, SpidLevel.L3])
 };
 
+/**
+ * Checks if the value of `a` is greater than or equal to the value of `b` based on the comparison defined in the `spidComparison` object.
+ *
+ * @param {SpidLevel} a - The first value to compare.
+ * @param {SpidLevel} b - The second value to compare.
+ * @returns {boolean} Returns `true` if the value of `a` is greater than or equal to the value of `b`, otherwise returns `false`.
+ */
 export const gte = (a: SpidLevel, b: SpidLevel): boolean =>
   spidComparison[a].has(b);
