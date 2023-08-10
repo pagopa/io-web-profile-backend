@@ -1,6 +1,14 @@
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { FastLoginClientConfig, IConfig, JWTConfig } from "../utils/config";
-import { FeatureFlag, FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
+import {
+  FastLoginClientConfig,
+  HSLConfig,
+  IConfig,
+  JWTConfig
+} from "../utils/config";
+import {
+  FeatureFlag,
+  FeatureFlagEnum
+} from "../utils/featureFlags/featureFlags";
 
 const iconfig = {
   AzureWebJobsStorage: "azureWebJobsStorage" as NonEmptyString,
@@ -16,7 +24,7 @@ const iconfig = {
 export const jwtConfig: JWTConfig = {
   BEARER_AUTH_HEADER: "authorization" as NonEmptyString,
   HUB_SPID_LOGIN_JWT_ISSUER: "hslIssuer" as NonEmptyString,
-  HUB_SPID_LOGIN_JWT_KEY: "hslKey" as NonEmptyString,
+  HUB_SPID_LOGIN_JWT_PUB_KEY: "hslKey" as NonEmptyString,
   ISSUER: "PAGOPA" as NonEmptyString,
   JWT_TTL: 900,
   PRIMARY_PRIVATE_KEY: "primaryPrivateKey" as NonEmptyString,
@@ -28,8 +36,14 @@ export const fastLoginClientConfig: FastLoginClientConfig = {
   FAST_LOGIN_CLIENT_BASE_URL: "fastLoginClientBaseUrl" as NonEmptyString
 };
 
+export const hslConfig: HSLConfig = {
+  HUB_SPID_LOGIN_API_KEY: "hslApiKey" as NonEmptyString,
+  HUB_SPID_LOGIN_CLIENT_BASE_URL: "hslClientBaseUrl" as NonEmptyString
+};
+
 export const config: IConfig = {
   ...iconfig,
   ...jwtConfig,
-  ...fastLoginClientConfig
+  ...fastLoginClientConfig,
+  ...hslConfig
 };
