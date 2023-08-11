@@ -1,8 +1,7 @@
 import * as E from "fp-ts/Either";
 import { hslJwtValidation } from "../hsl-jwt-validation-middleware";
 import { config } from "../../../__mocks__/config.mock";
-import { FiscalCode } from "@pagopa/ts-commons/lib/strings";
-import { INonEmptyStringTag } from "@pagopa/ts-commons/lib/strings";
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 describe(`Hub Spid Login JWT Validation Middleware`, () => {
   it(`Should validate JWT and call hub-spid-login for introspection call,
@@ -31,7 +30,7 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
 describe(`Hub Spid Login JWT Validation Middleware`, () => {
   it(`Should fail if JWT is not valid or expired,
      - Fail -`, async () => {
-    const token = "" as string & INonEmptyStringTag;
+    const token = "" as NonEmptyString;
 
     const jwtValidation = hslJwtValidation(token, config);
     const result = await jwtValidation(token)();
