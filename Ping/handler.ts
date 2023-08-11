@@ -24,9 +24,9 @@ type PingHandler = (
   tokenPayload: IHslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
-export const PingHandler = (): PingHandler => (
-  tokenPayload: IHslJwtPayloadExtended
-): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> =>
+export const PingHandler = (): PingHandler => (): Promise<
+  IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
+> =>
   // eslint-disable-next-line no-console
   T.of(
     ResponseSuccessJson<ServiceStatus>({
