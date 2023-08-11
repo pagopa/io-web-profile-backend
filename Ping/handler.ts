@@ -26,15 +26,13 @@ type PingHandler = (
 
 export const PingHandler = (): PingHandler => (
   tokenPayload: IHslJwtPayloadExtended
-): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> => {
+): Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal> =>
   // eslint-disable-next-line no-console
-  console.log("fiscal_code from jwt -> ", tokenPayload.fiscal_number);
-  return T.of(
+  T.of(
     ResponseSuccessJson<ServiceStatus>({
       message: "Function IO Web Profile is up and running"
     })
   )();
-};
 
 export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
