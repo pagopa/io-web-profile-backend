@@ -7,12 +7,17 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
   it(`Should validate JWT and call hub-spid-login for introspection call,
     - Should return JWT payload 
     - Success -`, async () => {
+    const mockIntrospectionCall = jest
+      .spyOn(hslUtils, "introspectionCall")
+      .mockReturnValueOnce(TE.right(ResponseSuccessJson({ active: true })));
     const token = config.HUB_SPID_LOGIN_MOCK_TOKEN;
 
     const jwtValidation = hslJwtValidation(token, config);
     const result = await jwtValidation(token)();
 
     expect(E.isRight(result)).toBe(true);
+    expect(mockIntrospectionCall).toHaveBeenCalledTimes(1);
+    expect(mockIntrospectionCall).toHaveBeenCalledWith(token, config);
 
     const resultPayload = E.fold(
       () => null,
@@ -20,9 +25,9 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
     )(result);
 
     expect(resultPayload).toMatchObject({
-      name: expect.anything() as string,
-      family_name: expect.anything() as string,
-      fiscal_number: expect.anything() as FiscalCode
+      name: "Carla",
+      family_name: "Rossi",
+      fiscal_number: "ISPXNB32R82Y766D"
     });
   });
 });
