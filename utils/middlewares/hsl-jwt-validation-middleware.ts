@@ -90,8 +90,6 @@ export const hslJwtValidation = (
       config.HUB_SPID_LOGIN_JWT_ISSUER,
       config.HUB_SPID_LOGIN_JWT_PUB_KEY
     )(token),
-    TE.mapLeft(error => new Error(error.message)),
-    // TE.map(tokenPayload => tokenPayload as IHslJwtPayloadExtended)
     TE.chain(jwtDecoded =>
       pipe(
         TE.tryCatch(
