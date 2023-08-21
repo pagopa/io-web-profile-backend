@@ -9,13 +9,12 @@ import * as t from "io-ts";
 
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { NumberFromString, withFallback } from "io-ts-types";
+import { withFallback } from "io-ts-types";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
 
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { withDefault } from "@pagopa/ts-commons/lib/types";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
@@ -27,15 +26,9 @@ export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
-    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString,
-    ISSUER: NonEmptyString,
-    JWT_TTL: withDefault(t.string, "900").pipe(NumberFromString),
-    PRIMARY_PRIVATE_KEY: NonEmptyString,
-    PRIMARY_PUBLIC_KEY: NonEmptyString
+    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString
   }),
-  t.partial({
-    SECONDARY_PUBLIC_KEY: NonEmptyString
-  })
+  t.partial({})
 ]);
 
 export type HSLConfig = t.TypeOf<typeof HSLConfig>;
