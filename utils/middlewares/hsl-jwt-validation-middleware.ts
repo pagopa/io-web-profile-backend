@@ -94,18 +94,12 @@ export const hslJwtValidation = (
     )(token),
     TE.chain(jwtDecoded =>
       pipe(
-        TE.tryCatch(
-          () => introspectionCall(token, config),
-          error => new Error(error as string)
-        ),
-        TE.mapLeft(error => new Error(error.message)),
-        TE.chain(introspect => {
-          if (introspect.kind === "IResponseSuccessJson") {
-            return TE.right(jwtDecoded as IHslJwtPayloadExtended);
-          } else {
-            return TE.left(new Error("Introspection failed"));
-          }
-        })
+        introspectionCall(token, config),
+        TE.fold(
+          _ => TE.left(new Error("Something went wrong")),
+          // active is always true if we are in this rail
+          _ => TE.right(jwtDecoded as IHslJwtPayloadExtended)
+        )
       )
     )
   );
