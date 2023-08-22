@@ -58,7 +58,8 @@ components:
         active:
           type: boolean
           enum:
-          - false
+            - false
+
       required:
         - active
       example:
