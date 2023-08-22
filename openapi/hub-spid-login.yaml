@@ -46,6 +46,8 @@ components:
       properties:
         active:
           type: boolean
+          enum:
+            - true
       required:
         - active
       example:
@@ -55,6 +57,8 @@ components:
       properties:
         active:
           type: boolean
+      enum:
+        - false
       required:
         - active
       example:

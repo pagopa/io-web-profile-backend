@@ -80,7 +80,10 @@ export const introspectionCall: IjwtIntrospectionCall = (token, config) =>
 
 export type HslJWTValid = (
   token: NonEmptyString
-) => TE.TaskEither<Error, IHslJwtPayloadExtended>;
+) => TE.TaskEither<
+  IResponseErrorForbiddenNotAuthorized,
+  IHslJwtPayloadExtended
+>;
 
 export const hslJwtValidation = (
   token: NonEmptyString,
@@ -92,11 +95,15 @@ export const hslJwtValidation = (
       config.HUB_SPID_LOGIN_JWT_ISSUER,
       config.HUB_SPID_LOGIN_JWT_PUB_KEY
     )(token),
+    TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message)),
     TE.chain(jwtDecoded =>
       pipe(
         introspectionCall(token, config),
         TE.fold(
-          _ => TE.left(new Error("Something went wrong")),
+          _ =>
+            TE.left(
+              getResponseErrorForbiddenNotAuthorized("Token is not valid")
+            ),
           // active is always true if we are in this rail
           _ => TE.right(jwtDecoded as IHslJwtPayloadExtended)
         )
@@ -129,7 +136,7 @@ export const hslJwtValidationMiddleware = (
         token,
         hslJwtValidation(token, config),
         TE.mapLeft(error =>
-          getResponseErrorForbiddenNotAuthorized(error.message)
+          getResponseErrorForbiddenNotAuthorized(error.detail)
         )
       )
     )

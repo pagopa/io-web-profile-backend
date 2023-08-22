@@ -35,10 +35,11 @@ export type HSLConfig = t.TypeOf<typeof HSLConfig>;
 export const HSLConfig = t.intersection([
   t.type({
     HUB_SPID_LOGIN_API_KEY: NonEmptyString,
-    HUB_SPID_LOGIN_CLIENT_BASE_URL: NonEmptyString,
-    HUB_SPID_LOGIN_MOCK_TOKEN: NonEmptyString
+    HUB_SPID_LOGIN_CLIENT_BASE_URL: NonEmptyString
   }),
-  t.partial({})
+  t.partial({
+    HUB_SPID_LOGIN_MOCK_TOKEN: NonEmptyString
+  })
 ]);
 
 export const IConfig = t.intersection([
