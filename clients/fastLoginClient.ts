@@ -1,15 +1,15 @@
-import nodeFetch from "node-fetch";
 import {
   Client,
   createClient
 } from "../generated/definitions/fast-login/client";
+import { timeoutFetch } from "../utils/fetch";
 
 export const getFastLoginClient = (
   apiKeyAuth: string,
   baseUrl: string,
   basePath?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fetchApi: typeof fetch = (nodeFetch as any) as typeof fetch
+  fetchApi: typeof timeoutFetch = (timeoutFetch as any) as typeof timeoutFetch
 ): Client<"ApiKeyAuth"> =>
   createClient<"ApiKeyAuth">({
     basePath,
