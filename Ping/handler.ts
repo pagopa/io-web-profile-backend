@@ -27,7 +27,6 @@ type PingHandler = (
 export const PingHandler = (): PingHandler => (): Promise<
   IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
 > =>
-  // eslint-disable-next-line no-console
   T.of(
     ResponseSuccessJson<ServiceStatus>({
       message: "Function IO Web Profile is up and running"
