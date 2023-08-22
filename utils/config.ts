@@ -9,13 +9,12 @@ import * as t from "io-ts";
 
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { NumberFromString, withFallback } from "io-ts-types";
+import { withFallback } from "io-ts-types";
 
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
 
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { withDefault } from "@pagopa/ts-commons/lib/types";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
@@ -26,15 +25,20 @@ export type JWTConfig = t.TypeOf<typeof JWTConfig>;
 export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
-    ISSUER: NonEmptyString,
+    HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
+    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString
+  }),
+  t.partial({})
+]);
 
-    JWT_TTL: withDefault(t.string, "900").pipe(NumberFromString),
-
-    PRIMARY_PRIVATE_KEY: NonEmptyString,
-    PRIMARY_PUBLIC_KEY: NonEmptyString
+export type HSLConfig = t.TypeOf<typeof HSLConfig>;
+export const HSLConfig = t.intersection([
+  t.type({
+    HUB_SPID_LOGIN_API_KEY: NonEmptyString,
+    HUB_SPID_LOGIN_CLIENT_BASE_URL: NonEmptyString
   }),
   t.partial({
-    SECONDARY_PUBLIC_KEY: NonEmptyString
+    HUB_SPID_LOGIN_MOCK_TOKEN: NonEmptyString
   })
 ]);
 
@@ -42,18 +46,15 @@ export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
     BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
-
     COSMOSDB_KEY: NonEmptyString,
     COSMOSDB_NAME: NonEmptyString,
     COSMOSDB_URI: NonEmptyString,
-
     FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
-
     QueueStorageConnection: NonEmptyString,
-
     isProduction: t.boolean
   }),
-  JWTConfig
+  JWTConfig,
+  HSLConfig
 ]);
 
 export const envConfig = {

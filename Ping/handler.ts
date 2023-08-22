@@ -15,12 +15,16 @@ import * as T from "fp-ts/Task";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
+import {
+  hslJwtValidationMiddleware,
+  IHslJwtPayloadExtended
+} from "../utils/middlewares/hsl-jwt-validation-middleware";
 
-type InfoHandler = () => Promise<
-  IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
->;
+type PingHandler = (
+  tokenPayload: IHslJwtPayloadExtended
+) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
-export const PingHandler = (): InfoHandler => (): Promise<
+export const PingHandler = (): PingHandler => (): Promise<
   IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal
 > =>
   T.of(
@@ -32,8 +36,11 @@ export const PingHandler = (): InfoHandler => (): Promise<
 export const getPing = (config: IConfig): express.RequestHandler => {
   const handler = PingHandler();
   const middlewaresWrap = withRequestMiddlewares(
-    verifyUserEligibilityMiddleware(config)
+    verifyUserEligibilityMiddleware(config),
+    hslJwtValidationMiddleware(config)
   );
 
-  return wrapRequestHandler(middlewaresWrap(handler));
+  return wrapRequestHandler(
+    middlewaresWrap((_, tokenPayload) => handler(tokenPayload))
+  );
 };
