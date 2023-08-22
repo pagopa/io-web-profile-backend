@@ -32,15 +32,11 @@ export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
 type IjwtIntrospectionCall = (
   token: NonEmptyString,
   config: IConfig
-) => Promise<
-  | IResponseSuccessJson<IntrospectSuccessResponse>
-  | IResponseErrorInternal
-  | IResponseErrorForbiddenNotAuthorized
+) => TE.TaskEither<
+  IResponseErrorInternal | IResponseErrorForbiddenNotAuthorized,
+  IResponseSuccessJson<IntrospectSuccessResponse>
 >;
-export const introspectionCall: IjwtIntrospectionCall = (
-  token: NonEmptyString,
-  config: IConfig
-) =>
+export const introspectionCall: IjwtIntrospectionCall = (token, config) =>
   pipe(
     TE.tryCatch(
       () =>
@@ -52,7 +48,9 @@ export const introspectionCall: IjwtIntrospectionCall = (
           }
         }),
       flow(E.toError, () =>
-        ResponseErrorInternal(`Something gone wrong calling introspection`)
+        ResponseErrorInternal(
+          `Something went wrong while calling the introspection endpoint`
+        )
       )
     ),
     TE.chain(
@@ -61,26 +59,33 @@ export const introspectionCall: IjwtIntrospectionCall = (
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
-        TE.map(response => {
+        TE.chainW(response => {
           switch (response.status) {
             case 200:
               return response.value.active
-                ? ResponseSuccessJson(response.value)
-                : ResponseErrorForbiddenNotAuthorized;
+                ? TE.right(ResponseSuccessJson(response.value))
+                : TE.left<
+                    | IResponseErrorForbiddenNotAuthorized
+                    | IResponseErrorInternal
+                  >(ResponseErrorForbiddenNotAuthorized);
             case 403:
-              return ResponseErrorForbiddenNotAuthorized;
+              return TE.left<
+                IResponseErrorForbiddenNotAuthorized | IResponseErrorInternal
+              >(ResponseErrorForbiddenNotAuthorized);
             default:
-              return ResponseErrorInternal(`Something gone wrong`);
+              return TE.left(ResponseErrorInternal(`Something went wrong`));
           }
         })
       )
-    ),
-    TE.toUnion
-  )();
+    )
+  );
 
 export type HslJWTValid = (
   token: NonEmptyString
-) => TE.TaskEither<Error, IHslJwtPayloadExtended>;
+) => TE.TaskEither<
+  IResponseErrorForbiddenNotAuthorized,
+  IHslJwtPayloadExtended
+>;
 
 export const hslJwtValidation = (
   token: NonEmptyString,
@@ -92,22 +97,18 @@ export const hslJwtValidation = (
       config.HUB_SPID_LOGIN_JWT_ISSUER,
       config.HUB_SPID_LOGIN_JWT_PUB_KEY
     )(token),
-    TE.mapLeft(error => new Error(error.message)),
-    // TE.map(tokenPayload => tokenPayload as IHslJwtPayloadExtended)
+    TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message)),
     TE.chain(jwtDecoded =>
       pipe(
-        TE.tryCatch(
-          () => introspectionCall(token, config),
-          error => new Error(error as string)
-        ),
-        TE.mapLeft(error => new Error(error.message)),
-        TE.chain(introspect => {
-          if (introspect.kind === "IResponseSuccessJson") {
-            return TE.right(jwtDecoded as IHslJwtPayloadExtended);
-          } else {
-            return TE.left(new Error("Introspection failed"));
-          }
-        })
+        introspectionCall(token, config),
+        TE.fold(
+          _ =>
+            TE.left(
+              getResponseErrorForbiddenNotAuthorized("Token is not valid")
+            ),
+          // active is always true if we are in this rail
+          _ => TE.right(jwtDecoded as IHslJwtPayloadExtended)
+        )
       )
     )
   );
@@ -137,7 +138,7 @@ export const hslJwtValidationMiddleware = (
         token,
         hslJwtValidation(token, config),
         TE.mapLeft(error =>
-          getResponseErrorForbiddenNotAuthorized(error.message)
+          getResponseErrorForbiddenNotAuthorized(error.detail)
         )
       )
     )
