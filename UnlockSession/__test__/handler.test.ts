@@ -40,6 +40,10 @@ const aValidL3Payload: UnlockSessionData = {};
 
 // #region tests
 describe("UnlockSession", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test(`GIVEN a valid payload and a valid L2 user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
@@ -47,6 +51,13 @@ describe("UnlockSession", () => {
 
     const res = await handler(aValidL2User, aValidL2Payload);
 
+    expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(unlockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidL2User.fiscal_number,
+        unlock_code: aValidL2Payload.unlock_code
+      }
+    });
     expect(res).toMatchObject({
       kind: "IResponseSuccessNoContent"
     });
@@ -59,6 +70,13 @@ describe("UnlockSession", () => {
 
     const res = await handler(aValidL3User, aValidL3Payload);
 
+    expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(unlockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidL2User.fiscal_number,
+        unlock_code: undefined
+      }
+    });
     expect(res).toMatchObject({
       kind: "IResponseSuccessNoContent"
     });

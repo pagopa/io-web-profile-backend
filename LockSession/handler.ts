@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
 import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
@@ -42,42 +40,35 @@ type ILockSessionHandler = (
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
-interface ILockSessionPayload {
-  readonly user: IHslJwtPayloadExtended;
-  readonly payload: LockSessionData;
-}
-
-const toLockSessionPayload = (
-  user: IHslJwtPayloadExtended,
-  payload: LockSessionData
-): ILockSessionPayload => ({
-  payload,
-  user
-});
-
 const canLock = (user: IHslJwtPayloadExtended): boolean =>
   gte(user.spid_level, SpidLevel.L2);
 
 export const lockSessionHandler = (
   client: LockSessionClient
-): ILockSessionHandler => (user, payload): ReturnType<ILockSessionHandler> =>
+): ILockSessionHandler => (
+  reqJwtData,
+  reqPayload
+): ReturnType<ILockSessionHandler> =>
   pipe(
-    toLockSessionPayload(user, payload),
-    TE.fromPredicate(
-      o => canLock(o.user),
-      o =>
-        getResponseErrorForbiddenNotAuthorized(
-          `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${o.user.spid_level}}`
-        )
+    TE.Do,
+    TE.bind("user_data", () => TE.of(reqJwtData)),
+    TE.bind("unlock_code", () => TE.of(reqPayload.unlock_code)),
+    TE.chain(
+      TE.fromPredicate(
+        ({ user_data }) => canLock(user_data),
+        ({ user_data }) =>
+          getResponseErrorForbiddenNotAuthorized(
+            `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
+          )
+      )
     ),
-    TE.chainW(x =>
+    TE.chainW(({ user_data, unlock_code }) =>
       TE.tryCatch(
         () =>
           client.lockUserSession({
             body: {
-              // eslint-disable-next-line sonarjs/no-duplicate-string
-              fiscal_code: x.user.fiscal_number,
-              unlock_code: x.payload.unlock_code
+              fiscal_code: user_data.fiscal_number,
+              unlock_code
             }
           }),
         flow(E.toError, e =>

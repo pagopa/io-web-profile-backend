@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
 import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
@@ -31,6 +29,7 @@ import {
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 import { SpidLevel } from "../utils/enums/SpidLevels";
 import { Client } from "../generated/definitions/fast-login/client";
+import { UnlockCode } from "../generated/definitions/external/UnlockCode";
 
 type IUnlockSessionHandler = (
   user: IHslJwtPayloadExtended,
@@ -43,46 +42,40 @@ type IUnlockSessionHandler = (
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
 
-interface IUnlockSessionPayload {
-  readonly user: IHslJwtPayloadExtended;
-  readonly payload: UnlockSessionData;
-}
-
-const toUnlockSessionPayload = (
+const canUnlock = (
   user: IHslJwtPayloadExtended,
-  payload: UnlockSessionData
-): IUnlockSessionPayload => ({
-  payload,
-  user
-});
-
-const canUnlock = ({ user, payload }: IUnlockSessionPayload): boolean =>
+  unlock_code: UnlockCode | undefined
+): boolean =>
   user.spid_level === SpidLevel.L3 ||
-  (user.spid_level === SpidLevel.L2 && payload.unlock_code !== undefined);
+  (user.spid_level === SpidLevel.L2 && unlock_code !== undefined);
 
 export const unlockSessionHandler = (
   client: UnlockSessionClient
 ): IUnlockSessionHandler => (
-  user,
-  payload
+  reqJwtData,
+  reqPayload
 ): ReturnType<IUnlockSessionHandler> =>
   pipe(
-    toUnlockSessionPayload(user, payload),
-    TE.fromPredicate(
-      o => canUnlock(o),
-      o =>
-        getResponseErrorForbiddenNotAuthorized(
-          `Could not perform unlock-session. SpidLevel: {${o.user.spid_level}}, UnlockCode: {${o.payload.unlock_code}}`
-        )
+    TE.Do,
+    TE.bind("user_data", () => TE.of(reqJwtData)),
+    TE.bind("unlock_code", () => TE.of(reqPayload.unlock_code)),
+    TE.chain(
+      TE.fromPredicate(
+        ({ user_data, unlock_code }) => canUnlock(user_data, unlock_code),
+        ({ user_data, unlock_code }) =>
+          getResponseErrorForbiddenNotAuthorized(
+            `Could not perform unlock-session. SpidLevel: {${user_data.spid_level}}, UnlockCode: {${unlock_code}}`
+          )
+      )
     ),
-    TE.chainW(x =>
+    TE.chainW(({ user_data, unlock_code }) =>
       TE.tryCatch(
         () =>
           client.unlockUserSession({
             body: {
               // eslint-disable-next-line sonarjs/no-duplicate-string
-              fiscal_code: x.user.fiscal_number,
-              unlock_code: x.payload.unlock_code
+              fiscal_code: user_data.fiscal_number,
+              unlock_code
             }
           }),
         flow(E.toError, e =>
