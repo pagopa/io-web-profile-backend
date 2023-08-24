@@ -1,3 +1,4 @@
+import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
@@ -15,7 +16,9 @@ import * as express from "express";
 
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
+import * as O from "fp-ts/Option";
 
+import { defaultLog } from "@pagopa/winston-ts";
 import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import { flow, pipe } from "fp-ts/lib/function";
 import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
@@ -30,14 +33,14 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
+type IUnlockSessionErrorResponses =
+  | IResponseErrorForbiddenNotAuthorized
+  | IResponseErrorInternal;
+
 type IUnlockSessionHandler = (
   user: IHslJwtPayloadExtended,
   payload: UnlockSessionData
-) => Promise<
-  | IResponseSuccessNoContent
-  | IResponseErrorForbiddenNotAuthorized
-  | IResponseErrorInternal
->;
+) => Promise<IResponseSuccessNoContent | IUnlockSessionErrorResponses>;
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
 
@@ -57,14 +60,20 @@ export const unlockSessionHandler = (
   pipe(
     TE.Do,
     TE.bind("user_data", () => TE.of(reqJwtData)),
-    TE.bind("unlock_code", () => TE.of(reqPayload.unlock_code)),
+    TE.bind("unlock_code", () => TE.of(O.fromNullable(reqPayload.unlock_code))),
     TE.chain(
-      TE.fromPredicate(
-        ({ user_data, unlock_code }) => canUnlock(user_data, unlock_code),
-        ({ user_data, unlock_code }) =>
-          getResponseErrorForbiddenNotAuthorized(
-            `Could not perform unlock-session. SpidLevel: {${user_data.spid_level}}, UnlockCode: {${unlock_code}}`
-          )
+      flow(
+        TE.fromPredicate(
+          ({ user_data, unlock_code }) =>
+            canUnlock(user_data, O.toUndefined(unlock_code)),
+          ({ user_data, unlock_code }) =>
+            getResponseErrorForbiddenNotAuthorized(
+              `Could not perform unlock-session. SpidLevel: {${user_data.spid_level}}, UnlockCode: {${unlock_code}}`
+            )
+        ),
+        defaultLog.taskEither.errorLeft(
+          errorResponse => `${errorResponse.detail}`
+        )
       )
     ),
     TE.chainW(({ user_data, unlock_code }) =>
@@ -73,13 +82,16 @@ export const unlockSessionHandler = (
           client.unlockUserSession({
             body: {
               fiscal_code: user_data.fiscal_number,
-              unlock_code
+              unlock_code: O.toUndefined(unlock_code)
             }
           }),
-        flow(E.toError, e =>
-          ResponseErrorInternal(
-            `Something gone wrong calling fast-login: ${e.message}`
-          )
+        flow(
+          E.toError,
+          e =>
+            ResponseErrorInternal(
+              `Something gone wrong calling fast-login: ${e.message}`
+            ),
+          defaultLog.peek.error(e => `${e.detail}`)
         )
       )
     ),
@@ -89,13 +101,21 @@ export const unlockSessionHandler = (
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
+        defaultLog.taskEither.errorLeft(e => `${e.detail}`),
         TE.chainW(response => {
           switch (response.status) {
             case 204:
-            case 409:
               return TE.right(ResponseSuccessNoContent());
+            case 403:
+              return TE.left<
+                IUnlockSessionErrorResponses,
+                IResponseSuccessNoContent
+              >(getResponseErrorForbiddenNotAuthorized(`Forbidden`));
             default:
-              return TE.left(
+              return TE.left<
+                IUnlockSessionErrorResponses,
+                IResponseSuccessNoContent
+              >(
                 ResponseErrorInternal(
                   `Something gone wrong. Response Status: {${response.status}}`
                 )
@@ -113,12 +133,13 @@ export const getUnlockSessionHandler = (
 ): express.RequestHandler => {
   const handler = unlockSessionHandler(client);
   const middlewaresWrap = withRequestMiddlewares(
+    ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
     hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(UnlockSessionData)
   );
 
   return wrapRequestHandler(
-    middlewaresWrap((_, user, payload) => handler(user, payload))
+    middlewaresWrap((_, __, user, payload) => handler(user, payload))
   );
 };

@@ -1,12 +1,16 @@
 import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
+import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { defaultLog } from "@pagopa/winston-ts";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
+  IResponseErrorConflict,
   IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
+  ResponseErrorConflict,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
@@ -29,14 +33,15 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
+type ILookSessionErrorResponses =
+  | IResponseErrorConflict
+  | IResponseErrorForbiddenNotAuthorized
+  | IResponseErrorInternal;
+
 type ILockSessionHandler = (
   user: IHslJwtPayloadExtended,
   payload: LockSessionData
-) => Promise<
-  | IResponseSuccessNoContent
-  | IResponseErrorForbiddenNotAuthorized
-  | IResponseErrorInternal
->;
+) => Promise<IResponseSuccessNoContent | ILookSessionErrorResponses>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
@@ -54,12 +59,17 @@ export const lockSessionHandler = (
     TE.bind("user_data", () => TE.of(reqJwtData)),
     TE.bind("unlock_code", () => TE.of(reqPayload.unlock_code)),
     TE.chain(
-      TE.fromPredicate(
-        ({ user_data }) => canLock(user_data),
-        ({ user_data }) =>
-          getResponseErrorForbiddenNotAuthorized(
-            `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
-          )
+      flow(
+        TE.fromPredicate(
+          ({ user_data }) => canLock(user_data),
+          ({ user_data }) =>
+            getResponseErrorForbiddenNotAuthorized(
+              `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
+            )
+        ),
+        defaultLog.taskEither.errorLeft(
+          errorResponse => `${errorResponse.detail}`
+        )
       )
     ),
     TE.chainW(({ user_data, unlock_code }) =>
@@ -71,10 +81,13 @@ export const lockSessionHandler = (
               unlock_code
             }
           }),
-        flow(E.toError, e =>
-          ResponseErrorInternal(
-            `Something gone wrong calling fast-login: ${e.message}`
-          )
+        flow(
+          E.toError,
+          e =>
+            ResponseErrorInternal(
+              `Something gone wrong calling fast-login: ${e.message}`
+            ),
+          defaultLog.peek.error(e => `${e.detail}`)
         )
       )
     ),
@@ -84,13 +97,21 @@ export const lockSessionHandler = (
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
+        defaultLog.taskEither.errorLeft(e => `${e.detail}`),
         TE.chainW(response => {
           switch (response.status) {
             case 204:
-            case 409:
               return TE.right(ResponseSuccessNoContent());
+            case 409:
+              return TE.left<
+                ILookSessionErrorResponses,
+                IResponseSuccessNoContent
+              >(ResponseErrorConflict("Session was already locked"));
             default:
-              return TE.left(
+              return TE.left<
+                ILookSessionErrorResponses,
+                IResponseSuccessNoContent
+              >(
                 ResponseErrorInternal(
                   `Something gone wrong. Response Status: {${response.status}}`
                 )
@@ -108,12 +129,13 @@ export const getLockSessionHandler = (
 ): express.RequestHandler => {
   const handler = lockSessionHandler(client);
   const middlewaresWrap = withRequestMiddlewares(
+    ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
     hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(LockSessionData)
   );
 
   return wrapRequestHandler(
-    middlewaresWrap((_, user, payload) => handler(user, payload))
+    middlewaresWrap((_, __, user, payload) => handler(user, payload))
   );
 };

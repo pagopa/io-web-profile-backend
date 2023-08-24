@@ -209,8 +209,8 @@ paths:
                 $ref: '#/components/schemas/Unauthorized'
         '403':
           description: Forbidden
-        '409':
-          description: Conflict
+        '429':
+          description: 'Too Many Requests'
         '500':
           description: Server error
           content:
