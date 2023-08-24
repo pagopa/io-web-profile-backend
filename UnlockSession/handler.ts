@@ -10,7 +10,6 @@ import {
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
-  // getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
 import * as express from "express";
 
@@ -23,13 +22,13 @@ import { UnlockSessionData } from "../generated/definitions/external/UnlockSessi
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 
+import { UnlockCode } from "../generated/definitions/external/UnlockCode";
+import { Client } from "../generated/definitions/fast-login/client";
+import { SpidLevel } from "../utils/enums/SpidLevels";
 import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
-import { SpidLevel } from "../utils/enums/SpidLevels";
-import { Client } from "../generated/definitions/fast-login/client";
-import { UnlockCode } from "../generated/definitions/external/UnlockCode";
 
 type IUnlockSessionHandler = (
   user: IHslJwtPayloadExtended,
