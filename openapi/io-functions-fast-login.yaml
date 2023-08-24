@@ -119,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/LogoutData'
+              $ref: '#/components/schemas/LogoutData'
       responses:
         '200':
           description: Success
@@ -154,7 +154,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/LockSessionData'
+              $ref: '#/components/schemas/LockSessionData'
       responses:
         '204':
           description: Session Successfully locked
@@ -191,7 +191,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/UnlockSessionData'
+              $ref: '#/components/schemas/UnlockSessionData'
       responses:
         '204':
           description: Session successfully unlocked
@@ -230,7 +230,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/GetSessionStateData'
+              $ref: '#/components/schemas/GetSessionStateData'
       responses:
         '200':
           description: Created
