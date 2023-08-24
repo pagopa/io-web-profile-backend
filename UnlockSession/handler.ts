@@ -46,10 +46,10 @@ type UnlockSessionClient = Client<"ApiKeyAuth">;
 
 const canUnlock = (
   user: IHslJwtPayloadExtended,
-  unlock_code: UnlockCode | undefined
+  unlock_code: O.Option<UnlockCode>
 ): boolean =>
   user.spid_level === SpidLevel.L3 ||
-  (user.spid_level === SpidLevel.L2 && unlock_code !== undefined);
+  (user.spid_level === SpidLevel.L2 && O.isSome(unlock_code));
 
 export const unlockSessionHandler = (
   client: UnlockSessionClient
@@ -64,8 +64,7 @@ export const unlockSessionHandler = (
     TE.chain(
       flow(
         TE.fromPredicate(
-          ({ user_data, unlock_code }) =>
-            canUnlock(user_data, O.toUndefined(unlock_code)),
+          ({ user_data, unlock_code }) => canUnlock(user_data, unlock_code),
           ({ user_data, unlock_code }) =>
             getResponseErrorForbiddenNotAuthorized(
               `Could not perform unlock-session. SpidLevel: {${user_data.spid_level}}, UnlockCode: {${unlock_code}}`

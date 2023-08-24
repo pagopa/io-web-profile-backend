@@ -64,7 +64,7 @@ describe("LockSession", () => {
 
   test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT and fast-login response is 409
         WHEN all checks passed
-        THEN the response is 204`, async () => {
+        THEN the response is 409`, async () => {
     const handler = lockSessionHandler(fastLoginClient409Mock);
 
     const res = await handler(aValidUser, aValidPayload);
@@ -77,7 +77,7 @@ describe("LockSession", () => {
       }
     });
     expect(res).toMatchObject({
-      kind: "IResponseSuccessNoContent"
+      kind: "IResponseErrorConflict"
     });
   });
 });
