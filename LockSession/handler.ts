@@ -84,14 +84,16 @@ export const lockSessionHandler = (
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
-        TE.map(response => {
+        TE.chainW(response => {
           switch (response.status) {
             case 204:
             case 409:
-              return ResponseSuccessNoContent();
+              return TE.right(ResponseSuccessNoContent());
             default:
-              return ResponseErrorInternal(
-                `Something gone wrong. Response Status: {${response.status}}`
+              return TE.left(
+                ResponseErrorInternal(
+                  `Something gone wrong. Response Status: {${response.status}}`
+                )
               );
           }
         })

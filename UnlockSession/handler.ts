@@ -73,7 +73,6 @@ export const unlockSessionHandler = (
         () =>
           client.unlockUserSession({
             body: {
-              // eslint-disable-next-line sonarjs/no-duplicate-string
               fiscal_code: user_data.fiscal_number,
               unlock_code
             }
@@ -91,14 +90,16 @@ export const unlockSessionHandler = (
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
-        TE.map(response => {
+        TE.chainW(response => {
           switch (response.status) {
             case 204:
             case 409:
-              return ResponseSuccessNoContent();
+              return TE.right(ResponseSuccessNoContent());
             default:
-              return ResponseErrorInternal(
-                `Something gone wrong. Response Status: {${response.status}}`
+              return TE.left(
+                ResponseErrorInternal(
+                  `Something gone wrong. Response Status: {${response.status}}`
+                )
               );
           }
         })
