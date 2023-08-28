@@ -1,6 +1,11 @@
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { sign } from "jsonwebtoken";
-import { HSLConfig, IConfig, JWTConfig } from "../utils/config";
+import {
+  FastLoginClientConfig,
+  HSLConfig,
+  IConfig,
+  JWTConfig
+} from "../utils/config";
 import { FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
 import { generateKeyPairSync } from "crypto";
 
@@ -53,8 +58,14 @@ export const hslConfig: HSLConfig = {
   HUB_SPID_LOGIN_CLIENT_BASE_URL: "http://localhost:9090" as NonEmptyString
 };
 
+export const fastLoginClientConfig: FastLoginClientConfig = {
+  FAST_LOGIN_API_KEY: "fastLoginApiKey" as NonEmptyString,
+  FAST_LOGIN_CLIENT_BASE_URL: "fastLoginClientBaseUrl" as NonEmptyString
+};
+
 export const config: IConfig = {
   ...iconfig,
   ...jwtConfig,
-  ...hslConfig
+  ...hslConfig,
+  ...fastLoginClientConfig
 };

@@ -20,11 +20,13 @@ import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
 import { IConfig } from "../config";
 import { getHubSpidLoginClient } from "../../clients/hubSpidLogin";
 import { IntrospectSuccessResponse } from "../../generated/definitions/hub-spid-login/IntrospectSuccessResponse";
+import { SpidLevel } from "../enums/SpidLevels";
 
 export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
   readonly name: string;
   readonly family_name: string;
   readonly fiscal_number: FiscalCode;
+  readonly spid_level: SpidLevel;
 }
 
 type IjwtIntrospectionCall = (

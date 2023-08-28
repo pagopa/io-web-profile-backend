@@ -11,8 +11,8 @@ import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import { withFallback } from "io-ts-types";
 
-import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
+import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
@@ -42,6 +42,13 @@ export const HSLConfig = t.intersection([
   })
 ]);
 
+// Lock Session Client Configuration
+export const FastLoginClientConfig = t.type({
+  FAST_LOGIN_API_KEY: NonEmptyString,
+  FAST_LOGIN_CLIENT_BASE_URL: NonEmptyString
+});
+export type FastLoginClientConfig = t.TypeOf<typeof FastLoginClientConfig>;
+
 export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
@@ -54,6 +61,7 @@ export const IConfig = t.intersection([
     isProduction: t.boolean
   }),
   JWTConfig,
+  FastLoginClientConfig,
   HSLConfig
 ]);
 
