@@ -3,6 +3,16 @@
 variables:
   HEALTHCHECK_PATH: '/api/v1/info'
 
+parameters:
+  - name: 'RELEASE_SEMVER'
+    displayName: 'When packing a release, define the version bump to apply'
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+    default: minor
+
 # Only manual activations are intended
 trigger: none
 pr: none
@@ -23,11 +33,51 @@ resources:
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
+  # Create a relase
+  # Activated when ONE OF these are met:
+  # - is on branch main 
+  # - is a tag in the form v{version}-RELEASE
+  - stage: Release
+    condition:
+      and(
+        succeeded(),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          and(
+            startsWith(variables['Build.SourceBranch'], 'refs/tags'),
+            endsWith(variables['Build.SourceBranch'], '-RELEASE')
+          )
+        )
+      )
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+      - job: make_release
+        steps:
+        - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+          - template: templates/node-job-setup/template.yaml@pagopaCommons
+            parameters:
+              persistCredentials: true
+              gitReference: main
+          - template: templates/node-github-release/template.yaml@pagopaCommons
+            parameters:
+              release_branch: main
+              semver: '${{ parameters.RELEASE_SEMVER }}'
+              gitEmail: $(GIT_EMAIL)
+              gitUsername: $(GIT_USERNAME)
+              gitHubConnection: $(GITHUB_CONNECTION)
+
+        - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+          - script: |
+              echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
+            displayName: 'Skip release bundle'
 
   # Prepare Artifact
-  - stage: Prepare_artifact
+  - stage: Deploy_staging
+    dependsOn:
+      - Release
     jobs:
-      - job: 'prepare_artifact'
+      - job: 'prepare_artifact_and_deploy'
         steps:
           # Build application
           - template: templates/node-job-setup/template.yaml@pagopaCommons
@@ -35,23 +85,22 @@ stages:
               # On the assumption that this stage is executed only when Relase stage is,
               #  with this parameter we set the reference the deploy script must pull changes from.
               # The branch/tag name is calculated from the source branch
-              #  ex: Build.SourceBranch=refs/heads/master --> master
+              #  ex: Build.SourceBranch=refs/heads/main --> main
               #  ex: Build.SourceBranch=refs/tags/v1.2.3-RELEASE --> v1.2.3-RELEASE
               gitReference: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/tags/', ''), 'refs/heads/', '') }}
           - script: |
               yarn predeploy
             displayName: 'Build'
-
           # Install functions extensions
           - task: DotNetCoreCLI@2
             inputs:
               command: "build"
-              arguments: "-o bin"   
-          # Copy application to  
+              arguments: "-o bin"
+          # Copy application to
           - task: CopyFiles@2
             inputs:
               SourceFolder: '$(System.DefaultWorkingDirectory)'
-              TargetFolder: '$(System.DefaultWorkingDirectory)/bundle'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)'
               Contents: |
                 **/*
                 !.git/**/*
@@ -66,56 +115,63 @@ stages:
                 !local.settings.json
                 !test
                 !tsconfig.json
-                !tslint.json
-                !yarn.lock
-                !Dangerfile.js
                 !CODEOWNERS
                 !__*/**/*
             displayName: 'Copy deploy files'
-          
-          - publish: $(System.DefaultWorkingDirectory)/bundle
-            artifact: Bundle
-
-  - stage: Deploy_to_Production_Slot
-    dependsOn:
-      - Prepare_artifact
-    jobs:
-      - job: 'do_deploy'
-        steps:
-          - checkout: none
-          - download: current
-            artifact: Bundle
-          
-          - task: AzureFunctionApp@1  
+            
+          - task: AzureFunctionApp@1
             inputs:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: "$(PRODUCTION_RESOURCE_GROUP_NAME)"
+              azureSubscription: '$(PROD_AZURE_SUBSCRIPTION)'
+              resourceGroupName: '$(PROD_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
-              appName: "$(PRODUCTION_APP_NAME)"
-              package: '$(Pipeline.Workspace)/Bundle'
+              appName: '$(PROD_APP_NAME)'
+              package: '$(Build.ArtifactStagingDirectory)/'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
-              slotName: 'production'
-            displayName: Deploy code
+              slotName: 'staging'
+            displayName: Deploy to staging slot
 
-  - stage: Deploy_to_DryRun_Slot
+  # Check that the staging instance is healthy
+  - stage: Healthcheck
+    pool:
+      name: $(AGENT_POOL)
     dependsOn:
-      - Prepare_artifact
+      - Deploy_staging
     jobs:
-      - job: 'do_deploy'
+      - job: 'do_healthcheck'
         steps:
           - checkout: none
-          - download: current
-            artifact: Bundle
-          
-          - task: AzureFunctionApp@1  
+          - script: |
+              # fails if response status is not 2xx
+              curl -f 'https://$(PROD_APP_NAME)-staging.azurewebsites.net/$(HEALTHCHECK_PATH)'
+            displayName: 'Healthcheck'
+
+  # Promote the staging instance to production
+  - stage: Deploy_production
+    dependsOn:
+      - Healthcheck
+      - Deploy_staging
+    jobs:
+      - job: 'do_deploy'
+        steps:  
+          - task: AzureAppServiceManage@0
             inputs:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: "$(PRODUCTION_RESOURCE_GROUP_NAME)"
-              appType: 'functionApp'
-              appName: "$(PRODUCTION_APP_NAME)"
-              package: '$(Pipeline.Workspace)/Bundle'
-              deploymentMethod: 'auto'
-              deployToSlotOrASE: true
-              slotName: 'dryrun'
-            displayName: Deploy code
+              azureSubscription: '$(PROD_AZURE_SUBSCRIPTION)'
+              resourceGroupName: '$(PROD_RESOURCE_GROUP_NAME)'
+              webAppName: '$(PROD_APP_NAME)'
+              sourceSlot: staging
+              swapWithProduction: true
+            displayName: Swap with production slot
+
+  # Publish client SDK to NPM
+  # - stage: PublishClientSDKtoNPM
+  #   dependsOn: Release
+  #   pool:
+  #     vmImage: 'ubuntu-latest'
+  #   jobs:
+  #     - job: publish_SDK
+  #       steps:
+  #       # Template for generating and deploying client SDK to NPM
+  #       - template: templates/client-sdk-publish/template.yaml@pagopaCommons
+  #         parameters:
+  #           openapiSpecPath: './api/internal.yaml'

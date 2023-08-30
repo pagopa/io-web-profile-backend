@@ -46,21 +46,12 @@ stages:
             yarn lint
           displayName: 'Lint'
 
-      - job: danger
-        condition: 
-          and(
-            succeeded(),
-            ne(variables['DANGER_GITHUB_API_TOKEN'], 'skip')
-          )
+      - job: lint_api     
         steps:
-          - template: templates/node-job-setup/template.yaml@pagopaCommons
-
-          - bash: |
-              yarn danger ci
-            env:
-              DANGER_GITHUB_API_TOKEN: '$(DANGER_GITHUB_API_TOKEN)'
-            displayName: 'Danger CI'
-
+        - template: templates/node-job-setup/template.yaml@pagopaCommons
+        - script: |
+            yarn lint-api
+          displayName: 'Lint API'
 
   # B) Run unit tests if there is a push or pull request on any branch.
   - stage: Test
@@ -69,11 +60,12 @@ stages:
       - job: unit_tests
         steps:
         - template: templates/node-job-setup/template.yaml@pagopaCommons
-
+        - script: |
+            yarn generate
+          displayName: 'Generate definitions'
         - script: |
             yarn test:coverage
           displayName: 'Unit tests exec'
-
         - bash: |
             bash <(curl -s https://codecov.io/bash)
           displayName: 'Code coverage'
