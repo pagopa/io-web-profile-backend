@@ -42,12 +42,21 @@ export const HSLConfig = t.intersection([
   })
 ]);
 
-// Lock Session Client Configuration
+// Fast Login Client Configuration
 export const FastLoginClientConfig = t.type({
   FAST_LOGIN_API_KEY: NonEmptyString,
   FAST_LOGIN_CLIENT_BASE_URL: NonEmptyString
 });
 export type FastLoginClientConfig = t.TypeOf<typeof FastLoginClientConfig>;
+
+// Fast Login Client Configuration
+export const FunctionsAppClientConfig = t.type({
+  FUNCTIONS_APP_CLIENT_BASE_URL: NonEmptyString,
+  FUNCTIONS_APP_SUBSCRIPTION_KEY: NonEmptyString
+});
+export type FunctionsAppClientConfig = t.TypeOf<
+  typeof FunctionsAppClientConfig
+>;
 
 export const IConfig = t.intersection([
   t.interface({
@@ -62,6 +71,7 @@ export const IConfig = t.intersection([
   }),
   JWTConfig,
   FastLoginClientConfig,
+  FunctionsAppClientConfig,
   HSLConfig
 ]);
 

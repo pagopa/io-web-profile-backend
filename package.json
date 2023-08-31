@@ -23,6 +23,7 @@
     "generate:definitions-external": "rimraf ./generated/definitions/external && shx mkdir -p ./generated/definitions/external && gen-api-models --api-spec ./openapi/external.yaml --no-strict --out-dir ./generated/definitions/external",
     "generate:fast-login": "rimraf ./generated/definitions/fast-login && shx mkdir -p ./generated/definitions/fast-login && gen-api-models --api-spec ./openapi/io-functions-fast-login.yaml --no-strict --out-dir ./generated/definitions/fast-login --request-types --response-decoders --client",
     "generate:hub-spid-login": "rimraf ./generated/definitions/hub-spid-login && shx mkdir -p ./generated/definitions/hub-spid-login && gen-api-models --api-spec ./openapi/hub-spid-login.yaml --no-strict --out-dir ./generated/definitions/hub-spid-login --request-types --response-decoders --client",
+    "generate:functions-app": "rimraf ./generated/definitions/io-functions-app && shx mkdir -p ./generated/definitions/io-functions-app && gen-api-models --api-spec ./openapi/io-functions-app.yaml --no-strict --out-dir ./generated/definitions/io-functions-app --request-types --response-decoders --client",
     "dist:modules": "modclean -r -n default:safe && yarn install --production",
     "predeploy": "npm-run-all build dist:*",
     "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
