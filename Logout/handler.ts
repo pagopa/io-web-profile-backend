@@ -26,15 +26,15 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
-type ILogoutHandler = (
+type LogoutHandlerT = (
   user: IHslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<void> | IResponseErrorInternal>;
 
 type LogoutClient = Client<"ApiKeyAuth">;
 
-export const logoutHandler = (client: LogoutClient): ILogoutHandler => (
+export const logoutHandler = (client: LogoutClient): LogoutHandlerT => (
   user_data: IHslJwtPayloadExtended
-): ReturnType<ILogoutHandler> =>
+): ReturnType<LogoutHandlerT> =>
   pipe(
     TE.tryCatch(
       () =>
@@ -52,20 +52,20 @@ export const logoutHandler = (client: LogoutClient): ILogoutHandler => (
         defaultLog.peek.error(e => `${e.detail}`)
       )
     ),
-    TE.chainW(
+    TE.chain(
       flow(
         TE.fromEither,
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
         defaultLog.taskEither.errorLeft(e => `${e.detail}`),
-        TE.chainW(response => {
-          if (response.status === 200) {
+        TE.chainW(({ status }) => {
+          if (status === 200) {
             return TE.right(ResponseSuccessJson(void 0));
           } else {
-            return TE.left<IResponseErrorInternal, IResponseSuccessJson<void>>(
+            return TE.left(
               ResponseErrorInternal(
-                `Something gone wrong. Response Status: {${response.status}}`
+                `Something gone wrong. Response Status: {${status}}`
               )
             );
           }

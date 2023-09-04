@@ -46,5 +46,26 @@ describe("Logout", () => {
       kind: "IResponseSuccessJson"
     });
   });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 500`, async () => {
+    const errorStatus = 500;
+    logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
+    const handler = logoutHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(logoutMock).toHaveBeenCalledTimes(1);
+    expect(logoutMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      detail: expect.stringContaining(`${errorStatus}`),
+      kind: "IResponseErrorInternal"
+    });
+  });
 });
 // #endregion
