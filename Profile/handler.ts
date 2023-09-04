@@ -31,15 +31,15 @@ import {
 
 type IProfileErrorResponses = IResponseErrorNotFound | IResponseErrorInternal;
 
-type IProfileHandler = (
+type ProfileHandlerT = (
   user: IHslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ProfileData> | IProfileErrorResponses>;
 
 type ProfileClient = Client<"SubscriptionKey">;
 
-export const profileHandler = (client: ProfileClient): IProfileHandler => (
+export const profileHandler = (client: ProfileClient): ProfileHandlerT => (
   user_data: IHslJwtPayloadExtended
-): ReturnType<IProfileHandler> =>
+): ReturnType<ProfileHandlerT> =>
   pipe(
     TE.tryCatch(
       () => client.getProfile({ fiscal_code: user_data.fiscal_number }),
@@ -59,12 +59,10 @@ export const profileHandler = (client: ProfileClient): IProfileHandler => (
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
         defaultLog.taskEither.errorLeft(e => `${e.detail}`),
-        TE.chainW(response => {
-          switch (response.status) {
+        TE.chainW(({ status, value }) => {
+          switch (status) {
             case 200:
-              return TE.right(
-                ResponseSuccessJson({ email: response.value.email })
-              );
+              return TE.right(ResponseSuccessJson({ email: value.email }));
             case 404:
               return TE.left<
                 IProfileErrorResponses,
@@ -76,7 +74,7 @@ export const profileHandler = (client: ProfileClient): IProfileHandler => (
                 IResponseSuccessJson<ProfileData>
               >(
                 ResponseErrorInternal(
-                  `Something gone wrong. Response Status: {${response.status}}`
+                  `Something gone wrong. Response Status: {${status}}`
                 )
               );
           }

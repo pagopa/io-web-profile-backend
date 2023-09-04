@@ -151,12 +151,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProfileData'
-        '400':
-          description: Invalid request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
         '401':
           description: Unauthorized
           content:
@@ -171,8 +165,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
-        '429':
-          description: Too Many Requests
         '500':
           description: Internal Server Error
           content:

@@ -6,25 +6,18 @@ import { profileHandler } from "../handler";
 import { Client } from "../../generated/definitions/io-functions-app/client";
 
 // #region mocks
+const aValidEmailResponse = {
+  email: "example@test.com"
+};
+
 const getProfileMock = jest.fn(async () =>
   E.right({
     status: 200,
-    value: {
-      email: "example@test.com"
-    }
+    value: aValidEmailResponse
   })
 );
 const functionsAppClientMock = ({
   getProfile: getProfileMock
-} as unknown) as Client<"SubscriptionKey">;
-
-const getProfileNotFoundMock = jest.fn(async () =>
-  E.right({
-    status: 404
-  })
-);
-const functionsAppClientNotFoundMock = ({
-  getProfile: getProfileNotFoundMock
 } as unknown) as Client<"SubscriptionKey">;
 
 const aValidUser: IHslJwtPayloadExtended = {
@@ -54,23 +47,47 @@ describe("Profile", () => {
     });
     expect(res).toMatchObject({
       kind: "IResponseSuccessJson",
-      value: { email: "example@test.com" }
+      value: aValidEmailResponse
     });
   });
 
   test(`GIVEN a valid user decoded from JWT
         WHEN functions-app do not find the user
         THEN the response is 404`, async () => {
-    const handler = profileHandler(functionsAppClientNotFoundMock);
+    const errorStatus = 404;
+    getProfileMock.mockResolvedValueOnce(
+      E.right({ status: errorStatus, value: { email: "" } })
+    );
+    const handler = profileHandler(functionsAppClientMock);
 
     const res = await handler(aValidUser);
 
-    expect(getProfileNotFoundMock).toHaveBeenCalledTimes(1);
-    expect(getProfileNotFoundMock).toHaveBeenCalledWith({
+    expect(getProfileMock).toHaveBeenCalledTimes(1);
+    expect(getProfileMock).toHaveBeenCalledWith({
       fiscal_code: aValidUser.fiscal_number
     });
     expect(res).toMatchObject({
       kind: "IResponseErrorNotFound"
+    });
+  });
+
+  test(`GIVEN a valid user decoded from JWT
+        WHEN something goes wrong
+        THEN the response is 500`, async () => {
+    const errorStatus = 500;
+    getProfileMock.mockResolvedValueOnce(
+      E.right({ status: errorStatus, value: { email: "" } })
+    );
+    const handler = profileHandler(functionsAppClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(getProfileMock).toHaveBeenCalledTimes(1);
+    expect(getProfileMock).toHaveBeenCalledWith({
+      fiscal_code: aValidUser.fiscal_number
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorInternal"
     });
   });
 });
