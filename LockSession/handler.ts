@@ -5,12 +5,14 @@ import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
+import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import {
   IResponseErrorConflict,
   IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
   ResponseErrorConflict,
+  ResponseErrorForbiddenNotAuthorized,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
@@ -32,6 +34,11 @@ import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+import {
+  IExchangeJwtPayloadExtended,
+  exchangeJwtValidationMiddleware
+} from "../utils/middlewares/exchange-jwt-validation-middleware";
+import { TokenTypes } from "../utils/enums/TokenTypes";
 
 type ILookSessionErrorResponses =
   | IResponseErrorConflict
@@ -39,14 +46,16 @@ type ILookSessionErrorResponses =
   | IResponseErrorInternal;
 
 type ILockSessionHandler = (
-  user: IHslJwtPayloadExtended,
+  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended,
   payload: LockSessionData
 ) => Promise<IResponseSuccessNoContent | ILookSessionErrorResponses>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
-const canLock = (user: IHslJwtPayloadExtended): boolean =>
-  gte(user.spid_level, SpidLevel.L2);
+const canLock = (
+  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended
+): boolean =>
+  TokenTypes.EXCHANGE === user.token_type || gte(user.spid_level, SpidLevel.L2);
 
 export const lockSessionHandler = (
   client: LockSessionClient
@@ -131,7 +140,10 @@ export const getLockSessionHandler = (
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
-    hslJwtValidationMiddleware(config),
+    SequenceMiddleware(ResponseErrorForbiddenNotAuthorized)(
+      hslJwtValidationMiddleware(config),
+      exchangeJwtValidationMiddleware(config)
+    ),
     RequiredBodyPayloadMiddleware(LockSessionData)
   );
 

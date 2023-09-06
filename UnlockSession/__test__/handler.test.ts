@@ -6,6 +6,8 @@ import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { UnlockSessionData } from "../../generated/definitions/external/UnlockSessionData";
+import { IExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { TokenTypes } from "../../utils/enums/TokenTypes";
 
 // #region mocks
 const unlockSessionMock = jest.fn(async () =>
@@ -33,6 +35,13 @@ const aValidL3User: IHslJwtPayloadExtended = {
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name",
   spid_level: SpidLevel.L3
+};
+
+const aValidExchangeUser: IExchangeJwtPayloadExtended = {
+  family_name: "family_name",
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name",
+  token_type: TokenTypes.EXCHANGE
 };
 
 const aValidL3Payload: UnlockSessionData = {};
@@ -73,7 +82,26 @@ describe("UnlockSession", () => {
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidL2User.fiscal_number,
+        fiscal_code: aValidL3User.fiscal_number,
+        unlock_code: undefined
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseSuccessNoContent"
+    });
+  });
+
+  test(`GIVEN a valid payload and a valid magic link user decoded from JWT
+        WHEN all checks passed
+        THEN the response is 204`, async () => {
+    const handler = unlockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aValidExchangeUser, aValidL3Payload);
+
+    expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(unlockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidExchangeUser.fiscal_number,
         unlock_code: undefined
       }
     });

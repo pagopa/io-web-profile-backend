@@ -5,6 +5,8 @@ import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validati
 import { lockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
+import { IExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { TokenTypes } from "../../utils/enums/TokenTypes";
 
 // #region mocks
 const lockSession204Mock = jest.fn(async () =>
@@ -30,6 +32,12 @@ const aValidUser: IHslJwtPayloadExtended = {
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name",
   spid_level: SpidLevel.L2
+};
+const aValidExchangeUser: IExchangeJwtPayloadExtended = {
+  family_name: "family_name",
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name",
+  token_type: TokenTypes.EXCHANGE
 };
 
 const aValidPayload = {
@@ -78,6 +86,25 @@ describe("LockSession", () => {
     });
     expect(res).toMatchObject({
       kind: "IResponseErrorConflict"
+    });
+  });
+
+  test(`GIVEN a valid unlock_code in payload and a valid magic link user decoded from JWT
+        WHEN all checks passed
+        THEN the response is 204`, async () => {
+    const handler = lockSessionHandler(fastLoginClient204Mock);
+
+    const res = await handler(aValidExchangeUser, aValidPayload);
+
+    expect(lockSession204Mock).toHaveBeenCalledTimes(1);
+    expect(lockSession204Mock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidExchangeUser.fiscal_number,
+        unlock_code: aValidPayload.unlock_code
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseSuccessNoContent"
     });
   });
 });
