@@ -38,7 +38,23 @@ const {
   }
 });
 
+const {
+  privateKey: exchangePrivateKey,
+  publicKey: exchangePublicKey
+} = generateKeyPairSync("rsa", {
+  modulusLength: 2048,
+  publicKeyEncoding: {
+    type: "spki",
+    format: "pem"
+  },
+  privateKeyEncoding: {
+    type: "pkcs8",
+    format: "pem"
+  }
+});
+
 const hslIssuer = "SPID";
+const exchangeIssuer = "PAGOPA";
 
 const jwt = sign(
   { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode },
@@ -49,7 +65,9 @@ const jwt = sign(
 export const jwtConfig: JWTConfig = {
   BEARER_AUTH_HEADER: "authorization" as NonEmptyString,
   HUB_SPID_LOGIN_JWT_ISSUER: hslIssuer as NonEmptyString,
-  HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString
+  HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString,
+  EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
+  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString
 };
 
 export const hslConfig: HSLConfig = {

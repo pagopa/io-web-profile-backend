@@ -4,13 +4,11 @@ import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
-import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 
 import {
   IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
-  ResponseErrorForbiddenNotAuthorized,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
@@ -32,31 +30,25 @@ import { UnlockCode } from "../generated/definitions/external/UnlockCode";
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel } from "../utils/enums/SpidLevels";
 import {
-  IExchangeJwtPayloadExtended,
-  exchangeJwtValidationMiddleware
-} from "../utils/middlewares/exchange-jwt-validation-middleware";
-import {
   IHslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
-import { TokenTypes } from "../utils/enums/TokenTypes";
 
 type IUnlockSessionErrorResponses =
   | IResponseErrorForbiddenNotAuthorized
   | IResponseErrorInternal;
 
 type IUnlockSessionHandler = (
-  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended,
+  user: IHslJwtPayloadExtended,
   payload: UnlockSessionData
 ) => Promise<IResponseSuccessNoContent | IUnlockSessionErrorResponses>;
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
 
 const canUnlock = (
-  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended,
+  user: IHslJwtPayloadExtended,
   unlock_code: O.Option<UnlockCode>
 ): boolean =>
-  TokenTypes.EXCHANGE === user.token_type ||
   user.spid_level === SpidLevel.L3 ||
   (user.spid_level === SpidLevel.L2 && O.isSome(unlock_code));
 
@@ -143,10 +135,7 @@ export const getUnlockSessionHandler = (
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
-    SequenceMiddleware(ResponseErrorForbiddenNotAuthorized)(
-      hslJwtValidationMiddleware(config),
-      exchangeJwtValidationMiddleware(config)
-    ),
+    hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(UnlockSessionData)
   );
 
