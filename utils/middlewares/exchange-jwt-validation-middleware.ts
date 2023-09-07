@@ -1,74 +1,49 @@
-import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
 import {
   IResponseErrorForbiddenNotAuthorized,
   getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
-import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import * as E from "fp-ts/Either";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
-
-import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
+import * as t from "io-ts";
+import { enumType } from "@pagopa/ts-commons/lib/types";
+import { IRequestMiddleware } from "@pagopa/ts-commons/lib/request_middleware";
+import { jwtValidationMiddleware } from "../jwt";
 import { IConfig } from "../config";
 import { TokenTypes } from "../enums/TokenTypes";
+import { BaseJwtPayload } from "../jwt";
 
-export interface IExchangeJwtPayloadExtended extends jwt.JwtPayload {
-  readonly name: string;
-  readonly family_name: string;
-  readonly fiscal_number: FiscalCode;
-  readonly token_type: TokenTypes;
-}
-
-export type HslJWTValid = (
-  token: NonEmptyString
-) => TE.TaskEither<
-  IResponseErrorForbiddenNotAuthorized,
-  IExchangeJwtPayloadExtended
+export const ExchangeJwtPayloadExtended = t.intersection([
+  BaseJwtPayload,
+  t.type({
+    token_type: enumType(TokenTypes, "tokenType")
+  })
+]);
+export type ExchangeJwtPayloadExtended = t.TypeOf<
+  typeof ExchangeJwtPayloadExtended
 >;
 
-export const exchangeJwtValidation = (
-  token: NonEmptyString,
-  config: IConfig
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-): HslJWTValid => () =>
+export const exchangeJwtValidation = (config: IConfig) => (
+  token: NonEmptyString
+): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, jwt.JwtPayload> =>
   pipe(
     getValidateJWT(
       config.EXCHANGE_JWT_ISSUER,
       config.EXCHANGE_JWT_PUB_KEY
     )(token),
-    TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message)),
-    TE.map(jwtDecoded => jwtDecoded as IExchangeJwtPayloadExtended)
+    TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message))
   );
 
 export const exchangeJwtValidationMiddleware = (
   config: IConfig
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
-  IExchangeJwtPayloadExtended
-> => (
-  req
-): Promise<
-  E.Either<IResponseErrorForbiddenNotAuthorized, IExchangeJwtPayloadExtended>
+  ExchangeJwtPayloadExtended
 > =>
-  pipe(
-    req.headers[config.BEARER_AUTH_HEADER],
-    AuthBearer.decode,
-    E.mapLeft(_ =>
-      getResponseErrorForbiddenNotAuthorized(
-        `Invalid or missing JWT in header ${config.BEARER_AUTH_HEADER}`
-      )
-    ),
-    E.map(authBearer => authBearer.replace("Bearer ", "") as NonEmptyString),
-    TE.fromEither,
-    TE.chain(token =>
-      pipe(
-        token,
-        exchangeJwtValidation(token, config),
-        TE.mapLeft(error =>
-          getResponseErrorForbiddenNotAuthorized(error.detail)
-        )
-      )
-    )
-  )();
+  jwtValidationMiddleware(
+    config,
+    exchangeJwtValidation(config),
+    ExchangeJwtPayloadExtended
+  );

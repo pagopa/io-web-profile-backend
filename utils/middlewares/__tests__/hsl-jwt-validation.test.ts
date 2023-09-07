@@ -25,7 +25,7 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
       .spyOn(hslUtils, "introspectionCall")
       .mockReturnValueOnce(TE.right(ResponseSuccessJson({ active: true })));
 
-    const jwtValidation = hslJwtValidation(token, config);
+    const jwtValidation = hslJwtValidation(config);
     const result = await jwtValidation(token)();
 
     expect(E.isRight(result)).toBe(true);
@@ -51,7 +51,7 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
       .spyOn(hslUtils, "introspectionCall")
       .mockReturnValueOnce(TE.left(getResponseErrorForbiddenNotAuthorized()));
 
-    const jwtValidation = hslJwtValidation(token, config);
+    const jwtValidation = hslJwtValidation(config);
     const result = await jwtValidation(token)();
 
     expect(E.isLeft(result)).toBe(true);
@@ -69,7 +69,7 @@ describe(`Hub Spid Login JWT Validation Middleware`, () => {
   it(`Should fail if JWT is not valid or expired,
      - Fail -`, async () => {
     const token = "" as NonEmptyString;
-    const jwtValidation = hslJwtValidation(token, config);
+    const jwtValidation = hslJwtValidation(config);
     const result = await jwtValidation(token)();
 
     expect(E.isLeft(result)).toBe(true);

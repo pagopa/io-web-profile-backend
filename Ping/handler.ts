@@ -17,11 +17,11 @@ import { IConfig } from "../utils/config";
 import { ServiceStatus } from "../generated/definitions/external/ServiceStatus";
 import {
   hslJwtValidationMiddleware,
-  IHslJwtPayloadExtended
+  HslJwtPayloadExtended
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
 type PingHandler = (
-  tokenPayload: IHslJwtPayloadExtended
+  tokenPayload: HslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ServiceStatus> | IResponseErrorInternal>;
 
 export const PingHandler = (): PingHandler => (): Promise<

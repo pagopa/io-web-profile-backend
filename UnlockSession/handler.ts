@@ -30,7 +30,7 @@ import { UnlockCode } from "../generated/definitions/external/UnlockCode";
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel } from "../utils/enums/SpidLevels";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
@@ -39,18 +39,19 @@ type IUnlockSessionErrorResponses =
   | IResponseErrorInternal;
 
 type IUnlockSessionHandler = (
-  user: IHslJwtPayloadExtended,
+  user: HslJwtPayloadExtended,
   payload: UnlockSessionData
 ) => Promise<IResponseSuccessNoContent | IUnlockSessionErrorResponses>;
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
 
 const canUnlock = (
-  user: IHslJwtPayloadExtended,
+  user: HslJwtPayloadExtended,
   unlock_code: O.Option<UnlockCode>
 ): boolean =>
-  user.spid_level === SpidLevel.L3 ||
-  (user.spid_level === SpidLevel.L2 && O.isSome(unlock_code));
+  HslJwtPayloadExtended.is(user) &&
+  (user.spid_level === SpidLevel.L3 ||
+    (user.spid_level === SpidLevel.L2 && O.isSome(unlock_code)));
 
 export const unlockSessionHandler = (
   client: UnlockSessionClient
@@ -68,7 +69,9 @@ export const unlockSessionHandler = (
           ({ user_data, unlock_code }) => canUnlock(user_data, unlock_code),
           ({ user_data, unlock_code }) =>
             getResponseErrorForbiddenNotAuthorized(
-              `Could not perform unlock-session. SpidLevel: {${user_data.spid_level}}, UnlockCode: {${unlock_code}}`
+              `Could not perform unlock-session. SpidLevel: {${
+                user_data.spid_level
+              }}, UnlockCode: {${O.toUndefined(unlock_code)}}`
             )
         ),
         defaultLog.taskEither.errorLeft(

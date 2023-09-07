@@ -1,13 +1,14 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { HSLJWTPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { UnlockSessionData } from "../../generated/definitions/external/UnlockSessionData";
-import { IExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
 import { TokenTypes } from "../../utils/enums/TokenTypes";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 // #region mocks
 const unlockSessionMock = jest.fn(async () =>
@@ -19,10 +20,10 @@ const fastLoginClientMock = ({
   unlockUserSession: unlockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidL2User: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidL2User: HSLJWTPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
 
@@ -30,17 +31,17 @@ const aValidL2Payload = {
   unlock_code: "123456789" as UnlockCode
 };
 
-const aValidL3User: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidL3User: HSLJWTPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L3
 };
 
-const aValidExchangeUser: IExchangeJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidExchangeUser: ExchangeJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   token_type: TokenTypes.EXCHANGE
 };
 
@@ -93,20 +94,14 @@ describe("UnlockSession", () => {
 
   test(`GIVEN a valid payload and a valid magic link user decoded from JWT
         WHEN all checks passed
-        THEN the response is 204`, async () => {
+        THEN the response is 403`, async () => {
     const handler = unlockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidExchangeUser, aValidL3Payload);
+    const res = await handler(aValidExchangeUser, aValidL2Payload);
 
-    expect(unlockSessionMock).toHaveBeenCalledTimes(1);
-    expect(unlockSessionMock).toHaveBeenCalledWith({
-      body: {
-        fiscal_code: aValidExchangeUser.fiscal_number,
-        unlock_code: undefined
-      }
-    });
+    expect(unlockSessionMock).toHaveBeenCalledTimes(0);
     expect(res).toMatchObject({
-      kind: "IResponseSuccessNoContent"
+      kind: "IResponseErrorForbiddenNotAuthorized"
     });
   });
 });

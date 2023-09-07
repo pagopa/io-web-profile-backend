@@ -3,8 +3,7 @@ import * as TE from "fp-ts/TaskEither";
 import { flow, pipe } from "fp-ts/lib/function";
 import * as jwt from "jsonwebtoken";
 import { getValidateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
-import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import {
   getResponseErrorForbiddenNotAuthorized,
   IResponseErrorForbiddenNotAuthorized,
@@ -16,18 +15,22 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 
 import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
-import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
+import * as t from "io-ts";
+import { enumType } from "@pagopa/ts-commons/lib/types";
+import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import { IConfig } from "../config";
 import { getHubSpidLoginClient } from "../../clients/hubSpidLogin";
 import { IntrospectSuccessResponse } from "../../generated/definitions/hub-spid-login/IntrospectSuccessResponse";
 import { SpidLevel } from "../enums/SpidLevels";
+import { BaseJwtPayload, jwtValidationMiddleware } from "../jwt";
 
-export interface IHslJwtPayloadExtended extends jwt.JwtPayload {
-  readonly name: string;
-  readonly family_name: string;
-  readonly fiscal_number: FiscalCode;
-  readonly spid_level: SpidLevel;
-}
+export const HslJwtPayloadExtended = t.intersection([
+  BaseJwtPayload,
+  t.type({
+    spid_level: enumType(SpidLevel, "spidLevel")
+  })
+]);
+export type HslJwtPayloadExtended = t.TypeOf<typeof HslJwtPayloadExtended>;
 
 type IjwtIntrospectionCall = (
   token: NonEmptyString,
@@ -80,18 +83,12 @@ export const introspectionCall: IjwtIntrospectionCall = (token, config) =>
     )
   );
 
-export type HslJWTValid = (
-  token: NonEmptyString
-) => TE.TaskEither<
-  IResponseErrorForbiddenNotAuthorized,
-  IHslJwtPayloadExtended
->;
-
 export const hslJwtValidation = (
-  token: NonEmptyString,
   config: IConfig
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-): HslJWTValid => () =>
+) => (
+  token: NonEmptyString
+): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, jwt.JwtPayload> =>
   pipe(
     getValidateJWT(
       config.HUB_SPID_LOGIN_JWT_ISSUER,
@@ -107,7 +104,7 @@ export const hslJwtValidation = (
               getResponseErrorForbiddenNotAuthorized("Token is not valid")
             ),
           // active is always true if we are in this rail
-          _ => TE.right(jwtDecoded as IHslJwtPayloadExtended)
+          _ => TE.right(jwtDecoded)
         )
       )
     )
@@ -117,29 +114,10 @@ export const hslJwtValidationMiddleware = (
   config: IConfig
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
-  IHslJwtPayloadExtended
-> => (
-  req
-): Promise<
-  E.Either<IResponseErrorForbiddenNotAuthorized, IHslJwtPayloadExtended>
+  HslJwtPayloadExtended
 > =>
-  pipe(
-    req.headers[config.BEARER_AUTH_HEADER],
-    AuthBearer.decode,
-    E.mapLeft(_ =>
-      getResponseErrorForbiddenNotAuthorized(
-        `Invalid or missing JWT in header ${config.BEARER_AUTH_HEADER}`
-      )
-    ),
-    E.map(authBearer => authBearer.replace("Bearer ", "") as NonEmptyString),
-    TE.fromEither,
-    TE.chain(token =>
-      pipe(
-        token,
-        hslJwtValidation(token, config),
-        TE.mapLeft(error =>
-          getResponseErrorForbiddenNotAuthorized(error.detail)
-        )
-      )
-    )
-  )();
+  jwtValidationMiddleware(
+    config,
+    hslJwtValidation(config),
+    HslJwtPayloadExtended
+  );

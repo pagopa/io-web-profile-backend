@@ -31,14 +31,13 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 import {
-  IExchangeJwtPayloadExtended,
+  ExchangeJwtPayloadExtended,
   exchangeJwtValidationMiddleware
 } from "../utils/middlewares/exchange-jwt-validation-middleware";
-import { TokenTypes } from "../utils/enums/TokenTypes";
 
 type ILookSessionErrorResponses =
   | IResponseErrorConflict
@@ -46,16 +45,16 @@ type ILookSessionErrorResponses =
   | IResponseErrorInternal;
 
 type ILockSessionHandler = (
-  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended,
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended,
   payload: LockSessionData
 ) => Promise<IResponseSuccessNoContent | ILookSessionErrorResponses>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
 const canLock = (
-  user: IHslJwtPayloadExtended | IExchangeJwtPayloadExtended
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ): boolean =>
-  TokenTypes.EXCHANGE === user.token_type || gte(user.spid_level, SpidLevel.L2);
+  ExchangeJwtPayloadExtended.is(user) || gte(user.spid_level, SpidLevel.L2);
 
 export const lockSessionHandler = (
   client: LockSessionClient
@@ -73,7 +72,13 @@ export const lockSessionHandler = (
           ({ user_data }) => canLock(user_data),
           ({ user_data }) =>
             getResponseErrorForbiddenNotAuthorized(
-              `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
+              `Could not perform lock-session. Required SpidLevel at least: {${
+                SpidLevel.L2
+              }}; User SpidLevel: {${
+                HslJwtPayloadExtended.is(user_data)
+                  ? user_data.spid_level
+                  : undefined
+              }}`
             )
         ),
         defaultLog.taskEither.errorLeft(
