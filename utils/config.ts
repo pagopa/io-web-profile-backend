@@ -25,6 +25,8 @@ export type JWTConfig = t.TypeOf<typeof JWTConfig>;
 export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
+    EXCHANGE_JWT_ISSUER: NonEmptyString,
+    EXCHANGE_JWT_PUB_KEY: NonEmptyString,
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString
   }),

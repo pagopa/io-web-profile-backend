@@ -5,12 +5,14 @@ import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
+import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import {
   IResponseErrorConflict,
   IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
   ResponseErrorConflict,
+  ResponseErrorForbiddenNotAuthorized,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
@@ -29,9 +31,13 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+import {
+  ExchangeJwtPayloadExtended,
+  exchangeJwtValidationMiddleware
+} from "../utils/middlewares/exchange-jwt-validation-middleware";
 
 type ILookSessionErrorResponses =
   | IResponseErrorConflict
@@ -39,14 +45,16 @@ type ILookSessionErrorResponses =
   | IResponseErrorInternal;
 
 type ILockSessionHandler = (
-  user: IHslJwtPayloadExtended,
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended,
   payload: LockSessionData
 ) => Promise<IResponseSuccessNoContent | ILookSessionErrorResponses>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
-const canLock = (user: IHslJwtPayloadExtended): boolean =>
-  gte(user.spid_level, SpidLevel.L2);
+const canLock = (
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
+): boolean =>
+  ExchangeJwtPayloadExtended.is(user) || gte(user.spid_level, SpidLevel.L2);
 
 export const lockSessionHandler = (
   client: LockSessionClient
@@ -64,7 +72,13 @@ export const lockSessionHandler = (
           ({ user_data }) => canLock(user_data),
           ({ user_data }) =>
             getResponseErrorForbiddenNotAuthorized(
-              `Could not perform lock-session. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
+              `Could not perform lock-session. Required SpidLevel at least: {${
+                SpidLevel.L2
+              }}; User SpidLevel: {${
+                HslJwtPayloadExtended.is(user_data)
+                  ? user_data.spid_level
+                  : undefined
+              }}`
             )
         ),
         defaultLog.taskEither.errorLeft(
@@ -131,7 +145,10 @@ export const getLockSessionHandler = (
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
-    hslJwtValidationMiddleware(config),
+    SequenceMiddleware(ResponseErrorForbiddenNotAuthorized)(
+      hslJwtValidationMiddleware(config),
+      exchangeJwtValidationMiddleware(config)
+    ),
     RequiredBodyPayloadMiddleware(LockSessionData)
   );
 

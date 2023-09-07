@@ -1,11 +1,14 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { UnlockSessionData } from "../../generated/definitions/external/UnlockSessionData";
+import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { TokenTypes } from "../../utils/enums/TokenTypes";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 // #region mocks
 const unlockSessionMock = jest.fn(async () =>
@@ -17,10 +20,10 @@ const fastLoginClientMock = ({
   unlockUserSession: unlockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidL2User: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidL2User: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
 
@@ -28,11 +31,18 @@ const aValidL2Payload = {
   unlock_code: "123456789" as UnlockCode
 };
 
-const aValidL3User: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidL3User: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L3
+};
+
+const aValidExchangeUser: ExchangeJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name" as NonEmptyString,
+  token_type: TokenTypes.EXCHANGE
 };
 
 const aValidL3Payload: UnlockSessionData = {};
@@ -73,7 +83,7 @@ describe("UnlockSession", () => {
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidL2User.fiscal_number,
+        fiscal_code: aValidL3User.fiscal_number,
         unlock_code: undefined
       }
     });
