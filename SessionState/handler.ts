@@ -106,7 +106,7 @@ export const sessionStateHandler = (
                 IResponseSuccessJson<SessionState>
               >(
                 ResponseErrorGatewayTimeout(
-                  `Gateway Timeout: server couldn't respond in time. Please check your internet connection and try again.`
+                  `Gateway Timeout: Server couldn't respond in time, try again.`
                 )
               );
             default:

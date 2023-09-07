@@ -37,6 +37,11 @@ const aNotValidUser: IHslJwtPayloadExtended = {
   name: "name",
   spid_level: SpidLevel.L1
 };
+
+const emptySessionState = {
+  access_enabled: false,
+  session_info: { active: false, expiration_date: "" }
+};
 // #endregion
 
 // #region tests
@@ -74,6 +79,56 @@ describe("SessionState", () => {
     expect(sessionStateMock).toHaveBeenCalledTimes(0);
     expect(res).toMatchObject({
       kind: "IResponseErrorForbiddenNotAuthorized"
+    });
+  });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 502`, async () => {
+    const errorStatus = 502;
+    sessionStateMock.mockResolvedValueOnce(
+      E.right({
+        status: errorStatus,
+        value: emptySessionState
+      })
+    );
+    const handler = sessionStateHandler(sessionStateClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(sessionStateMock).toHaveBeenCalledTimes(1);
+    expect(sessionStateMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorBadGateway"
+    });
+  });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 504`, async () => {
+    const errorStatus = 504;
+    sessionStateMock.mockResolvedValueOnce(
+      E.right({
+        status: errorStatus,
+        value: emptySessionState
+      })
+    );
+    const handler = sessionStateHandler(sessionStateClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(sessionStateMock).toHaveBeenCalledTimes(1);
+    expect(sessionStateMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorGatewayTimeout"
     });
   });
 });
