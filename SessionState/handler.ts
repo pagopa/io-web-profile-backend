@@ -6,8 +6,12 @@ import {
 import {
   IResponseErrorForbiddenNotAuthorized,
   IResponseErrorInternal,
+  IResponseErrorBadGateway,
+  IResponseErrorGatewayTimeout,
   IResponseSuccessJson,
   ResponseErrorInternal,
+  ResponseErrorBadGateway,
+  ResponseErrorGatewayTimeout,
   ResponseSuccessJson,
   getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
@@ -30,13 +34,15 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
-type ISessionStateErrorResponses =
+type SessionStateErrorResponsesT =
   | IResponseErrorForbiddenNotAuthorized
-  | IResponseErrorInternal;
+  | IResponseErrorInternal
+  | IResponseErrorBadGateway
+  | IResponseErrorGatewayTimeout;
 
-type ISessionStateHandler = (
+type SessionStateHandlerT = (
   user: IHslJwtPayloadExtended
-) => Promise<IResponseSuccessJson<SessionState> | ISessionStateErrorResponses>;
+) => Promise<IResponseSuccessJson<SessionState> | SessionStateErrorResponsesT>;
 
 type SessionStateClient = Client<"ApiKeyAuth">;
 
@@ -46,9 +52,9 @@ const canSeeProfile = (user: IHslJwtPayloadExtended): boolean =>
 
 export const sessionStateHandler = (
   client: SessionStateClient
-): ISessionStateHandler => (
+): SessionStateHandlerT => (
   reqJwtPayload: IHslJwtPayloadExtended
-): ReturnType<ISessionStateHandler> =>
+): ReturnType<SessionStateHandlerT> =>
   pipe(
     reqJwtPayload,
     TE.fromPredicate(
@@ -77,25 +83,41 @@ export const sessionStateHandler = (
         )
       )
     ),
-    TE.chainW(
+    TE.chain(
       flow(
         TE.fromEither,
         TE.mapLeft(errors =>
           ResponseErrorInternal(readableReportSimplified(errors))
         ),
         defaultLog.taskEither.errorLeft(e => `${e.detail}`),
-        TE.chainW(response => {
-          if (response.status === 200) {
-            return TE.right(ResponseSuccessJson(response.value));
-          } else {
-            return TE.left<
-              ISessionStateErrorResponses,
-              IResponseSuccessJson<SessionState>
-            >(
-              ResponseErrorInternal(
-                `Something gone wrong. Response Status: {${response.status}}`
-              )
-            );
+        TE.chain(({ status, value }) => {
+          switch (status) {
+            case 200: {
+              return TE.right(ResponseSuccessJson(value));
+            }
+            case 502:
+              return TE.left<
+                SessionStateErrorResponsesT,
+                IResponseSuccessJson<SessionState>
+              >(ResponseErrorBadGateway(`Something gone wrong. Bad Gateway`));
+            case 504:
+              return TE.left<
+                SessionStateErrorResponsesT,
+                IResponseSuccessJson<SessionState>
+              >(
+                ResponseErrorGatewayTimeout(
+                  `Gateway Timeout: server couldn't respond in time. Please check your internet connection and try again.`
+                )
+              );
+            default:
+              return TE.left<
+                SessionStateErrorResponsesT,
+                IResponseSuccessJson<SessionState>
+              >(
+                ResponseErrorInternal(
+                  `Something gone wrong. Response Status: {${status}}`
+                )
+              );
           }
         })
       )
