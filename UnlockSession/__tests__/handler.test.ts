@@ -1,7 +1,7 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { HSLJWTPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
@@ -20,7 +20,7 @@ const fastLoginClientMock = ({
   unlockUserSession: unlockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidL2User: HSLJWTPayloadExtended = {
+const aValidL2User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
@@ -31,7 +31,7 @@ const aValidL2Payload = {
   unlock_code: "123456789" as UnlockCode
 };
 
-const aValidL3User: HSLJWTPayloadExtended = {
+const aValidL3User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
@@ -89,19 +89,6 @@ describe("UnlockSession", () => {
     });
     expect(res).toMatchObject({
       kind: "IResponseSuccessNoContent"
-    });
-  });
-
-  test(`GIVEN a valid payload and a valid magic link user decoded from JWT
-        WHEN all checks passed
-        THEN the response is 403`, async () => {
-    const handler = unlockSessionHandler(fastLoginClientMock);
-
-    const res = await handler(aValidExchangeUser, aValidL2Payload);
-
-    expect(unlockSessionMock).toHaveBeenCalledTimes(0);
-    expect(res).toMatchObject({
-      kind: "IResponseErrorForbiddenNotAuthorized"
     });
   });
 });

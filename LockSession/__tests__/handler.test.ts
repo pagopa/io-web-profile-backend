@@ -1,7 +1,7 @@
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
-import { HSLJWTPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { lockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
@@ -28,7 +28,7 @@ const fastLoginClient409Mock = ({
   lockUserSession: lockSession409Mock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidUser: HSLJWTPayloadExtended = {
+const aValidUser: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
