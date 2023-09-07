@@ -67,5 +67,45 @@ describe("Logout", () => {
       kind: "IResponseErrorInternal"
     });
   });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 502`, async () => {
+    const errorStatus = 502;
+    logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
+    const handler = logoutHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(logoutMock).toHaveBeenCalledTimes(1);
+    expect(logoutMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorBadGateway"
+    });
+  });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 504`, async () => {
+    const errorStatus = 504;
+    logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
+    const handler = logoutHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(logoutMock).toHaveBeenCalledTimes(1);
+    expect(logoutMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorGatewayTimeout"
+    });
+  });
 });
 // #endregion

@@ -4,8 +4,12 @@ import {
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
+  IResponseErrorBadGateway,
+  IResponseErrorGatewayTimeout,
   IResponseErrorInternal,
   IResponseSuccessJson,
+  ResponseErrorBadGateway,
+  ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
@@ -26,9 +30,13 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
+type LogoutErrorResponsesT =
+  | IResponseErrorInternal
+  | IResponseErrorBadGateway
+  | IResponseErrorGatewayTimeout;
 type LogoutHandlerT = (
   user: IHslJwtPayloadExtended
-) => Promise<IResponseSuccessJson<void> | IResponseErrorInternal>;
+) => Promise<IResponseSuccessJson<void> | LogoutErrorResponsesT>;
 
 type LogoutClient = Client<"ApiKeyAuth">;
 
@@ -60,14 +68,25 @@ export const logoutHandler = (client: LogoutClient): LogoutHandlerT => (
         ),
         defaultLog.taskEither.errorLeft(e => `${e.detail}`),
         TE.chainW(({ status }) => {
-          if (status === 200) {
-            return TE.right(ResponseSuccessJson(void 0));
-          } else {
-            return TE.left(
-              ResponseErrorInternal(
-                `Something gone wrong. Response Status: {${status}}`
-              )
-            );
+          switch (status) {
+            case 200:
+              return TE.right(ResponseSuccessJson(void 0));
+            case 502:
+              return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
+                ResponseErrorBadGateway(`Something gone wrong. Bad Gateway`)
+              );
+            case 504:
+              return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
+                ResponseErrorGatewayTimeout(
+                  `Gateway Timeout: Server couldn't respond in time, try again.`
+                )
+              );
+            default:
+              return TE.left(
+                ResponseErrorInternal(
+                  `Something gone wrong. Response Status: {${status}}`
+                )
+              );
           }
         })
       )
