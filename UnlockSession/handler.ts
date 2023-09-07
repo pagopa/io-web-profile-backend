@@ -6,9 +6,13 @@ import {
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 
 import {
+  IResponseErrorBadGateway,
   IResponseErrorForbiddenNotAuthorized,
+  IResponseErrorGatewayTimeout,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
+  ResponseErrorBadGateway,
+  ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
@@ -34,14 +38,16 @@ import {
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
-type IUnlockSessionErrorResponses =
+type UnlockSessionErrorResponsesT =
   | IResponseErrorForbiddenNotAuthorized
-  | IResponseErrorInternal;
+  | IResponseErrorInternal
+  | IResponseErrorBadGateway
+  | IResponseErrorGatewayTimeout;
 
-type IUnlockSessionHandler = (
+type UnlockSessionHandlerT = (
   user: HslJwtPayloadExtended,
   payload: UnlockSessionData
-) => Promise<IResponseSuccessNoContent | IUnlockSessionErrorResponses>;
+) => Promise<IResponseSuccessNoContent | UnlockSessionErrorResponsesT>;
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
 
@@ -55,10 +61,10 @@ const canUnlock = (
 
 export const unlockSessionHandler = (
   client: UnlockSessionClient
-): IUnlockSessionHandler => (
+): UnlockSessionHandlerT => (
   reqJwtData,
   reqPayload
-): ReturnType<IUnlockSessionHandler> =>
+): ReturnType<UnlockSessionHandlerT> =>
   pipe(
     TE.Do,
     TE.bind("user_data", () => TE.of(reqJwtData)),
@@ -111,12 +117,27 @@ export const unlockSessionHandler = (
               return TE.right(ResponseSuccessNoContent());
             case 403:
               return TE.left<
-                IUnlockSessionErrorResponses,
+                UnlockSessionErrorResponsesT,
                 IResponseSuccessNoContent
               >(getResponseErrorForbiddenNotAuthorized(`Forbidden`));
+            case 502:
+              return TE.left<
+                UnlockSessionErrorResponsesT,
+                IResponseSuccessNoContent
+              >(ResponseErrorBadGateway(`Something gone wrong. Bad Gateway`));
+            case 504:
+              return TE.left<
+                UnlockSessionErrorResponsesT,
+                IResponseSuccessNoContent
+              >(
+                ResponseErrorGatewayTimeout(
+                  `Gateway Timeout: Server couldn't respond in time, try again.`
+                )
+              );
+
             default:
               return TE.left<
-                IUnlockSessionErrorResponses,
+                UnlockSessionErrorResponsesT,
                 IResponseSuccessNoContent
               >(
                 ResponseErrorInternal(

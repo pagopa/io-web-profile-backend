@@ -26,7 +26,7 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 
 import { Client } from "../generated/definitions/fast-login/client";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
@@ -35,13 +35,13 @@ type LogoutErrorResponsesT =
   | IResponseErrorBadGateway
   | IResponseErrorGatewayTimeout;
 type LogoutHandlerT = (
-  user: IHslJwtPayloadExtended
+  user: HslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<void> | LogoutErrorResponsesT>;
 
 type LogoutClient = Client<"ApiKeyAuth">;
 
 export const logoutHandler = (client: LogoutClient): LogoutHandlerT => (
-  user_data: IHslJwtPayloadExtended
+  user_data: HslJwtPayloadExtended
 ): ReturnType<LogoutHandlerT> =>
   pipe(
     TE.tryCatch(

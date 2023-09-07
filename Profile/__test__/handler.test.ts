@@ -1,9 +1,10 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
-import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
-import { profileHandler } from "../handler";
 import { Client } from "../../generated/definitions/io-functions-app/client";
+import { SpidLevel } from "../../utils/enums/SpidLevels";
+import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { profileHandler } from "../handler";
 
 // #region mocks
 const aValidEmailResponse = {
@@ -20,10 +21,10 @@ const functionsAppClientMock = ({
   getProfile: getProfileMock
 } as unknown) as Client<"SubscriptionKey">;
 
-const aValidUser: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidUser: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
 // #endregion

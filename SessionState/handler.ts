@@ -4,14 +4,14 @@ import {
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
-  IResponseErrorForbiddenNotAuthorized,
-  IResponseErrorInternal,
   IResponseErrorBadGateway,
+  IResponseErrorForbiddenNotAuthorized,
   IResponseErrorGatewayTimeout,
+  IResponseErrorInternal,
   IResponseSuccessJson,
-  ResponseErrorInternal,
   ResponseErrorBadGateway,
   ResponseErrorGatewayTimeout,
+  ResponseErrorInternal,
   ResponseSuccessJson,
   getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
@@ -30,7 +30,7 @@ import { SessionState } from "../generated/definitions/external/SessionState";
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
@@ -41,19 +41,19 @@ type SessionStateErrorResponsesT =
   | IResponseErrorGatewayTimeout;
 
 type SessionStateHandlerT = (
-  user: IHslJwtPayloadExtended
+  user: HslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<SessionState> | SessionStateErrorResponsesT>;
 
 type SessionStateClient = Client<"ApiKeyAuth">;
 
-const canSeeProfile = (user: IHslJwtPayloadExtended): boolean =>
+const canSeeProfile = (user: HslJwtPayloadExtended): boolean =>
   // TODO: add check (!== magic link)
   gte(user.spid_level, SpidLevel.L2);
 
 export const sessionStateHandler = (
   client: SessionStateClient
 ): SessionStateHandlerT => (
-  reqJwtPayload: IHslJwtPayloadExtended
+  reqJwtPayload: HslJwtPayloadExtended
 ): ReturnType<SessionStateHandlerT> =>
   pipe(
     reqJwtPayload,
