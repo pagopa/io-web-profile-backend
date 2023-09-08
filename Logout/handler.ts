@@ -73,12 +73,12 @@ export const logoutHandler = (client: LogoutClient): LogoutHandlerT => (
               return TE.right(ResponseSuccessJson(void 0));
             case 502:
               return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
-                ResponseErrorBadGateway(`Something gone wrong. Bad Gateway`)
+                ResponseErrorBadGateway(`Something gone wrong.`)
               );
             case 504:
               return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
                 ResponseErrorGatewayTimeout(
-                  `Gateway Timeout: Server couldn't respond in time, try again.`
+                  `Server couldn't respond in time, try again.`
                 )
               );
             default:

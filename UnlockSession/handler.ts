@@ -124,14 +124,14 @@ export const unlockSessionHandler = (
               return TE.left<
                 UnlockSessionErrorResponsesT,
                 IResponseSuccessNoContent
-              >(ResponseErrorBadGateway(`Something gone wrong. Bad Gateway`));
+              >(ResponseErrorBadGateway(`Something gone wrong.`));
             case 504:
               return TE.left<
                 UnlockSessionErrorResponsesT,
                 IResponseSuccessNoContent
               >(
                 ResponseErrorGatewayTimeout(
-                  `Gateway Timeout: Server couldn't respond in time, try again.`
+                  `Server couldn't respond in time, try again.`
                 )
               );
 
