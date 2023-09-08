@@ -1,8 +1,9 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as E from "fp-ts/lib/Either";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { IHslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
+import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { sessionStateHandler } from "../handler";
 
 // #region mocks
@@ -24,17 +25,17 @@ const sessionStateClientMock = ({
   getUserSessionState: sessionStateMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidUser: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aValidUser: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
 
-const aNotValidUser: IHslJwtPayloadExtended = {
-  family_name: "family_name",
+const aNotValidUser: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name",
+  name: "name" as NonEmptyString,
   spid_level: SpidLevel.L1
 };
 

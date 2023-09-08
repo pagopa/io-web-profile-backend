@@ -2,6 +2,7 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { sign } from "jsonwebtoken";
 import {
   FastLoginClientConfig,
+  FunctionsAppClientConfig,
   HSLConfig,
   IConfig,
   JWTConfig
@@ -81,9 +82,15 @@ export const fastLoginClientConfig: FastLoginClientConfig = {
   FAST_LOGIN_CLIENT_BASE_URL: "fastLoginClientBaseUrl" as NonEmptyString
 };
 
+export const functionsAppClientConfig: FunctionsAppClientConfig = {
+  FUNCTIONS_APP_CLIENT_BASE_URL: "functionsAppClientBaseUrl" as NonEmptyString,
+  FUNCTIONS_APP_SUBSCRIPTION_KEY: "functionsAppApiKey" as NonEmptyString
+};
+
 export const config: IConfig = {
   ...iconfig,
   ...jwtConfig,
   ...hslConfig,
-  ...fastLoginClientConfig
+  ...fastLoginClientConfig,
+  ...functionsAppClientConfig
 };

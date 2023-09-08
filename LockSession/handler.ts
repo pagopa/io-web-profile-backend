@@ -1,22 +1,26 @@
-import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
-import { defaultLog } from "@pagopa/winston-ts";
+import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
-import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import {
+  IResponseErrorBadGateway,
   IResponseErrorConflict,
   IResponseErrorForbiddenNotAuthorized,
+  IResponseErrorGatewayTimeout,
   IResponseErrorInternal,
   IResponseSuccessNoContent,
+  ResponseErrorBadGateway,
   ResponseErrorConflict,
   ResponseErrorForbiddenNotAuthorized,
+  ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
   ResponseSuccessNoContent,
   getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
+import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
+import { defaultLog } from "@pagopa/winston-ts";
 import * as express from "express";
 
 import * as E from "fp-ts/Either";
@@ -31,23 +35,25 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
 import {
-  HslJwtPayloadExtended,
-  hslJwtValidationMiddleware
-} from "../utils/middlewares/hsl-jwt-validation-middleware";
-import {
   ExchangeJwtPayloadExtended,
   exchangeJwtValidationMiddleware
 } from "../utils/middlewares/exchange-jwt-validation-middleware";
+import {
+  HslJwtPayloadExtended,
+  hslJwtValidationMiddleware
+} from "../utils/middlewares/hsl-jwt-validation-middleware";
 
-type ILookSessionErrorResponses =
+type LockSessionErrorResponsesT =
   | IResponseErrorConflict
   | IResponseErrorForbiddenNotAuthorized
-  | IResponseErrorInternal;
+  | IResponseErrorInternal
+  | IResponseErrorBadGateway
+  | IResponseErrorGatewayTimeout;
 
-type ILockSessionHandler = (
+type LockSessionHandlerT = (
   user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended,
   payload: LockSessionData
-) => Promise<IResponseSuccessNoContent | ILookSessionErrorResponses>;
+) => Promise<IResponseSuccessNoContent | LockSessionErrorResponsesT>;
 
 type LockSessionClient = Client<"ApiKeyAuth">;
 
@@ -58,10 +64,10 @@ const canLock = (
 
 export const lockSessionHandler = (
   client: LockSessionClient
-): ILockSessionHandler => (
+): LockSessionHandlerT => (
   reqJwtData,
   reqPayload
-): ReturnType<ILockSessionHandler> =>
+): ReturnType<LockSessionHandlerT> =>
   pipe(
     TE.Do,
     TE.bind("user_data", () => TE.of(reqJwtData)),
@@ -118,12 +124,26 @@ export const lockSessionHandler = (
               return TE.right(ResponseSuccessNoContent());
             case 409:
               return TE.left<
-                ILookSessionErrorResponses,
+                LockSessionErrorResponsesT,
                 IResponseSuccessNoContent
               >(ResponseErrorConflict("Session was already locked"));
+            case 502:
+              return TE.left<
+                LockSessionErrorResponsesT,
+                IResponseSuccessNoContent
+              >(ResponseErrorBadGateway(`Something gone wrong.`));
+            case 504:
+              return TE.left<
+                LockSessionErrorResponsesT,
+                IResponseSuccessNoContent
+              >(
+                ResponseErrorGatewayTimeout(
+                  `Server couldn't respond in time, try again.`
+                )
+              );
             default:
               return TE.left<
-                ILookSessionErrorResponses,
+                LockSessionErrorResponsesT,
                 IResponseSuccessNoContent
               >(
                 ResponseErrorInternal(

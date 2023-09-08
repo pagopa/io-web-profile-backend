@@ -25,20 +25,20 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 import { ProfileData } from "../generated/definitions/external/ProfileData";
 import { Client } from "../generated/definitions/io-functions-app/client";
 import {
-  IHslJwtPayloadExtended,
+  HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
 
 type IProfileErrorResponses = IResponseErrorNotFound | IResponseErrorInternal;
 
 type ProfileHandlerT = (
-  user: IHslJwtPayloadExtended
+  user: HslJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<ProfileData> | IProfileErrorResponses>;
 
 type ProfileClient = Client<"SubscriptionKey">;
 
 export const profileHandler = (client: ProfileClient): ProfileHandlerT => (
-  user_data: IHslJwtPayloadExtended
+  user_data: HslJwtPayloadExtended
 ): ReturnType<ProfileHandlerT> =>
   pipe(
     TE.tryCatch(
