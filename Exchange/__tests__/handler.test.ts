@@ -3,21 +3,9 @@ import { config as mockedConfig } from "../../__mocks__/config.mock";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { TokenTypes } from "../../utils/enums/TokenTypes";
-import {
-  ExchangeJwtPayloadExtended,
-  exchangeJwtValidation
-} from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
 import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { exchangeHandler } from "../handler";
-import { pipe } from "fp-ts/lib/function";
-import * as E from "fp-ts/Either";
-import * as TE from "fp-ts/TaskEither";
-import {
-  IResponseErrorInternal,
-  IResponseSuccessJson,
-  ResponseErrorInternal,
-  ResponseSuccessJson
-} from "@pagopa/ts-commons/lib/responses";
 
 // #region mocks
 const aValidUser: HslJwtPayloadExtended = {
@@ -33,10 +21,6 @@ const aValidExchangeUser: ExchangeJwtPayloadExtended = {
   name: "name" as NonEmptyString,
   token_type: TokenTypes.EXCHANGE
 };
-
-const generateJWTFunction = jest
-  .fn()
-  .mockImplementation(() => TE.of(aValidExchangeUser));
 // #endregion
 
 // #region tests
