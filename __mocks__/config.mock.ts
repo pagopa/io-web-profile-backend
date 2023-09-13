@@ -68,7 +68,9 @@ export const jwtConfig: JWTConfig = {
   HUB_SPID_LOGIN_JWT_ISSUER: hslIssuer as NonEmptyString,
   HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString,
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
-  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString
+  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString,
+  EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
+  EXCHANGE_JWT_TTL: 900
 };
 
 export const hslConfig: HSLConfig = {

@@ -25,7 +25,7 @@ const aPayload: ExchangeJwtPayloadExtended = {
   token_type: TokenTypes.EXCHANGE
 };
 
-describe("getValidateJWT - Success", () => {
+describe("exchangeJwtValidation - Success", () => {
   it("should succeed validating a valid JWT", async () => {
     // Setup
     const generateJWT = getGenerateExchangeJWT(mockedConfig);
