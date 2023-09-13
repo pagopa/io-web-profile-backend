@@ -20,7 +20,6 @@ const iconfig = {
   COSMOSDB_NAME: "cosmosdbName" as NonEmptyString,
   COSMOSDB_URI: "cosmosdbUri" as NonEmptyString,
   FF_API_ENABLED: FeatureFlagEnum.ALL,
-  QueueStorageConnection: "queueStorageConnection" as NonEmptyString,
   isProduction: false
 };
 

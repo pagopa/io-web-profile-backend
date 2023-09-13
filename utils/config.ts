@@ -73,7 +73,6 @@ export const IConfig = t.intersection([
     COSMOSDB_NAME: NonEmptyString,
     COSMOSDB_URI: NonEmptyString,
     FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
-    QueueStorageConnection: NonEmptyString,
     isProduction: t.boolean
   }),
   JWTConfig,
