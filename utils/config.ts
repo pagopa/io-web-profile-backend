@@ -14,7 +14,9 @@ import { withFallback } from "io-ts-types";
 import { CommaSeparatedListOf } from "@pagopa/ts-commons/lib/comma-separated-list";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 
+import { NumberFromString } from "@pagopa/ts-commons/lib/numbers";
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { withDefault } from "@pagopa/ts-commons/lib/types";
 import { FeatureFlag, FeatureFlagEnum } from "./featureFlags/featureFlags";
 
 // global app configuration
@@ -26,7 +28,10 @@ export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
     EXCHANGE_JWT_ISSUER: NonEmptyString,
+    EXCHANGE_JWT_PRIVATE_KEY: NonEmptyString,
     EXCHANGE_JWT_PUB_KEY: NonEmptyString,
+    // Default 1h = 3600 seconds
+    EXCHANGE_JWT_TTL: withDefault(t.string, "3600").pipe(NumberFromString),
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString
   }),
