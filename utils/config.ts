@@ -69,9 +69,6 @@ export const IConfig = t.intersection([
   t.interface({
     AzureWebJobsStorage: NonEmptyString,
     BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
-    COSMOSDB_KEY: NonEmptyString,
-    COSMOSDB_NAME: NonEmptyString,
-    COSMOSDB_URI: NonEmptyString,
     FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
     isProduction: t.boolean
   }),
