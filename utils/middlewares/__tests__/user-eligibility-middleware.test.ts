@@ -25,7 +25,7 @@ describe(`userIsEligible`, () => {
 
   it("should return false if the user is not eligible for BETA", async () => {
     config.FF_API_ENABLED = FeatureFlagEnum.BETA;
-    const token = getToken("SDRSRB70A01F205N");
+    const token = getToken("ISPXNB32R82Y766X");
     const user = await userIsEligible(token, config)(token)();
 
     expect(E.isLeft(user)).toBeTruthy();
@@ -107,7 +107,7 @@ describe(`verifyUserEligibilityMiddleware`, () => {
       WHEN verifyUserEligibilityMiddleware is called\
       THEN it should return user as not eligible\
       ", async () => {
-    const token = getToken("SDRSRB70A01F205N");
+    const token = getToken("ISPXNB32R82Y766X");
     config.FF_API_ENABLED = FeatureFlagEnum.BETA;
     const middleware = verifyUserEligibilityMiddleware(config);
 
