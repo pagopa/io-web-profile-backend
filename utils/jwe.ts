@@ -21,20 +21,21 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
   pipe(
     TE.tryCatch(
       () => jose.importPKCS8(jweKey, "ECDH-ES+A256KW"),
-      () => {
-        throw new Error("Invalid JWE Key.");
+      e => {
+        throw new Error(`Invalid JWE Key. Error: ${e}`);
       }
     ),
     TE.chain(pkcs8 => {
       const plaintext = new TextEncoder().encode(
         JSON.stringify({ ...payload, issuer, ttl })
       );
+      console.log("plaintext: ", plaintext);
       return TE.taskify<Error, string>(() =>
         new jose.GeneralEncrypt(plaintext)
           .setProtectedHeader({
-            crv: "P-256",
-            enc: "A128CBC-HS256",
-            kty: "EC"
+            // crv: "P-256",
+            enc: "A128CBC-HS256"
+            // kty: "EC"
           })
           .addRecipient(pkcs8)
           .setUnprotectedHeader({
@@ -43,7 +44,11 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
           .encrypt()
       )();
     }),
-    TE.mapLeft(E.toError),
+    x => {
+      console.log("====> ", x);
+      return x;
+    },
+    TE.mapLeft(e => E.toError(`Error: ${e}`)),
     TE.chain(
       TE.fromPredicate(NonEmptyString.is, () => E.toError("Token is empty."))
     )
