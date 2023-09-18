@@ -1,6 +1,6 @@
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
-import { flow, pipe } from "fp-ts/lib/function";
+import { pipe } from "fp-ts/lib/function";
 import * as jose from "jose";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";

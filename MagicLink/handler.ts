@@ -57,8 +57,6 @@ export const getMagicLinkHandler = (
   const handler = magicLinkHandler(config);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
-    // verifyUserEligibilityMiddleware(config),
-    // hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(MagicLinkData)
   );
 
