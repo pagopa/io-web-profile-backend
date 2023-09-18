@@ -6,9 +6,8 @@ import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middl
 import { useWinstonFor } from "@pagopa/winston-ts";
 import { LoggerId } from "@pagopa/winston-ts/dist/types/logging";
 import * as express from "express";
-import { getFunctionsAppClient } from "../clients/functionsAppClient";
 import { getConfigOrThrow } from "../utils/config";
-import { getProfileHandler } from "./handler";
+import { getMagicLinkHandler } from "./handler";
 
 const config = getConfigOrThrow();
 
@@ -23,23 +22,14 @@ useWinstonFor({
 const app = express();
 secureExpressApp(app);
 
-app.get(
-  "/api/v1/profile",
-  getProfileHandler(
-    getFunctionsAppClient(
-      config.FUNCTIONS_APP_API_KEY,
-      config.FUNCTIONS_APP_CLIENT_BASE_URL
-    ),
-    config
-  )
-);
+app.post("/api/v1/magic-link", getMagicLinkHandler(config));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
-const Profile: AzureFunction = (context: Context): void => {
+const MagicLink: AzureFunction = (context: Context): void => {
   logger = context.log;
   setAppContext(app, context);
   azureFunctionHandler(context);
 };
 
-export default Profile;
+export default MagicLink;
