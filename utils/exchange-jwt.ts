@@ -7,17 +7,18 @@ import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 
 import { JWTConfig } from "./config";
+import { BaseJwtPayload } from "./jwt";
 
 export type MagicLinkPayload = t.TypeOf<typeof MagicLinkPayload>;
 export const MagicLinkPayload = t.strict({
   family_name: NonEmptyString,
-  fiscal_number: FiscalCode,
+  fiscal_code: FiscalCode,
   name: NonEmptyString
 });
 
 export type ExchangeJWT = t.TypeOf<typeof ExchangeJWT>;
 export const ExchangeJWT = t.intersection([
-  MagicLinkPayload,
+  BaseJwtPayload,
   t.type({
     token_type: NonEmptyString
   })

@@ -6,13 +6,16 @@ import { TokenTypes } from "../../utils/enums/TokenTypes";
 import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
 import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { exchangeHandler } from "../handler";
+import { MagicLinkPayload } from "../../utils/exchange-jwt";
+import { BaseJwePayload, secondsFromEpoch } from "../../utils/jwe";
 
 // #region mocks
-const aValidUser: HslJwtPayloadExtended = {
+const aValidUser: BaseJwePayload = {
   family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  fiscal_code: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
+  iss: "pagopa" as NonEmptyString,
+  exp: secondsFromEpoch(604800)
 };
 
 const aValidExchangeUser: ExchangeJwtPayloadExtended = {
