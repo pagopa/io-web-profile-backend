@@ -9,20 +9,6 @@ info:
 servers:
   - url: https://api-web.io.pagopa.it/ioweb/backend/api/v1
 paths:
-  /ping:
-    get:
-      operationId: getServiceStatus
-      summary: GetServiceStatus
-      description: Get Service status and test Auth Bearer Token
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Service is running
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceStatus'
   /lock-session:
     post:
       operationId: lockUserSession
@@ -328,13 +314,6 @@ components:
         jwt:
           type: string
           format: JWT
-    ServiceStatus:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
     ProblemJson:
       type: object
       properties:
