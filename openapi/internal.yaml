@@ -134,7 +134,7 @@ components:
       properties:
         family_name:
           type: string
-        fiscal_code:
+        fiscal_number:
           type: string
         name:
           type: string

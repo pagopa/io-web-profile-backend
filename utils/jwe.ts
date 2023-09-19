@@ -5,19 +5,16 @@ import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as jose from "jose";
 
-import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
-import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
+import { MagicLinkPayload } from "./exchange-jwt";
 
 const alg = "ECDH-ES+A256KW";
 
-export const BaseJwePayload = t.type({
-  exp: t.number,
-  family_name: NonEmptyString,
-  fiscal_code: FiscalCode,
-  iss: NonEmptyString,
-  name: NonEmptyString
-});
+export const BaseJwePayload = t.intersection([
+  MagicLinkPayload,
+  t.type({ exp: t.number, iss: NonEmptyString })
+]);
 export type BaseJwePayload = t.TypeOf<typeof BaseJwePayload>;
 
 const getKeyLikeFromString = (

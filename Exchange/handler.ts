@@ -46,12 +46,10 @@ export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
       )
     ),
     TE.fromEither,
-    TE.chain(({ fiscal_code, family_name, name }) =>
+    TE.chain(magic_link_payload =>
       pipe(
         getGenerateExchangeJWT(config)({
-          family_name,
-          fiscal_number: fiscal_code,
-          name,
+          ...magic_link_payload,
           token_type: EXCHANGE_TOKEN_TYPE
         }),
         TE.mapLeft(e =>

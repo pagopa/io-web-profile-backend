@@ -12,7 +12,7 @@ import { BaseJwtPayload } from "./jwt";
 export type MagicLinkPayload = t.TypeOf<typeof MagicLinkPayload>;
 export const MagicLinkPayload = t.strict({
   family_name: NonEmptyString,
-  fiscal_code: FiscalCode,
+  fiscal_number: FiscalCode,
   name: NonEmptyString
 });
 
