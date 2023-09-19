@@ -281,7 +281,7 @@ components:
           Bearer
           eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
     UnlockCode:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/UnlockCode'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/UnlockCode'
     LockSessionData:
       type: object
       properties:
@@ -304,9 +304,9 @@ components:
           format: email
           example: foobar@example.com
     SessionInfo:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionInfo'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionInfo'
     SessionState:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionState'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionState'
     ExchangeToken:
       description: Exchanged token
       type: object
