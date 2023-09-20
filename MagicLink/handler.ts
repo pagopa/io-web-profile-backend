@@ -17,10 +17,11 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 
 import { Second } from "@pagopa/ts-commons/lib/units";
+import { NumberFromString } from "@pagopa/ts-commons/lib/numbers";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { MagicLinkData } from "../generated/definitions/internal/MagicLinkData";
 import { MagicLinkToken } from "../generated/definitions/internal/MagicLinkToken";
 
-import { IConfig } from "../utils/config";
 import { getGenerateJWE } from "../utils/jwe";
 
 type MagicLinkErrorResponsesT = IResponseErrorInternal;
@@ -29,14 +30,14 @@ type MagicLinkHandlerT = (
   payload: MagicLinkData
 ) => Promise<IResponseSuccessJson<MagicLinkToken> | MagicLinkErrorResponsesT>;
 
-export const magicLinkHandler = (config: IConfig): MagicLinkHandlerT => (
-  reqPayload
-): ReturnType<MagicLinkHandlerT> =>
+export const magicLinkHandler = (
+  issuer: NonEmptyString,
+  privateKey: NonEmptyString,
+  ttl: NumberFromString,
+  magicLinkUrl: NonEmptyString
+): MagicLinkHandlerT => (reqPayload): ReturnType<MagicLinkHandlerT> =>
   pipe(
-    getGenerateJWE(
-      config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY
-    )(reqPayload, config.MAGIC_LINK_JWE_TTL as Second),
+    getGenerateJWE(issuer, privateKey)(reqPayload, ttl as Second),
     TE.mapLeft(e =>
       ResponseErrorInternal(
         `Something gone wrong generating magic link JWE: ${e}`
@@ -44,16 +45,19 @@ export const magicLinkHandler = (config: IConfig): MagicLinkHandlerT => (
     ),
     TE.map(jwe =>
       ResponseSuccessJson({
-        magic_link_token: jwe
+        magic_link: `${magicLinkUrl}${jwe}`
       })
     ),
     TE.toUnion
   )();
 
 export const getMagicLinkHandler = (
-  config: IConfig
+  issuer: NonEmptyString,
+  privateKey: NonEmptyString,
+  ttl: NumberFromString,
+  magicLinkUrl: NonEmptyString
 ): express.RequestHandler => {
-  const handler = magicLinkHandler(config);
+  const handler = magicLinkHandler(issuer, privateKey, ttl, magicLinkUrl);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     RequiredBodyPayloadMiddleware(MagicLinkData)

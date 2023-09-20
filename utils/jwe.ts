@@ -3,6 +3,8 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as jose from "jose";
 
+import { addSeconds } from "date-fns";
+
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 
@@ -15,10 +17,8 @@ export type GetGenerateJWE = <T extends jose.JWTPayload>(
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
 const secondsFromEpoch = (secondsToAdd: number): Second => {
-  const date = new Date();
-  const today = Math.floor(date.getTime() / 1000);
-  const total = today + secondsToAdd;
-  return total as Second;
+  const newDate = addSeconds(new Date(), secondsToAdd);
+  return Math.floor(newDate.getTime() / 1000) as Second;
 };
 
 const alg = "ECDH-ES+A256KW";
