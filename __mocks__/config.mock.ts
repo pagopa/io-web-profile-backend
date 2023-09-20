@@ -53,8 +53,24 @@ const {
   }
 });
 
+const {
+  privateKey: magicLinkPrivateKey,
+  publicKey: magicLinkPublicKey
+} = generateKeyPairSync("rsa", {
+  modulusLength: 2048,
+  publicKeyEncoding: {
+    type: "spki",
+    format: "pem"
+  },
+  privateKeyEncoding: {
+    type: "pkcs8",
+    format: "pem"
+  }
+});
+
 const hslIssuer = "SPID";
 const exchangeIssuer = "PAGOPA";
+const magicLinkIssuer = "PAGOPA";
 
 const jwt = sign(
   { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode },
@@ -69,7 +85,11 @@ export const jwtConfig: JWTConfig = {
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
   EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString,
   EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
-  EXCHANGE_JWT_TTL: 900
+  EXCHANGE_JWT_TTL: 900,
+  MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
+  MAGIC_LINK_JWE_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_PUB_KEY: magicLinkPublicKey as NonEmptyString,
+  MAGIC_LINK_JWE_TTL: 3600
 };
 
 export const hslConfig: HSLConfig = {
@@ -84,8 +104,8 @@ export const fastLoginClientConfig: FastLoginClientConfig = {
 };
 
 export const functionsAppClientConfig: FunctionsAppClientConfig = {
-  FUNCTIONS_APP_CLIENT_BASE_URL: "functionsAppClientBaseUrl" as NonEmptyString,
-  FUNCTIONS_APP_SUBSCRIPTION_KEY: "functionsAppApiKey" as NonEmptyString
+  FUNCTIONS_APP_API_KEY: "functionsAppApiKey" as NonEmptyString,
+  FUNCTIONS_APP_CLIENT_BASE_URL: "functionsAppClientBaseUrl" as NonEmptyString
 };
 
 export const config: IConfig = {
