@@ -23,7 +23,7 @@ type InfoHandler = () => Promise<
 
 type HealthChecker = (
   config: unknown
-) => healthcheck.HealthCheck<"AzureStorage" | "Config" | "AzureCosmosDB", true>;
+) => healthcheck.HealthCheck<"AzureStorage" | "Config", true>;
 
 export const InfoHandler = (
   checkApplicationHealth: HealthChecker
@@ -44,12 +44,7 @@ export const InfoHandler = (
   )();
 
 export const Info = (): express.RequestHandler => {
-  const handler = InfoHandler(
-    healthcheck.checkApplicationHealth(IConfig, [
-      c => healthcheck.checkAzureCosmosDbHealth(c.COSMOSDB_URI, c.COSMOSDB_KEY),
-      c => healthcheck.checkAzureStorageHealth(c.QueueStorageConnection)
-    ])
-  );
+  const handler = InfoHandler(healthcheck.checkApplicationHealth(IConfig, []));
 
   return wrapRequestHandler(handler);
 };

@@ -132,5 +132,33 @@ describe("SessionState", () => {
       kind: "IResponseErrorGatewayTimeout"
     });
   });
+
+  test(`GIVEN a valid user decoded from JWT
+    WHEN the client returns an error
+      THEN the response should be 500`, async () => {
+    const errorStatus = 500;
+    sessionStateMock.mockResolvedValueOnce(
+      E.right({
+        status: errorStatus,
+        value: emptySessionState
+      })
+    );
+    const handler = sessionStateHandler(sessionStateClientMock);
+
+    const res = await handler(aValidUser);
+
+    expect(sessionStateMock).toHaveBeenCalledTimes(1);
+    expect(sessionStateMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number
+      }
+    });
+    expect(res).toMatchObject({
+      detail: expect.stringContaining(
+        "Something gone wrong. Response Status: {500}"
+      ),
+      kind: "IResponseErrorInternal"
+    });
+  });
 });
 // #endregion

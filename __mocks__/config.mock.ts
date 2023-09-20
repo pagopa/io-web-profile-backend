@@ -20,7 +20,6 @@ const iconfig = {
   COSMOSDB_NAME: "cosmosdbName" as NonEmptyString,
   COSMOSDB_URI: "cosmosdbUri" as NonEmptyString,
   FF_API_ENABLED: FeatureFlagEnum.ALL,
-  QueueStorageConnection: "queueStorageConnection" as NonEmptyString,
   isProduction: false
 };
 
@@ -68,7 +67,9 @@ export const jwtConfig: JWTConfig = {
   HUB_SPID_LOGIN_JWT_ISSUER: hslIssuer as NonEmptyString,
   HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString,
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
-  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString
+  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString,
+  EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
+  EXCHANGE_JWT_TTL: 900
 };
 
 export const hslConfig: HSLConfig = {
