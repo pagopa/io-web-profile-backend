@@ -10,22 +10,13 @@ import { TokenTypes } from "../../utils/enums/TokenTypes";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 // #region mocks
-const lockSession204Mock = jest.fn(async () =>
+const lockSessionMock = jest.fn(async () =>
   E.right({
     status: 204
   })
 );
-const fastLoginClient204Mock = ({
-  lockUserSession: lockSession204Mock
-} as unknown) as Client<"ApiKeyAuth">;
-
-const lockSession409Mock = jest.fn(async () =>
-  E.right({
-    status: 409
-  })
-);
-const fastLoginClient409Mock = ({
-  lockUserSession: lockSession409Mock
+const fastLoginClientMock = ({
+  lockUserSession: lockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
 const aValidUser: HslJwtPayloadExtended = {
@@ -55,12 +46,12 @@ describe("LockSession", () => {
   test(`GIVEN a valid unlock_code in payload and a valid user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
-    const handler = lockSessionHandler(fastLoginClient204Mock);
+    const handler = lockSessionHandler(fastLoginClientMock);
 
     const res = await handler(aValidUser, aValidPayload);
 
-    expect(lockSession204Mock).toHaveBeenCalledTimes(1);
-    expect(lockSession204Mock).toHaveBeenCalledWith({
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
         fiscal_code: aValidUser.fiscal_number,
         unlock_code: aValidPayload.unlock_code
@@ -71,15 +62,16 @@ describe("LockSession", () => {
     });
   });
 
-  test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT and fast-login response is 409
-        WHEN all checks passed
+  test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT
+        WHEN fast-login response is 409
         THEN the response is 409`, async () => {
-    const handler = lockSessionHandler(fastLoginClient409Mock);
+    lockSessionMock.mockResolvedValueOnce(E.right({ status: 409 }));
+    const handler = lockSessionHandler(fastLoginClientMock);
 
     const res = await handler(aValidUser, aValidPayload);
 
-    expect(lockSession409Mock).toHaveBeenCalledTimes(1);
-    expect(lockSession409Mock).toHaveBeenCalledWith({
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
         fiscal_code: aValidUser.fiscal_number,
         unlock_code: aValidPayload.unlock_code
@@ -90,15 +82,83 @@ describe("LockSession", () => {
     });
   });
 
+  test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT
+        WHEN fast-login response is 502
+        THEN the response is 502`, async () => {
+    lockSessionMock.mockResolvedValueOnce(E.right({ status: 502 }));
+    const handler = lockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser, aValidPayload);
+
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number,
+        unlock_code: aValidPayload.unlock_code
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorBadGateway",
+      detail: expect.stringContaining(`Something gone wrong.`)
+    });
+  });
+
+  test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT 
+        WHEN fast-login response is 504
+        THEN the response is 504`, async () => {
+    lockSessionMock.mockResolvedValueOnce(E.right({ status: 504 }));
+    const handler = lockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser, aValidPayload);
+
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number,
+        unlock_code: aValidPayload.unlock_code
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorGatewayTimeout",
+      detail: expect.stringContaining(
+        `Server couldn't respond in time, try again.`
+      )
+    });
+  });
+
+  test(`GIVEN a valid unlock_code in payload, a valid user decoded from JWT
+        WHEN fast-login returns an error
+        THEN the response is 500`, async () => {
+    const errorStatus = 401;
+    lockSessionMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
+    const handler = lockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aValidUser, aValidPayload);
+
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidUser.fiscal_number,
+        unlock_code: aValidPayload.unlock_code
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorInternal",
+      detail: expect.stringContaining(
+        `Something gone wrong. Response Status: {${errorStatus}}`
+      )
+    });
+  });
+
   test(`GIVEN a valid unlock_code in payload and a valid magic link user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
-    const handler = lockSessionHandler(fastLoginClient204Mock);
+    const handler = lockSessionHandler(fastLoginClientMock);
 
     const res = await handler(aValidExchangeUser, aValidPayload);
 
-    expect(lockSession204Mock).toHaveBeenCalledTimes(1);
-    expect(lockSession204Mock).toHaveBeenCalledWith({
+    expect(lockSessionMock).toHaveBeenCalledTimes(1);
+    expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
         fiscal_code: aValidExchangeUser.fiscal_number,
         unlock_code: aValidPayload.unlock_code
