@@ -66,6 +66,3 @@ stages:
         - script: |
             yarn test:coverage
           displayName: 'Unit tests exec'
-        - bash: |
-            bash <(curl -s https://codecov.io/bash)
-          displayName: 'Code coverage'
