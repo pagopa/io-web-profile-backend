@@ -22,7 +22,15 @@ useWinstonFor({
 const app = express();
 secureExpressApp(app);
 
-app.post("/api/v1/magic-link", getMagicLinkHandler(config));
+app.post(
+  "/api/v1/magic-link",
+  getMagicLinkHandler(
+    config.MAGIC_LINK_JWE_ISSUER,
+    config.MAGIC_LINK_JWE_PRIVATE_KEY,
+    config.MAGIC_LINK_JWE_TTL,
+    config.MAGIC_LINK_BASE_URL
+  )
+);
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

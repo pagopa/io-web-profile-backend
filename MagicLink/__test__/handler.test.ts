@@ -10,7 +10,12 @@ describe("MagicLink", () => {
       fiscal_code: "ISPXNB32R82Y766D",
       name: "Carla"
     };
-    const handler = magicLinkHandler(config);
+    const handler = magicLinkHandler(
+      config.MAGIC_LINK_JWE_ISSUER,
+      config.MAGIC_LINK_JWE_PRIVATE_KEY,
+      config.MAGIC_LINK_JWE_TTL,
+      config.MAGIC_LINK_BASE_URL
+    );
     const res = await handler(aValidPayload);
 
     expect(res).toMatchObject({

@@ -5,6 +5,8 @@ import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as jose from "jose";
 
+import { addSeconds } from "date-fns";
+
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { MagicLinkPayload } from "./exchange-jwt";
@@ -28,13 +30,15 @@ const getKeyLikeFromString = (
 /**
  * JWE Generation
  */
-export type GetGenerateJWE = <T extends Record<string, unknown>>(
+export type GetGenerateJWE = <T extends jose.JWTPayload>(
   issuer: NonEmptyString,
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-export const secondsFromEpoch = (secondsToAdd: number): Second =>
-  (Math.floor(Date.now() / 1000) + secondsToAdd) as Second;
+const secondsFromEpoch = (secondsToAdd: number): Second => {
+  const newDate = addSeconds(new Date(), secondsToAdd);
+  return Math.floor(newDate.getTime() / 1000) as Second;
+};
 
 export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
   payload,
@@ -42,7 +46,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
 ): TE.TaskEither<Error, NonEmptyString> =>
   pipe(
     getKeyLikeFromString(jweKey),
-    TE.chain(pkcs8 =>
+    TE.chain(ecPrivateKey =>
       TE.tryCatch(
         () =>
           new jose.EncryptJWT(payload)
@@ -55,7 +59,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
             .setIssuer(issuer)
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
-            .encrypt(pkcs8),
+            .encrypt(ecPrivateKey),
         e => E.toError(`Cannot generate JWE. Error: ${e}`)
       )
     ),

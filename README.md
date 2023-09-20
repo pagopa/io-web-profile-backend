@@ -91,6 +91,7 @@ The following table contains the required ENV variables that the function requir
 | MAGIC_LINK_JWE_PRIVATE_KEY      | Magic Link JWE Private Key (token gen/validation)   | string|
 | MAGIC_LINK_JWE_ISSUER           | Magic Link JWE ISSUER                               | string|
 | MAGIC_LINK_JWE_TTL              | Magic Link JWE in seconds                           | string|
+| MAGIC_LINK_BASE_URL             | Magic Link baseUrl                                  | string|
 | HUB_SPID_LOGIN_JWT_PUB_KEY      | Hub Spid Login JWT Public Key (token validation)    | string|
 | HUB_SPID_LOGIN_JWT_ISSUER       | Hub Spid Login ISSUER                               | string|
 | HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login baseUrl                              | string|

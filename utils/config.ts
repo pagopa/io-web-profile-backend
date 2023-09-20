@@ -34,6 +34,7 @@ export const JWTConfig = t.intersection([
     EXCHANGE_JWT_TTL: withDefault(t.string, "3600").pipe(NumberFromString),
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString,
+    MAGIC_LINK_BASE_URL: NonEmptyString,
     MAGIC_LINK_JWE_ISSUER: NonEmptyString,
     MAGIC_LINK_JWE_PRIVATE_KEY: NonEmptyString,
     // Default 7d = 604800 seconds

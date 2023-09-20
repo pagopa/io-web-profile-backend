@@ -145,10 +145,10 @@ components:
     MagicLinkToken:
       type: object
       properties:
-        magic_link_token:
+        magic_link:
           type: string
       required:
-        - magic_link_token
+        - magic_link
     ProblemJson:
       type: object
       properties:

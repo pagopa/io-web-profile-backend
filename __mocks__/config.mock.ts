@@ -83,10 +83,11 @@ export const jwtConfig: JWTConfig = {
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
   EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString,
   EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
-  EXCHANGE_JWT_TTL: 3600,
+  EXCHANGE_JWT_TTL: 900 as Second,
   MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
   MAGIC_LINK_JWE_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
-  MAGIC_LINK_JWE_TTL: 604800 as Second
+  MAGIC_LINK_JWE_TTL: 604800 as Second,
+  MAGIC_LINK_BASE_URL: "http://localhost:3000/it/magic-link#token=" as NonEmptyString
 };
 
 export const hslConfig: HSLConfig = {
@@ -102,7 +103,7 @@ export const fastLoginClientConfig: FastLoginClientConfig = {
 
 export const functionsAppClientConfig: FunctionsAppClientConfig = {
   FUNCTIONS_APP_API_KEY: "functionsAppApiKey" as NonEmptyString,
-  FUNCTIONS_APP_CLIENT_BASE_URL: "functionsAppClientBaseUrl" as NonEmptyString,
+  FUNCTIONS_APP_CLIENT_BASE_URL: "functionsAppClientBaseUrl" as NonEmptyString
 };
 
 export const config: IConfig = {
