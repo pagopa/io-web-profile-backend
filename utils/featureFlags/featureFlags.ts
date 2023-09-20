@@ -27,8 +27,6 @@ export const getIsUserEligibleForNewFeature = <T>(
       return isUserBeta(i);
     case "CANARY":
       return isUserCanary(i) || isUserBeta(i);
-    case "NONE":
-      return false;
     default:
       return false;
   }

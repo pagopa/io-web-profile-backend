@@ -5,7 +5,6 @@ import {
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import {
-  IResponseErrorGeneric,
   IResponseErrorInternal,
   IResponseSuccessJson,
   ResponseErrorInternal,
@@ -24,7 +23,7 @@ import { MagicLinkToken } from "../generated/definitions/internal/MagicLinkToken
 import { IConfig } from "../utils/config";
 import { getGenerateJWE } from "../utils/jwe";
 
-type MagicLinkErrorResponsesT = IResponseErrorGeneric | IResponseErrorInternal;
+type MagicLinkErrorResponsesT = IResponseErrorInternal;
 
 type MagicLinkHandlerT = (
   payload: MagicLinkData

@@ -24,7 +24,7 @@ describe("InfoHandler", () => {
 
   it("should return a success if the application is healthy", async () => {
     const healthCheck: HealthCheck<
-      "AzureStorage" | "Config" | "AzureCosmosDB",
+      "AzureStorage" | "Config",
       true
     > = TE.of(true);
     const handler = InfoHandler(() => healthCheck);

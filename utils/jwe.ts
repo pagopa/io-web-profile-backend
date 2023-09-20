@@ -9,7 +9,7 @@ import { Second } from "@pagopa/ts-commons/lib/units";
 /**
  * JWE Generation
  */
-export type GetGenerateJWE = <T extends Record<string, unknown>>(
+export type GetGenerateJWE = <T extends jose.JWTPayload>(
   issuer: NonEmptyString,
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
@@ -29,11 +29,9 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
   pipe(
     TE.tryCatch(
       () => jose.importPKCS8(jweKey, alg),
-      e => {
-        throw new Error(`Invalid JWE Key. Error: ${e}`);
-      }
+      e => E.toError(`Invalid JWE Key. Error: ${e}`)
     ),
-    TE.chain(pkcs8 =>
+    TE.chain(ecPrivateKey =>
       TE.tryCatch(
         () =>
           new jose.EncryptJWT(payload)
@@ -46,10 +44,8 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
             .setIssuer(issuer)
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
-            .encrypt(pkcs8),
-        e => {
-          throw new Error(`Cannot generate JWE. Error: ${e}`);
-        }
+            .encrypt(ecPrivateKey),
+        e => E.toError(`Cannot generate JWE. Error: ${e}`)
       )
     ),
     TE.mapLeft(e => E.toError(`Error: ${e}`)),

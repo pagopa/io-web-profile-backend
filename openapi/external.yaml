@@ -9,20 +9,6 @@ info:
 servers:
   - url: https://api-web.io.pagopa.it/ioweb/backend/api/v1
 paths:
-  /ping:
-    get:
-      operationId: getServiceStatus
-      summary: GetServiceStatus
-      description: Get Service status and test Auth Bearer Token
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Service is running
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceStatus'
   /lock-session:
     post:
       operationId: lockUserSession
@@ -295,7 +281,7 @@ components:
           Bearer
           eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
     UnlockCode:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/UnlockCode'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/UnlockCode'
     LockSessionData:
       type: object
       properties:
@@ -318,9 +304,9 @@ components:
           format: email
           example: foobar@example.com
     SessionInfo:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionInfo'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionInfo'
     SessionState:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/IOPID-428/api/internal.yaml#/components/schemas/SessionState'
+      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionState'
     ExchangeToken:
       description: Exchanged token
       type: object
@@ -328,13 +314,6 @@ components:
         jwt:
           type: string
           format: JWT
-    ServiceStatus:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
     ProblemJson:
       type: object
       properties:
