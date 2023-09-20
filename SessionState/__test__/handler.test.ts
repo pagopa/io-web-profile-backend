@@ -154,6 +154,9 @@ describe("SessionState", () => {
       }
     });
     expect(res).toMatchObject({
+      detail: expect.stringContaining(
+        "Something gone wrong. Response Status: {500}"
+      ),
       kind: "IResponseErrorInternal"
     });
   });

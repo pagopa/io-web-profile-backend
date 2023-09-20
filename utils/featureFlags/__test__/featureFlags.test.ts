@@ -1,31 +1,77 @@
+import { FiscalCode } from "@pagopa/ts-commons/lib/strings";
 import {
   FeatureFlagEnum,
   getIsUserEligibleForNewFeature
 } from "../featureFlags";
 
-const betaTester = ["ISPXNB32R82Y766D"];
-const canaryTester = ["ISPXNB32R82Y766X"];
+const aFiscalCode = "ISPXNB32R82Y766D" as FiscalCode;
+const anotherFiscalCode = "ISPXNB32R82Y766X" as FiscalCode;
 
-describe(`getIsUserEligibleForNewFeature`, () => {
-  it("should succeed in passing the user as eligible when CANARY", async () => {
-    const fiscalCode = "ISPXNB32R82Y766X";
-    const result = getIsUserEligibleForNewFeature(
-      (fc: string) => betaTester.includes(fc),
-      (fc: string) => canaryTester.includes(fc),
-      FeatureFlagEnum.CANARY
-    )(fiscalCode);
+const betaUsers: ReadonlyArray<FiscalCode> = [aFiscalCode];
 
-    expect(result).toBe(true);
+const isUserBeta = (fc: FiscalCode): boolean => betaUsers.includes(fc);
+
+describe("isUserForFeatureFlag", () => {
+  it("should return true when featureFlag === all", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => false,
+      FeatureFlagEnum.ALL
+    );
+    expect(isUserForFeatureFlag(aFiscalCode)).toBeTruthy();
   });
 
-  it("should succeed in passing the user as eligible when NONE", async () => {
-    const fiscalCode = "ISPXNB32R82Y766D";
-    const result = getIsUserEligibleForNewFeature(
-      (fc: string) => betaTester.includes(fc),
-      (fc: string) => canaryTester.includes(fc),
-      FeatureFlagEnum.NONE
-    )(fiscalCode);
+  it("should return false when featureFlag === beta and the user is not beta", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => false,
+      FeatureFlagEnum.BETA
+    );
+    expect(isUserForFeatureFlag(anotherFiscalCode)).toBeFalsy();
+  });
 
-    expect(result).toBe(false);
+  it("should return true when featureFlag === beta and the first callback return true", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => false,
+      FeatureFlagEnum.BETA
+    );
+    expect(isUserForFeatureFlag(aFiscalCode)).toBeTruthy();
+  });
+
+  it("should return false when featureFlag === canary and callbacks return false", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => false,
+      FeatureFlagEnum.CANARY
+    );
+    expect(isUserForFeatureFlag(anotherFiscalCode)).toBeFalsy();
+  });
+
+  it("should return true when featureFlag === canary and the first callback return true", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => false,
+      FeatureFlagEnum.CANARY
+    );
+    expect(isUserForFeatureFlag(aFiscalCode)).toBeTruthy();
+  });
+
+  it("should return true when featureFlag === canary and the second callback return true", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => true,
+      FeatureFlagEnum.CANARY
+    );
+    expect(isUserForFeatureFlag(anotherFiscalCode)).toBeTruthy();
+  });
+
+  it("should return false when featureFlag === none", () => {
+    const isUserForFeatureFlag = getIsUserEligibleForNewFeature(
+      isUserBeta,
+      _ => true,
+      FeatureFlagEnum.NONE
+    );
+    expect(isUserForFeatureFlag(aFiscalCode)).toBeFalsy();
   });
 });
