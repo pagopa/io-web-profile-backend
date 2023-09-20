@@ -17,7 +17,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . -c .eslintrc.js --ext .ts,.tsx --cache",
-    "lint-api": "oval validate -p openapi/index.yaml",
+    "lint-api": "find ./openapi -name '*.yaml' -exec swagger-cli validate {} \\;",
     "generate": "npm-run-all generate:*",
     "generate:definitions-internal": "rimraf ./generated/definitions/internal && shx mkdir -p ./generated/definitions/internal && gen-api-models --api-spec ./openapi/internal.yaml --no-strict --out-dir ./generated/definitions/internal",
     "generate:definitions-external": "rimraf ./generated/definitions/external && shx mkdir -p ./generated/definitions/external && gen-api-models --api-spec ./openapi/external.yaml --no-strict --out-dir ./generated/definitions/external",
@@ -50,6 +50,7 @@
     "oval": "^1.0.0",
     "prettier": "^1.18.2",
     "shx": "^0.3.2",
+    "swagger-cli": "^4.0.4",
     "ts-jest": "^24.0.2",
     "typescript": "^4.3.5"
   },
