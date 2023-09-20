@@ -47,8 +47,7 @@ type SessionStateHandlerT = (
 type SessionStateClient = Client<"ApiKeyAuth">;
 
 const canSeeProfile = (user: HslJwtPayloadExtended): boolean =>
-  // TODO: add check (!== magic link)
-  gte(user.spid_level, SpidLevel.L2);
+  HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2);
 
 export const sessionStateHandler = (
   client: SessionStateClient

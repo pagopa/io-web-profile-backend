@@ -38,13 +38,6 @@ const aValidL3User: HslJwtPayloadExtended = {
   spid_level: SpidLevel.L3
 };
 
-const aValidExchangeUser: ExchangeJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
-};
-
 const aValidL3Payload: UnlockSessionData = {};
 // #endregion
 

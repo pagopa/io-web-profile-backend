@@ -42,6 +42,7 @@ import {
   HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+import { isExchangeToken } from "../utils/enums/TokenTypes";
 
 type LockSessionErrorResponsesT =
   | IResponseErrorConflict
@@ -60,7 +61,8 @@ type LockSessionClient = Client<"ApiKeyAuth">;
 const canLock = (
   user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ): boolean =>
-  ExchangeJwtPayloadExtended.is(user) || gte(user.spid_level, SpidLevel.L2);
+  isExchangeToken(user) ||
+  (HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2));
 
 export const lockSessionHandler = (
   client: LockSessionClient
