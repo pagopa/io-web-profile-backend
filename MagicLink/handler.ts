@@ -34,7 +34,7 @@ export const magicLinkHandler = (
   issuer: NonEmptyString,
   privateKey: NonEmptyString,
   ttl: NumberFromString,
-  magicLinkUrl: NonEmptyString
+  magicLinkBaseUrl: NonEmptyString
 ): MagicLinkHandlerT => (reqPayload): ReturnType<MagicLinkHandlerT> =>
   pipe(
     getGenerateJWE(issuer, privateKey)(reqPayload, ttl as Second),
