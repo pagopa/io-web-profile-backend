@@ -55,9 +55,9 @@ export const getMagicLinkHandler = (
   issuer: NonEmptyString,
   privateKey: NonEmptyString,
   ttl: NumberFromString,
-  magicLinkUrl: NonEmptyString
+  magicLinkBaseUrl: NonEmptyString
 ): express.RequestHandler => {
-  const handler = magicLinkHandler(issuer, privateKey, ttl, magicLinkUrl);
+  const handler = magicLinkHandler(issuer, privateKey, ttl, magicLinkBaseUrl);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     RequiredBodyPayloadMiddleware(MagicLinkData)
