@@ -5,9 +5,3 @@ export enum TokenTypes {
   EXCHANGE = "exchange",
   MAGIC_LINK = "magic_link"
 }
-
-export const isExchangeToken = (
-  token: ExchangeJwtPayloadExtended | HslJwtPayloadExtended
-): boolean =>
-  ExchangeJwtPayloadExtended.is(token) &&
-  token.token_type === TokenTypes.EXCHANGE;
