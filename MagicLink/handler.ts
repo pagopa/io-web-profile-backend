@@ -45,7 +45,7 @@ export const magicLinkHandler = (
     ),
     TE.map(jwe =>
       ResponseSuccessJson({
-        magic_link: `${magicLinkUrl}${jwe}`
+        magic_link: `${magicLinkBaseUrl}#token=${jwe}`
       })
     ),
     TE.toUnion
