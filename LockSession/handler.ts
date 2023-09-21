@@ -34,6 +34,7 @@ import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligi
 
 import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
+import { TokenTypes } from "../utils/enums/TokenTypes";
 import {
   ExchangeJwtPayloadExtended,
   exchangeJwtValidationMiddleware
@@ -42,7 +43,6 @@ import {
   HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
-import { isExchangeToken } from "../utils/enums/TokenTypes";
 
 type LockSessionErrorResponsesT =
   | IResponseErrorConflict
@@ -61,7 +61,8 @@ type LockSessionClient = Client<"ApiKeyAuth">;
 const canLock = (
   user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ): boolean =>
-  isExchangeToken(user) ||
+  (ExchangeJwtPayloadExtended.is(user) &&
+    user.token_type === TokenTypes.EXCHANGE) ||
   (HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2));
 
 export const lockSessionHandler = (
