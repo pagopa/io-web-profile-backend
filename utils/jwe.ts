@@ -16,10 +16,8 @@ export type GetGenerateJWE = <T extends jose.JWTPayload>(
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-const secondsFromEpoch = (secondsToAdd: number): Second => {
-  const newDate = addSeconds(new Date(), secondsToAdd);
-  return Math.floor(newDate.getTime() / 1000) as Second;
-};
+const secondsFromEpoch = (secondsToAdd: number): Second =>
+  getUnixTime(addSeconds(new Date(), secondsToAdd));
 
 const alg = "ECDH-ES+A256KW";
 export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
