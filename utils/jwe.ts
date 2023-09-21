@@ -43,7 +43,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
             .encrypt(ecPrivateKey),
-        e => E.toError(`Cannot generate JWE. Error: ${e}`)
+        e => E.toError(`Cannot generate JWE. ${e}`)
       )
     ),
     TE.mapLeft(e => E.toError(`Error: ${e}`)),

@@ -19,7 +19,9 @@ describe("MagicLink", () => {
     const res = await handler(aValidPayload);
 
     expect(res).toMatchObject({
-      magic_link: expect.stringMatching(`${config.MAGIC_LINK_BASE_URL}#token=[A-Za-z0-9-_]{1,520}`)
+      magic_link: expect.stringMatching(
+        `${config.MAGIC_LINK_BASE_URL}#token=[A-Za-z0-9-_]{1,520}`
+      )
     });
   });
 });

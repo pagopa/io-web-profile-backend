@@ -1,3 +1,4 @@
+import * as jose from "jose";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { sign } from "jsonwebtoken";
 import {
@@ -54,8 +55,8 @@ const {
 const {
   privateKey: magicLinkPrivateKey,
   publicKey: magicLinkPublicKey
-} = generateKeyPairSync("rsa", {
-  modulusLength: 2048,
+} = generateKeyPairSync("ec", {
+  namedCurve: "prime256v1",
   publicKeyEncoding: {
     type: "spki",
     format: "pem"
