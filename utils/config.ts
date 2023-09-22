@@ -33,7 +33,11 @@ export const JWTConfig = t.intersection([
     // Default 1h = 3600 seconds
     EXCHANGE_JWT_TTL: withDefault(t.string, "3600").pipe(NumberFromString),
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
-    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString
+    HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_ISSUER: NonEmptyString,
+    MAGIC_LINK_JWE_PRIVATE_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_PUB_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_TTL: withDefault(t.string, "604800").pipe(NumberFromString)
   }),
   t.partial({})
 ]);
@@ -58,8 +62,8 @@ export type FastLoginClientConfig = t.TypeOf<typeof FastLoginClientConfig>;
 
 // Fast Login Client Configuration
 export const FunctionsAppClientConfig = t.type({
-  FUNCTIONS_APP_CLIENT_BASE_URL: NonEmptyString,
-  FUNCTIONS_APP_SUBSCRIPTION_KEY: NonEmptyString
+  FUNCTIONS_APP_API_KEY: NonEmptyString,
+  FUNCTIONS_APP_CLIENT_BASE_URL: NonEmptyString
 });
 export type FunctionsAppClientConfig = t.TypeOf<
   typeof FunctionsAppClientConfig

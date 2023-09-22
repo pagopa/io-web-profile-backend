@@ -93,5 +93,5 @@ The following table contains the required ENV variables that the function requir
 | HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login baseUrl                              | string|
 | FAST_LOGIN_API_KEY              | Fast Login Api Key                                  | string|
 | FAST_LOGIN_CLIENT_BASE_URL      | Fast Login baseUrl                                  | string|
-| FUNCTIONS_APP_SUBSCRIPTION_KEY  | Io Functions App Api Key                            | string|
+| FUNCTIONS_APP_API_KEY           | Io Functions App Api Key                            | string|
 | FUNCTIONS_APP_CLIENT_BASE_URL   | Io Functions App baseUrl                            | string|
