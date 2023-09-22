@@ -25,6 +25,12 @@ const aValidUser: HslJwtPayloadExtended = {
   name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
+const aL1User: HslJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name" as NonEmptyString,
+  spid_level: SpidLevel.L1
+};
 const aValidExchangeUser: ExchangeJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
@@ -166,6 +172,20 @@ describe("LockSession", () => {
     });
     expect(res).toMatchObject({
       kind: "IResponseSuccessNoContent"
+    });
+  });
+
+  test(`GIVEN a user decoded from JWT with spid level L1
+        WHEN checks don't pass
+        THEN the response is 403`, async () => {
+    const handler = lockSessionHandler(fastLoginClientMock);
+
+    const res = await handler(aL1User, aValidPayload);
+
+    expect(lockSessionMock).toHaveBeenCalledTimes(0);
+
+    expect(res).toMatchObject({
+      kind: "IResponseErrorForbiddenNotAuthorized"
     });
   });
 });

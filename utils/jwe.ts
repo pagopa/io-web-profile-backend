@@ -5,7 +5,7 @@ import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as jose from "jose";
 
-import { addSeconds } from "date-fns";
+import { addSeconds, getUnixTime } from "date-fns";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
@@ -35,10 +35,8 @@ export type GetGenerateJWE = <T extends jose.JWTPayload>(
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-const secondsFromEpoch = (secondsToAdd: number): Second => {
-  const newDate = addSeconds(new Date(), secondsToAdd);
-  return Math.floor(newDate.getTime() / 1000) as Second;
-};
+const secondsFromEpoch = (secondsToAdd: number): Second =>
+  getUnixTime(addSeconds(new Date(), secondsToAdd)) as Second;
 
 export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
   payload,
@@ -60,9 +58,10 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
             .encrypt(ecPrivateKey),
-        e => E.toError(`Cannot generate JWE. Error: ${e}`)
+        e => E.toError(`Cannot generate JWE. ${e}`)
       )
     ),
+    TE.mapLeft(e => E.toError(`Error: ${e}`)),
     TE.chain(
       TE.fromPredicate(NonEmptyString.is, () => E.toError("Token is empty."))
     )

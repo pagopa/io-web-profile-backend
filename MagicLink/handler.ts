@@ -16,9 +16,9 @@ import * as TE from "fp-ts/TaskEither";
 
 import { pipe } from "fp-ts/lib/function";
 
-import { Second } from "@pagopa/ts-commons/lib/units";
 import { NumberFromString } from "@pagopa/ts-commons/lib/numbers";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { Second } from "@pagopa/ts-commons/lib/units";
 import { MagicLinkData } from "../generated/definitions/internal/MagicLinkData";
 import { MagicLinkToken } from "../generated/definitions/internal/MagicLinkToken";
 
@@ -34,7 +34,7 @@ export const magicLinkHandler = (
   issuer: NonEmptyString,
   privateKey: NonEmptyString,
   ttl: NumberFromString,
-  magicLinkUrl: NonEmptyString
+  magicLinkBaseUrl: NonEmptyString
 ): MagicLinkHandlerT => (reqPayload): ReturnType<MagicLinkHandlerT> =>
   pipe(
     getGenerateJWE(issuer, privateKey)(reqPayload, ttl as Second),
@@ -45,7 +45,7 @@ export const magicLinkHandler = (
     ),
     TE.map(jwe =>
       ResponseSuccessJson({
-        magic_link: `${magicLinkUrl}${jwe}`
+        magic_link: `${magicLinkBaseUrl}#token=${jwe}`
       })
     ),
     TE.toUnion
@@ -55,9 +55,9 @@ export const getMagicLinkHandler = (
   issuer: NonEmptyString,
   privateKey: NonEmptyString,
   ttl: NumberFromString,
-  magicLinkUrl: NonEmptyString
+  magicLinkBaseUrl: NonEmptyString
 ): express.RequestHandler => {
-  const handler = magicLinkHandler(issuer, privateKey, ttl, magicLinkUrl);
+  const handler = magicLinkHandler(issuer, privateKey, ttl, magicLinkBaseUrl);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     RequiredBodyPayloadMiddleware(MagicLinkData)
