@@ -37,6 +37,7 @@ export const JWTConfig = t.intersection([
     MAGIC_LINK_BASE_URL: NonEmptyString,
     MAGIC_LINK_JWE_ISSUER: NonEmptyString,
     MAGIC_LINK_JWE_PRIVATE_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_PUB_KEY: NonEmptyString,
     MAGIC_LINK_JWE_TTL: withDefault(t.string, "604800").pipe(NumberFromString)
   }),
   t.partial({})

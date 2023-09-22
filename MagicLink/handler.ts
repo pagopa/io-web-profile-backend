@@ -16,9 +16,9 @@ import * as TE from "fp-ts/TaskEither";
 
 import { pipe } from "fp-ts/lib/function";
 
-import { Second } from "@pagopa/ts-commons/lib/units";
 import { NumberFromString } from "@pagopa/ts-commons/lib/numbers";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { Second } from "@pagopa/ts-commons/lib/units";
 import { MagicLinkData } from "../generated/definitions/internal/MagicLinkData";
 import { MagicLinkToken } from "../generated/definitions/internal/MagicLinkToken";
 
