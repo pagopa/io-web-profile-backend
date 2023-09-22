@@ -35,7 +35,7 @@ export type GetGenerateJWE = <T extends jose.JWTPayload>(
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-const secondsFromEpoch = (secondsToAdd: number): Second =>
+export const secondsFromEpoch = (secondsToAdd: number): Second =>
   getUnixTime(addSeconds(new Date(), secondsToAdd)) as Second;
 
 export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (

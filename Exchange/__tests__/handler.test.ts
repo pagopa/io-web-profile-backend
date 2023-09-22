@@ -12,7 +12,7 @@ import { BaseJwePayload, secondsFromEpoch } from "../../utils/jwe";
 // #region mocks
 const aValidUser: BaseJwePayload = {
   family_name: "family_name" as NonEmptyString,
-  fiscal_code: "ISPXNB32R82Y766D" as FiscalCode,
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
   iss: "pagopa" as NonEmptyString,
   exp: secondsFromEpoch(604800)
