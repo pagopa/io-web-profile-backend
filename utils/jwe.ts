@@ -3,6 +3,8 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as jose from "jose";
 
+import { addSeconds, getUnixTime } from "date-fns";
+
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 
@@ -14,12 +16,8 @@ export type GetGenerateJWE = <T extends jose.JWTPayload>(
   jweKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
-const secondsFromEpoch = (secondsToAdd: number): Second => {
-  const date = new Date();
-  const today = Math.floor(date.getTime() / 1000);
-  const total = today + secondsToAdd;
-  return total as Second;
-};
+const secondsFromEpoch = (secondsToAdd: number): Second =>
+  getUnixTime(addSeconds(new Date(), secondsToAdd)) as Second;
 
 const alg = "ECDH-ES+A256KW";
 export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
@@ -45,7 +43,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
             .encrypt(ecPrivateKey),
-        e => E.toError(`Cannot generate JWE. Error: ${e}`)
+        e => E.toError(`Cannot generate JWE. ${e}`)
       )
     ),
     TE.mapLeft(e => E.toError(`Error: ${e}`)),

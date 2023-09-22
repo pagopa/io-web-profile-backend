@@ -1,3 +1,4 @@
+import * as jose from "jose";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { sign } from "jsonwebtoken";
 import {
@@ -9,6 +10,7 @@ import {
 } from "../utils/config";
 import { FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
 import { generateKeyPairSync } from "crypto";
+import { Second } from "@pagopa/ts-commons/lib/units";
 
 const aFiscalCode = "ISPXNB32R82Y766D";
 const aName = "Carla";
@@ -16,9 +18,6 @@ const aFamilyName = "Rossi";
 const iconfig = {
   AzureWebJobsStorage: "azureWebJobsStorage" as NonEmptyString,
   BETA_TESTERS: [aFiscalCode],
-  COSMOSDB_KEY: "cosmosdbKey" as NonEmptyString,
-  COSMOSDB_NAME: "cosmosdbName" as NonEmptyString,
-  COSMOSDB_URI: "cosmosdbUri" as NonEmptyString,
   FF_API_ENABLED: FeatureFlagEnum.ALL,
   isProduction: false
 };
@@ -56,8 +55,8 @@ const {
 const {
   privateKey: magicLinkPrivateKey,
   publicKey: magicLinkPublicKey
-} = generateKeyPairSync("rsa", {
-  modulusLength: 2048,
+} = generateKeyPairSync("ec", {
+  namedCurve: "prime256v1",
   publicKeyEncoding: {
     type: "spki",
     format: "pem"
@@ -87,9 +86,10 @@ export const jwtConfig: JWTConfig = {
   EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
   EXCHANGE_JWT_TTL: 900,
   MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
+  MAGIC_LINK_JWE_PUB_KEY: magicLinkPublicKey as NonEmptyString, 
   MAGIC_LINK_JWE_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
-  MAGIC_LINK_JWE_PUB_KEY: magicLinkPublicKey as NonEmptyString,
-  MAGIC_LINK_JWE_TTL: 3600
+  MAGIC_LINK_JWE_TTL: 604800 as Second,
+  MAGIC_LINK_BASE_URL: "http://localhost:3000/it/magic-link" as NonEmptyString
 };
 
 export const hslConfig: HSLConfig = {

@@ -85,9 +85,13 @@ The following table contains the required ENV variables that the function requir
 | BETA_TESTERS                    | Beta tester fiscal code separated by comma          | string,string,string,... |
 | BEARER_AUTH_HEADER              | Req Auth Header Param where Bearer token is sotored | string|
 | EXCHANGE_JWT_PUB_KEY            | Exchange JWT Public Key (token validation)          | string|
-| EXCHANGE_JWT_PRIVATE_KEY        | Exchange JWT Private Key (token validation)         | string|
+| EXCHANGE_JWT_PRIVATE_KEY        | Exchange JWT Private Key (token generation)         | string|
 | EXCHANGE_JWT_ISSUER             | Exchange JWT ISSUER                                 | string|
 | EXCHANGE_JWT_TTL                | Exchange JWT TTL in seconds                         | string|
+| MAGIC_LINK_JWE_PRIVATE_KEY      | Magic Link JWE Private Key (token gen/validation)   | string|
+| MAGIC_LINK_JWE_ISSUER           | Magic Link JWE ISSUER                               | string|
+| MAGIC_LINK_JWE_TTL              | Magic Link JWE in seconds                           | string|
+| MAGIC_LINK_BASE_URL             | Magic Link baseUrl                                  | string|
 | HUB_SPID_LOGIN_JWT_PUB_KEY      | Hub Spid Login JWT Public Key (token validation)    | string|
 | HUB_SPID_LOGIN_JWT_ISSUER       | Hub Spid Login ISSUER                               | string|
 | HUB_SPID_LOGIN_CLIENT_BASE_URL  | Hub Spid Login baseUrl                              | string|
