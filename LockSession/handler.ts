@@ -43,7 +43,6 @@ import {
   HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
-import { isExchangeToken } from "../utils/enums/TokenTypes";
 
 type LockSessionErrorResponsesT =
   | IResponseErrorConflict
