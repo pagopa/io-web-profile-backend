@@ -70,8 +70,11 @@ export const getExchangeHandler = (config: IConfig): express.RequestHandler => {
   const handler = exchangeHandler(config);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
-    // verifyUserEligibilityMiddleware(config),
-    magicLinkJweValidationMiddleware(config)
+    magicLinkJweValidationMiddleware(
+      config.BEARER_AUTH_HEADER,
+      config.MAGIC_LINK_JWE_ISSUER,
+      config.MAGIC_LINK_JWE_PRIVATE_KEY
+    )
   );
 
   return wrapRequestHandler(middlewaresWrap((_, user) => handler(user)));
