@@ -28,7 +28,7 @@
     "predeploy": "npm-run-all build dist:*",
     "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
     "version": "auto-changelog -p --config .auto-changelog.json --unreleased && git add CHANGELOG.md",
-    "generate-certificate": "rimraf ./certificate && shx mkdir -p ./certificate && openssl ecparam -genkey -name prime256v1 -noout -out ./certificate/ec_private.pem" 
+    "generate-certificate": "rimraf ./certificate && shx mkdir -p ./certificate && openssl ecparam -genkey -name prime256v1 -noout -out ./certificate/ec_primary.pem && openssl ecparam -genkey -name prime256v1 -noout -out ./certificate/ec_secondary.pem" 
   },
   "devDependencies": {
     "@azure/functions": "^3.2.0",

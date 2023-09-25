@@ -12,7 +12,7 @@ describe("MagicLink", () => {
     };
     const handler = magicLinkHandler(
       config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY,
+      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
       config.MAGIC_LINK_JWE_TTL,
       config.MAGIC_LINK_BASE_URL
     );

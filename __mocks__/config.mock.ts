@@ -82,12 +82,13 @@ export const jwtConfig: JWTConfig = {
   HUB_SPID_LOGIN_JWT_ISSUER: hslIssuer as NonEmptyString,
   HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString,
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
-  EXCHANGE_JWT_PUB_KEY: exchangePublicKey as NonEmptyString,
-  EXCHANGE_JWT_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
+  EXCHANGE_JWT_PRIMARY_PRIVATE_KEY: exchangePrivateKey as NonEmptyString,
+  EXCHANGE_JWT_PRIMARY_PUB_KEY: exchangePublicKey as NonEmptyString,
+  EXCHANGE_JWT_SECONDARY_PUB_KEY: exchangePrivateKey as NonEmptyString,
   EXCHANGE_JWT_TTL: 900 as Second,
   MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
-  MAGIC_LINK_JWE_PUB_KEY: magicLinkPublicKey as NonEmptyString, 
-  MAGIC_LINK_JWE_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
   MAGIC_LINK_JWE_TTL: 604800 as Second,
   MAGIC_LINK_BASE_URL: "http://localhost:3000/it/magic-link" as NonEmptyString
 };

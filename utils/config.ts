@@ -28,16 +28,17 @@ export const JWTConfig = t.intersection([
   t.type({
     BEARER_AUTH_HEADER: NonEmptyString,
     EXCHANGE_JWT_ISSUER: NonEmptyString,
-    EXCHANGE_JWT_PRIVATE_KEY: NonEmptyString,
-    EXCHANGE_JWT_PUB_KEY: NonEmptyString,
+    EXCHANGE_JWT_PRIMARY_PRIVATE_KEY: NonEmptyString,
+    EXCHANGE_JWT_PRIMARY_PUB_KEY: NonEmptyString,
+    EXCHANGE_JWT_SECONDARY_PUB_KEY: NonEmptyString,
     // Default 1h = 3600 seconds
     EXCHANGE_JWT_TTL: withDefault(t.string, "3600").pipe(NumberFromString),
     HUB_SPID_LOGIN_JWT_ISSUER: NonEmptyString,
     HUB_SPID_LOGIN_JWT_PUB_KEY: NonEmptyString,
     MAGIC_LINK_BASE_URL: NonEmptyString,
     MAGIC_LINK_JWE_ISSUER: NonEmptyString,
-    MAGIC_LINK_JWE_PRIVATE_KEY: NonEmptyString,
-    MAGIC_LINK_JWE_PUB_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: NonEmptyString,
     // Default 7d = 604800 seconds
     MAGIC_LINK_JWE_TTL: withDefault(t.string, "604800").pipe(NumberFromString)
   }),

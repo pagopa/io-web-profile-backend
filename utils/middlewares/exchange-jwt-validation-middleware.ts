@@ -32,7 +32,8 @@ export const exchangeJwtValidation = (config: IConfig) => (
   pipe(
     getValidateJWT(
       config.EXCHANGE_JWT_ISSUER,
-      config.EXCHANGE_JWT_PUB_KEY
+      config.EXCHANGE_JWT_PRIMARY_PUB_KEY,
+      config.EXCHANGE_JWT_SECONDARY_PUB_KEY
     )(token),
     TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message))
   );

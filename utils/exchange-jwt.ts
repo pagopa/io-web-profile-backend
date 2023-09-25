@@ -33,10 +33,10 @@ export type GenerateExchangeJWT = (
 export const getGenerateExchangeJWT = ({
   EXCHANGE_JWT_ISSUER,
   EXCHANGE_JWT_TTL,
-  EXCHANGE_JWT_PRIVATE_KEY
+  EXCHANGE_JWT_PRIMARY_PRIVATE_KEY
 }: JWTConfig): GenerateExchangeJWT =>
   pipe(
-    getGenerateJWT(EXCHANGE_JWT_ISSUER, EXCHANGE_JWT_PRIVATE_KEY),
+    getGenerateJWT(EXCHANGE_JWT_ISSUER, EXCHANGE_JWT_PRIMARY_PRIVATE_KEY),
     generateJWTFunction => (exchangeJWT): ReturnType<GenerateExchangeJWT> =>
       generateJWTFunction(exchangeJWT, EXCHANGE_JWT_TTL as Second)
   );
