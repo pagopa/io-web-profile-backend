@@ -19,7 +19,11 @@ export const BaseJwePayload = t.intersection([
 ]);
 export type BaseJwePayload = t.TypeOf<typeof BaseJwePayload>;
 
-const getKeyLikeFromString = (
+/**
+ * Take in input a PEM-encoded PKCS#8 key string and
+ * returns an Either with an error or a KeyLike object
+ */
+const errorOrKeyLikeFromString = (
   key: NonEmptyString
 ): TE.TaskEither<Error, jose.KeyLike> =>
   TE.tryCatch(
@@ -115,11 +119,19 @@ export const validateJweWithKey = (
   pipe(
     getKeyLikeFromString(jwePrivateKey),
     TE.chain(pkcs8 =>
-      TE.tryCatch(() => jose.compactDecrypt(token, pkcs8), E.toError)
+      TE.tryCatch(() => jose.jwtDecrypt(token, pkcs8, { issuer }), E.toError)
     ),
     TE.mapLeft(e => new Error(`Error decrypting Magic Link JWE: ${e}`)),
-    TE.chain(crypted => getPayloadFromDecryptResult(crypted)),
-    TE.chain(payload => validateIssAndExp(payload, issuer))
+    TE.chain(
+      flow(
+        BaseJwePayload.decode,
+        E.mapLeft(
+          err =>
+            new Error(`Invalid JWE payload: ${readableReportSimplified(err)}`)
+        ),
+        TE.fromEither
+      )
+    )
   );
 
 export const getValidateJWE: GetValidateJWE = (issuer, jwePrivateKey) => (
