@@ -25,17 +25,16 @@ import {
   MagicLinkPayload,
   getGenerateExchangeJWT
 } from "../utils/exchange-jwt";
-import { BaseJwePayload } from "../utils/jwe";
 import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-link-jwe-validation-middleware";
 
 type ExchangeHandlerT = (
-  user: BaseJwePayload
+  user: MagicLinkPayload
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
 const EXCHANGE_TOKEN_TYPE = "exchange" as NonEmptyString;
 
 export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
-  user_data: BaseJwePayload
+  user_data: MagicLinkPayload
 ): ReturnType<ExchangeHandlerT> =>
   pipe(
     user_data,

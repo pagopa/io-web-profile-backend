@@ -9,14 +9,15 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import { AuthBearer } from "../../generated/definitions/external/AuthBearer";
-import { BaseJwePayload, getValidateJWE } from "../jwe";
+import { MagicLinkPayload } from "../exchange-jwt";
+import { getValidateJWE } from "../jwe";
 
 export const magicLinkJweValidation = (
   issuer: NonEmptyString,
   privateKey: NonEmptyString
 ) => (
   token: NonEmptyString
-): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, BaseJwePayload> =>
+): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, MagicLinkPayload> =>
   pipe(
     getValidateJWE(issuer, privateKey)(token),
     TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message))
@@ -28,10 +29,10 @@ export const magicLinkJweValidationMiddleware = (
   privateKey: NonEmptyString
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
-  BaseJwePayload
+  MagicLinkPayload
 > => (
   req
-): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, BaseJwePayload>> =>
+): Promise<E.Either<IResponseErrorForbiddenNotAuthorized, MagicLinkPayload>> =>
   pipe(
     req.headers[authHeader],
     AuthBearer.decode,
