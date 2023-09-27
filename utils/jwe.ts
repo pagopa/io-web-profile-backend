@@ -67,7 +67,7 @@ export const validateJweWithKey = (
   issuer: NonEmptyString
 ): TE.TaskEither<Error, MagicLinkPayload> =>
   pipe(
-    TE.of(crypto.createPrivateKey(privateKey)),
+    TE.tryCatch(async () => crypto.createPrivateKey(privateKey), E.toError),
     TE.chain(key =>
       TE.tryCatch(() => jose.jwtDecrypt(token, key, { issuer }), E.toError)
     ),

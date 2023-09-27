@@ -52,8 +52,22 @@ const {
 });
 
 const {
-  privateKey: magicLinkPrivateKey,
-  publicKey: magicLinkPublicKey
+  privateKey: magicLinkPrimaryPrivateKey,
+  publicKey: magicLinkPrimaryPublicKey
+} = generateKeyPairSync("ec", {
+  namedCurve: "prime256v1",
+  publicKeyEncoding: {
+    type: "spki",
+    format: "pem"
+  },
+  privateKeyEncoding: {
+    type: "pkcs8",
+    format: "pem"
+  }
+});
+const {
+  privateKey: magicLinkSecondaryPrivateKey,
+  publicKey: magicLinkSecondaryPublicKey
 } = generateKeyPairSync("ec", {
   namedCurve: "prime256v1",
   publicKeyEncoding: {
@@ -86,8 +100,8 @@ export const jwtConfig: JWTConfig = {
   EXCHANGE_JWT_SECONDARY_PUB_KEY: exchangePrivateKey as NonEmptyString,
   EXCHANGE_JWT_TTL: 900 as Second,
   MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
-  MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
-  MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: magicLinkPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: magicLinkPrimaryPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: magicLinkSecondaryPrivateKey as NonEmptyString,
   MAGIC_LINK_JWE_TTL: 604800 as Second,
   MAGIC_LINK_BASE_URL: "http://localhost:3000/it/magic-link" as NonEmptyString
 };
