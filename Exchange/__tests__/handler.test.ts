@@ -2,9 +2,9 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { config as mockedConfig } from "../../__mocks__/config.mock";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
 import { TokenTypes } from "../../utils/enums/TokenTypes";
-import { BaseJwePayload, secondsFromEpoch } from "../../utils/jwe";
 import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
 import { exchangeHandler } from "../handler";
+import { MagicLinkPayload } from "../../utils/exchange-jwt";
 
 // #region mocks
 const aValidUser: MagicLinkPayload = {

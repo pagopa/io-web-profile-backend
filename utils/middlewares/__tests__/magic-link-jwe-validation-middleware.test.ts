@@ -22,7 +22,7 @@ const jweIssuer = config.MAGIC_LINK_JWE_ISSUER;
 describe("MagicLinkJweValidationMiddleware", () => {
   const today = new Date();
   const jwePrivateKey = crypto.createPrivateKey(
-    config.MAGIC_LINK_JWE_PRIVATE_KEY
+    config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY
   );
 
   it("GIVEN a valid jwePayload WHEN magicLinkJweValidationMiddleware is called THEN it should return a valid response", async () => {
@@ -42,7 +42,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
     const middleware = magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY
+      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY
     );
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
@@ -68,7 +68,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
     const middleware = magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY
+      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY
     );
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
@@ -97,7 +97,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
     const middleware = magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY
+      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY
     );
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
