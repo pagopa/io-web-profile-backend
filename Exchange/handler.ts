@@ -15,18 +15,17 @@ import {
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { defaultLog } from "@pagopa/winston-ts";
 
 import { IConfig } from "../utils/config";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
+import { TokenTypes } from "../utils/enums/TokenTypes";
 import {
   MagicLinkPayload,
   getGenerateExchangeJWT
 } from "../utils/exchange-jwt";
 import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-link-jwe-validation-middleware";
-import { TokenTypes } from "../utils/enums/TokenTypes";
 
 type ExchangeHandlerT = (
   user: MagicLinkPayload
