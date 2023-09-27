@@ -1,5 +1,4 @@
 import * as express from "express";
-import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 
@@ -8,61 +7,45 @@ import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
-import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import {
   IResponseErrorInternal,
   IResponseSuccessJson,
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { defaultLog } from "@pagopa/winston-ts";
 
 import { IConfig } from "../utils/config";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
+import { TokenTypes } from "../utils/enums/TokenTypes";
 import {
   MagicLinkPayload,
   getGenerateExchangeJWT
 } from "../utils/exchange-jwt";
-import { BaseJwePayload } from "../utils/jwe";
 import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-link-jwe-validation-middleware";
 
 type ExchangeHandlerT = (
-  user: BaseJwePayload
+  user: MagicLinkPayload
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
-const EXCHANGE_TOKEN_TYPE = "exchange" as NonEmptyString;
-
 export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
-  user_data: BaseJwePayload
+  user_data: MagicLinkPayload
 ): ReturnType<ExchangeHandlerT> =>
   pipe(
-    user_data,
-    MagicLinkPayload.decode,
-    E.mapLeft(e =>
-      ResponseErrorInternal(
-        `Invalid Magic Link JWE: ${readableReportSimplified(e)}`
-      )
+    getGenerateExchangeJWT(config)({
+      family_name: user_data.family_name,
+      fiscal_number: user_data.fiscal_number,
+      name: user_data.name,
+      token_type: TokenTypes.EXCHANGE
+    }),
+    TE.mapLeft(e =>
+      ResponseErrorInternal(`Cannot generate Exchange JWT|ERROR=${e.message}`)
     ),
-    TE.fromEither,
-    TE.chain(magic_link_payload =>
-      pipe(
-        getGenerateExchangeJWT(config)({
-          ...magic_link_payload,
-          token_type: EXCHANGE_TOKEN_TYPE
-        }),
-        TE.mapLeft(e =>
-          ResponseErrorInternal(
-            `Cannot generate Exchange JWT|ERROR=${e.message}`
-          )
-        ),
-        defaultLog.taskEither.errorLeft(
-          r => r.detail ?? "Cannot generate Exchange JWT"
-        ),
-        TE.map(jwt => ResponseSuccessJson({ jwt } as ExchangeToken))
-      )
+    defaultLog.taskEither.errorLeft(
+      r => r.detail ?? "Cannot generate Exchange JWT"
     ),
+    TE.map(jwt => ResponseSuccessJson({ jwt } as ExchangeToken)),
     TE.toUnion
   )();
 

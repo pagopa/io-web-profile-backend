@@ -9,14 +9,25 @@ import {
 
 import { config as mockedConfig } from "../../__mocks__/config.mock";
 
+import * as jwt from "jsonwebtoken";
+
+import { ExchangeJWT, getGenerateExchangeJWT } from "../exchange-jwt";
+
+import { config as mockedConfig } from "../../__mocks__/config.mock";
+import { TokenTypes } from "../enums/TokenTypes";
+import { ExchangeJwtPayloadExtended } from "../middlewares/exchange-jwt-validation-middleware";
 
 const aPayload = {
   family_name: "fn",
   fiscal_number: "fc",
   name: "name",
-  token_type: "exchange"
+  token_type: TokenTypes.EXCHANGE
 } as ExchangeJWT;
 
+const expectedPayload = {
+  ...aPayload,
+  iss: mockedConfig.EXCHANGE_JWT_ISSUER
+};
 
 describe("getGenerateJWT", () => {
   it("should generate a valid ExchangeJWT", async () => {
@@ -24,8 +35,15 @@ describe("getGenerateJWT", () => {
 
     const res = await generateJWT(aPayload)();
 
-    expect(res).toMatchObject(
-      E.right(expect.stringMatching(`[A-Za-z0-9-_]{1,520}`))
-    );
+    expect(E.isRight(res)).toBeTruthy();
+    if (E.isRight(res)) {
+      const decodedToken = jwt.decode(res.right) as ExchangeJwtPayloadExtended;
+
+      if (!decodedToken) {
+        fail();
+      }
+
+      expect(decodedToken).toMatchObject(expectedPayload);
+    }
   });
 });

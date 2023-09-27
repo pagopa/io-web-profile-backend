@@ -1,5 +1,6 @@
-import * as jose from "jose";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { Second } from "@pagopa/ts-commons/lib/units";
+import { generateKeyPairSync } from "crypto";
 import { sign } from "jsonwebtoken";
 import {
   FastLoginClientConfig,
@@ -9,8 +10,6 @@ import {
   JWTConfig
 } from "../utils/config";
 import { FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
-import { generateKeyPairSync } from "crypto";
-import { Second } from "@pagopa/ts-commons/lib/units";
 
 const aFiscalCode = "ISPXNB32R82Y766D";
 const aName = "Carla";
@@ -68,8 +67,8 @@ const {
 });
 
 const hslIssuer = "SPID";
-const exchangeIssuer = "PAGOPA";
-const magicLinkIssuer = "PAGOPA";
+const exchangeIssuer = "pagopa";
+const magicLinkIssuer = "pagopa";
 
 const jwt = sign(
   { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode },

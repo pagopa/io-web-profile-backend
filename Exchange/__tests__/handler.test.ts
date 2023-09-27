@@ -7,12 +7,10 @@ import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt
 import { exchangeHandler } from "../handler";
 
 // #region mocks
-const aValidUser: BaseJwePayload = {
+const aValidUser: MagicLinkPayload = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  iss: "pagopa" as NonEmptyString,
-  exp: secondsFromEpoch(604800)
+  name: "name" as NonEmptyString
 };
 
 const aValidExchangeUser: ExchangeJwtPayloadExtended = {

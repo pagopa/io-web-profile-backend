@@ -3,7 +3,6 @@ import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { flow, pipe } from "fp-ts/lib/function";
-import * as t from "io-ts";
 import * as jose from "jose";
 
 import { addSeconds, getUnixTime } from "date-fns";
@@ -12,12 +11,6 @@ import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { MagicLinkPayload } from "./exchange-jwt";
-
-export const BaseJwePayload = t.intersection([
-  MagicLinkPayload,
-  t.type({ exp: t.number, iss: NonEmptyString })
-]);
-export type BaseJwePayload = t.TypeOf<typeof BaseJwePayload>;
 
 /**
  * JWE Generation
@@ -66,13 +59,13 @@ type GetValidateJWE = (
   issuer: NonEmptyString,
   primaryPrivateKey: NonEmptyString,
   secondaryPrivateKey?: NonEmptyString
-) => (token: NonEmptyString) => TE.TaskEither<Error, BaseJwePayload>;
+) => (token: NonEmptyString) => TE.TaskEither<Error, MagicLinkPayload>;
 
 export const validateJweWithKey = (
   token: NonEmptyString,
   privateKey: NonEmptyString,
   issuer: NonEmptyString
-): TE.TaskEither<Error, BaseJwePayload> =>
+): TE.TaskEither<Error, MagicLinkPayload> =>
   pipe(
     TE.of(crypto.createPrivateKey(privateKey)),
     TE.chain(key =>
@@ -82,7 +75,7 @@ export const validateJweWithKey = (
     TE.chain(
       flow(
         jwe => jwe.payload,
-        BaseJwePayload.decode,
+        MagicLinkPayload.decode,
         E.mapLeft(
           err =>
             new Error(`Invalid JWE payload: ${readableReportSimplified(err)}`)
@@ -99,7 +92,7 @@ export const getValidateJWE: GetValidateJWE = (
   issuer,
   primaryPrivateKey,
   secondaryPrivateKey
-) => (token): TE.TaskEither<Error, BaseJwePayload> =>
+) => (token): TE.TaskEither<Error, MagicLinkPayload> =>
   pipe(
     validateJweWithKey(token, primaryPrivateKey, issuer),
     TE.orElse(err =>
