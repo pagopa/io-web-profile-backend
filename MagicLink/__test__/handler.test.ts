@@ -7,7 +7,7 @@ describe("MagicLink", () => {
   it(`should generate a valid magic link token`, async () => {
     const aValidPayload = {
       family_name: "Rossi",
-      fiscal_code: "ISPXNB32R82Y766D",
+      fiscal_number: "ISPXNB32R82Y766D",
       name: "Carla"
     };
     const handler = magicLinkHandler(

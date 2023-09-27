@@ -5,8 +5,11 @@ import * as t from "io-ts";
 import { getGenerateJWT } from "@pagopa/ts-commons/lib/jwt_with_key_rotation";
 import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
+import { enumType } from "@pagopa/ts-commons/lib/types";
 
 import { JWTConfig } from "./config";
+import { TokenTypes } from "./enums/TokenTypes";
+import { BaseJwtPayload } from "./jwt";
 
 export type MagicLinkPayload = t.TypeOf<typeof MagicLinkPayload>;
 export const MagicLinkPayload = t.strict({
@@ -17,9 +20,9 @@ export const MagicLinkPayload = t.strict({
 
 export type ExchangeJWT = t.TypeOf<typeof ExchangeJWT>;
 export const ExchangeJWT = t.intersection([
-  MagicLinkPayload,
+  BaseJwtPayload,
   t.type({
-    token_type: NonEmptyString
+    token_type: enumType(TokenTypes, "tokenType")
   })
 ]);
 
