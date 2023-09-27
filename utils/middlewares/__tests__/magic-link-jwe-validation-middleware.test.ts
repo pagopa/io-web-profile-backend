@@ -8,7 +8,7 @@ import { magicLinkJweValidationMiddleware } from "../magic-link-jwe-validation-m
 
 const aJwePayload = {
   family_name: "fn",
-  fiscal_number: "fc",
+  fiscal_number: "ISPXNB32R82Y766D",
   name: "name"
 };
 const jweProtectedHeader = {
@@ -25,10 +25,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
     config.MAGIC_LINK_JWE_PRIVATE_KEY
   );
 
-  /**
-   * DISABLED because Jest has problems with Uint8Array
-   */
-  it.skip("GIVEN a valid jwePayload WHEN magicLinkJweValidationMiddleware is called THEN it should return a valid response", async () => {
+  it("GIVEN a valid jwePayload WHEN magicLinkJweValidationMiddleware is called THEN it should return a valid response", async () => {
     const token = await new jose.EncryptJWT(aJwePayload)
       .setProtectedHeader(jweProtectedHeader)
       .setIssuer(jweIssuer)
