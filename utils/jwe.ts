@@ -1,4 +1,6 @@
+import * as crypto from "crypto";
 import * as E from "fp-ts/Either";
+import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { flow, pipe } from "fp-ts/lib/function";
 import * as jose from "jose";
@@ -10,43 +12,29 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { MagicLinkPayload } from "./exchange-jwt";
 
-const alg = "ECDH-ES+A256KW";
-
-/**
- * Take in input a PEM-encoded PKCS#8 key string and
- * returns an Either with an error or a KeyLike object
- */
-const errorOrKeyLikeFromString = (
-  key: NonEmptyString
-): TE.TaskEither<Error, jose.KeyLike> =>
-  TE.tryCatch(
-    () => jose.importPKCS8(key, alg),
-    e => E.toError(`Cannot import key. Error: ${e}`)
-  );
-
 /**
  * JWE Generation
  */
 export type GetGenerateJWE = <T extends jose.JWTPayload>(
   issuer: NonEmptyString,
-  jweKey: NonEmptyString
+  primaryPrivateKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
 export const secondsFromEpoch = (secondsToAdd: number): Second =>
   getUnixTime(addSeconds(new Date(), secondsToAdd)) as Second;
 
-export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
+export const getGenerateJWE: GetGenerateJWE = (issuer, primaryPrivateKey) => (
   payload,
   ttl
 ): TE.TaskEither<Error, NonEmptyString> =>
   pipe(
-    errorOrKeyLikeFromString(jweKey),
+    TE.of(crypto.createPrivateKey(primaryPrivateKey)),
     TE.chain(ecPrivateKey =>
       TE.tryCatch(
         () =>
           new jose.EncryptJWT(payload)
             .setProtectedHeader({
-              alg,
+              alg: "ECDH-ES+A256KW",
               crv: "P-256",
               enc: "A128CBC-HS256",
               kty: "EC"
@@ -69,18 +57,19 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, jweKey) => (
  */
 type GetValidateJWE = (
   issuer: NonEmptyString,
-  jwePrivateKey: NonEmptyString
+  primaryPrivateKey: NonEmptyString,
+  secondaryPrivateKey?: NonEmptyString
 ) => (token: NonEmptyString) => TE.TaskEither<Error, MagicLinkPayload>;
 
 export const validateJweWithKey = (
   token: NonEmptyString,
-  jwePrivateKey: NonEmptyString,
+  privateKey: NonEmptyString,
   issuer: NonEmptyString
 ): TE.TaskEither<Error, MagicLinkPayload> =>
   pipe(
-    errorOrKeyLikeFromString(jwePrivateKey),
-    TE.chain(pkcs8 =>
-      TE.tryCatch(() => jose.jwtDecrypt(token, pkcs8, { issuer }), E.toError)
+    TE.tryCatch(async () => crypto.createPrivateKey(privateKey), E.toError),
+    TE.chain(key =>
+      TE.tryCatch(() => jose.jwtDecrypt(token, key, { issuer }), E.toError)
     ),
     TE.mapLeft(e => new Error(`Error decrypting Magic Link JWE: ${e}`)),
     TE.chain(
@@ -96,7 +85,23 @@ export const validateJweWithKey = (
     )
   );
 
-export const getValidateJWE: GetValidateJWE = (issuer, jwePrivateKey) => (
-  token
-): TE.TaskEither<Error, MagicLinkPayload> =>
-  validateJweWithKey(token, jwePrivateKey, issuer);
+export const errorIsInvalidSignatureError = (error: Error): boolean =>
+  error.message.includes(`Error decrypting Magic Link JWE`);
+
+export const getValidateJWE: GetValidateJWE = (
+  issuer,
+  primaryPrivateKey,
+  secondaryPrivateKey
+) => (token): TE.TaskEither<Error, MagicLinkPayload> =>
+  pipe(
+    validateJweWithKey(token, primaryPrivateKey, issuer),
+    TE.orElse(err =>
+      pipe(
+        secondaryPrivateKey,
+        O.fromNullable,
+        O.chain(O.fromPredicate(() => errorIsInvalidSignatureError(err))),
+        O.map(key => validateJweWithKey(token, key, issuer)),
+        O.getOrElse(() => TE.left(err))
+      )
+    )
+  );

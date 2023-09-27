@@ -56,7 +56,8 @@ export const getExchangeHandler = (config: IConfig): express.RequestHandler => {
     magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIVATE_KEY
+      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
+      config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
     )
   );
 

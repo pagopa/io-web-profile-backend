@@ -14,19 +14,21 @@ import { getValidateJWE } from "../jwe";
 
 export const magicLinkJweValidation = (
   issuer: NonEmptyString,
-  privateKey: NonEmptyString
+  primaryPrivateKey: NonEmptyString,
+  secondaryPrivateKey?: NonEmptyString
 ) => (
   token: NonEmptyString
 ): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, MagicLinkPayload> =>
   pipe(
-    getValidateJWE(issuer, privateKey)(token),
+    getValidateJWE(issuer, primaryPrivateKey, secondaryPrivateKey)(token),
     TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message))
   );
 
 export const magicLinkJweValidationMiddleware = (
   authHeader: NonEmptyString,
   issuer: NonEmptyString,
-  privateKey: NonEmptyString
+  primaryPrivateKey: NonEmptyString,
+  secondaryPrivateKey?: NonEmptyString
 ): IRequestMiddleware<
   "IResponseErrorForbiddenNotAuthorized",
   MagicLinkPayload
@@ -43,5 +45,11 @@ export const magicLinkJweValidationMiddleware = (
     ),
     E.map(authBearer => authBearer.replace("Bearer ", "") as NonEmptyString),
     TE.fromEither,
-    TE.chain(token => magicLinkJweValidation(issuer, privateKey)(token))
+    TE.chain(token =>
+      magicLinkJweValidation(
+        issuer,
+        primaryPrivateKey,
+        secondaryPrivateKey
+      )(token)
+    )
   )();
