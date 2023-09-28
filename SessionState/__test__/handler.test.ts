@@ -5,6 +5,8 @@ import { Client } from "../../generated/definitions/fast-login/client";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { sessionStateHandler } from "../handler";
+import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
+import { TokenTypes } from "../../utils/enums/TokenTypes";
 
 // #region mocks
 const aValidSessionState = {
@@ -31,6 +33,12 @@ const aValidUser: HslJwtPayloadExtended = {
   name: "name" as NonEmptyString,
   spid_level: SpidLevel.L2
 };
+const aValidExchangeUser: ExchangeJwtPayloadExtended = {
+  family_name: "family_name" as NonEmptyString,
+  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+  name: "name" as NonEmptyString,
+  token_type: TokenTypes.EXCHANGE
+};
 
 const aNotValidUser: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
@@ -51,24 +59,27 @@ describe("SessionState", () => {
     jest.clearAllMocks();
   });
 
-  test(`GIVEN a valid user decoded from JWT
+  test.each([aValidUser, aValidExchangeUser])(
+    `GIVEN a valid user decoded from JWT
         WHEN all checks passed
-        THEN the response is 200`, async () => {
-    const handler = sessionStateHandler(sessionStateClientMock);
+        THEN the response is 200`,
+    async user => {
+      const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aValidUser);
+      const res = await handler(user);
 
-    expect(sessionStateMock).toHaveBeenCalledTimes(1);
-    expect(sessionStateMock).toHaveBeenCalledWith({
-      body: {
-        fiscal_code: aValidUser.fiscal_number
-      }
-    });
-    expect(res).toMatchObject({
-      kind: "IResponseSuccessJson",
-      value: aValidSessionState
-    });
-  });
+      expect(sessionStateMock).toHaveBeenCalledTimes(1);
+      expect(sessionStateMock).toHaveBeenCalledWith({
+        body: {
+          fiscal_code: aValidUser.fiscal_number
+        }
+      });
+      expect(res).toMatchObject({
+        kind: "IResponseSuccessJson",
+        value: aValidSessionState
+      });
+    }
+  );
 
   test(`GIVEN a valid user decoded from JWT
         WHEN checks don't pass

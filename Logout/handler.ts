@@ -7,11 +7,11 @@ import {
   IResponseErrorBadGateway,
   IResponseErrorGatewayTimeout,
   IResponseErrorInternal,
-  IResponseSuccessJson,
+  IResponseSuccessNoContent,
   ResponseErrorBadGateway,
   ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
-  ResponseSuccessJson
+  ResponseSuccessNoContent
 } from "@pagopa/ts-commons/lib/responses";
 import { defaultLog } from "@pagopa/winston-ts";
 import * as express from "express";
@@ -36,7 +36,7 @@ type LogoutErrorResponsesT =
   | IResponseErrorGatewayTimeout;
 type LogoutHandlerT = (
   user: HslJwtPayloadExtended
-) => Promise<IResponseSuccessJson<void> | LogoutErrorResponsesT>;
+) => Promise<IResponseSuccessNoContent | LogoutErrorResponsesT>;
 
 type LogoutClient = Client<"ApiKeyAuth">;
 
@@ -69,14 +69,14 @@ export const logoutHandler = (client: LogoutClient): LogoutHandlerT => (
         defaultLog.taskEither.errorLeft(e => `${e.detail}`),
         TE.chainW(({ status }) => {
           switch (status) {
-            case 200:
-              return TE.right(ResponseSuccessJson(void 0));
+            case 204:
+              return TE.right(ResponseSuccessNoContent());
             case 502:
-              return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
+              return TE.left<LogoutErrorResponsesT, IResponseSuccessNoContent>(
                 ResponseErrorBadGateway(`Something gone wrong.`)
               );
             case 504:
-              return TE.left<LogoutErrorResponsesT, IResponseSuccessJson<void>>(
+              return TE.left<LogoutErrorResponsesT, IResponseSuccessNoContent>(
                 ResponseErrorGatewayTimeout(
                   `Server couldn't respond in time, try again.`
                 )

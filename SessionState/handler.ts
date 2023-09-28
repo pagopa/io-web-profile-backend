@@ -1,8 +1,14 @@
+import * as express from "express";
+import * as E from "fp-ts/Either";
+import * as TE from "fp-ts/TaskEither";
+import { flow, pipe } from "fp-ts/lib/function";
+
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
+import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import {
   IResponseErrorBadGateway,
   IResponseErrorForbiddenNotAuthorized,
@@ -10,29 +16,30 @@ import {
   IResponseErrorInternal,
   IResponseSuccessJson,
   ResponseErrorBadGateway,
+  ResponseErrorForbiddenNotAuthorized,
   ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
   ResponseSuccessJson,
   getResponseErrorForbiddenNotAuthorized
 } from "@pagopa/ts-commons/lib/responses";
+import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import { defaultLog } from "@pagopa/winston-ts";
-import * as express from "express";
 
-import * as E from "fp-ts/Either";
-import * as TE from "fp-ts/TaskEither";
-
-import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
-import { flow, pipe } from "fp-ts/lib/function";
 import { IConfig } from "../utils/config";
-import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
-
-import { SessionState } from "../generated/definitions/external/SessionState";
-import { Client } from "../generated/definitions/fast-login/client";
 import { SpidLevel, gte } from "../utils/enums/SpidLevels";
+import { TokenTypes } from "../utils/enums/TokenTypes";
+import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
+import {
+  ExchangeJwtPayloadExtended,
+  exchangeJwtValidationMiddleware
+} from "../utils/middlewares/exchange-jwt-validation-middleware";
 import {
   HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+
+import { SessionState } from "../generated/definitions/external/SessionState";
+import { Client } from "../generated/definitions/fast-login/client";
 
 type SessionStateErrorResponsesT =
   | IResponseErrorForbiddenNotAuthorized
@@ -41,26 +48,30 @@ type SessionStateErrorResponsesT =
   | IResponseErrorGatewayTimeout;
 
 type SessionStateHandlerT = (
-  user: HslJwtPayloadExtended
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ) => Promise<IResponseSuccessJson<SessionState> | SessionStateErrorResponsesT>;
 
 type SessionStateClient = Client<"ApiKeyAuth">;
 
-const canSeeProfile = (user: HslJwtPayloadExtended): boolean =>
-  HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2);
+const canSeeProfile = (
+  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
+): boolean =>
+  (ExchangeJwtPayloadExtended.is(user) &&
+    user.token_type === TokenTypes.EXCHANGE) ||
+  (HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2));
 
 export const sessionStateHandler = (
   client: SessionStateClient
 ): SessionStateHandlerT => (
-  reqJwtPayload: HslJwtPayloadExtended
+  reqJwtPayload: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ): ReturnType<SessionStateHandlerT> =>
   pipe(
     reqJwtPayload,
     TE.fromPredicate(
       user_data => canSeeProfile(user_data),
-      user_data =>
+      () =>
         getResponseErrorForbiddenNotAuthorized(
-          `Could not perform session-state. Required SpidLevel at least: {${SpidLevel.L2}}; User SpidLevel: {${user_data.spid_level}}`
+          `Could not perform session-state. Required SpidLevel at least: [${SpidLevel.L2}] or exchange token`
         )
     ),
     defaultLog.taskEither.errorLeft(errorResponse => `${errorResponse.detail}`),
@@ -132,7 +143,10 @@ export const getSessionStateHandler = (
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     verifyUserEligibilityMiddleware(config),
-    hslJwtValidationMiddleware(config)
+    SequenceMiddleware(ResponseErrorForbiddenNotAuthorized)(
+      hslJwtValidationMiddleware(config),
+      exchangeJwtValidationMiddleware(config)
+    )
   );
 
   return wrapRequestHandler(middlewaresWrap((_, __, user) => handler(user)));

@@ -9,7 +9,7 @@ import { logoutHandler } from "../handler";
 // #region mocks
 const logoutMock = jest.fn(async () =>
   E.right({
-    status: 200
+    status: 204
   })
 );
 const fastLoginClientMock = ({
@@ -44,7 +44,7 @@ describe("Logout", () => {
       }
     });
     expect(res).toMatchObject({
-      kind: "IResponseSuccessJson"
+      kind: "IResponseSuccessNoContent"
     });
   });
 
