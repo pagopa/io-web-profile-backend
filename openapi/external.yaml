@@ -20,35 +20,35 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LockSessionData'
+              $ref: "#/components/schemas/LockSessionData"
       responses:
-        '204':
+        "204":
           description: No Content
-        '400':
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadRequest'
-        '401':
+                $ref: "#/components/schemas/BadRequest"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '403':
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
           description: Forbidden
-        '409':
+        "409":
           description: Conflict
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
-        '502':
+                $ref: "#/components/schemas/InternalServerError"
+        "502":
           description: Bad Gateway
-        '504':
+        "504":
           description: Gateway Timeout
   /unlock-session:
     post:
@@ -59,37 +59,37 @@ paths:
         - bearerAuth: []
       requestBody:
         content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnlockSessionData'
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnlockSessionData"
       responses:
-        '204':
+        "204":
           description: No Content
-        '400':
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadRequest'
-        '401':
+                $ref: "#/components/schemas/BadRequest"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '403':
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
           description: Forbidden
-        '409':
+        "409":
           description: Conflict
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
-        '502':
+                $ref: "#/components/schemas/InternalServerError"
+        "502":
           description: Bad Gateway
-        '504':
+        "504":
           description: Gateway Timeout
   /logout:
     post:
@@ -99,29 +99,29 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
-          description: Success
-        '400':
+        "204":
+          description: No Content
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadRequest'
-        '401':
+                $ref: "#/components/schemas/BadRequest"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '500':
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
-        '502':
+                $ref: "#/components/schemas/InternalServerError"
+        "502":
           description: Bad Gateway
-        '504':
+        "504":
           description: Gateway Timeout
   /profile:
     get:
@@ -131,32 +131,32 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileData'
-        '401':
+                $ref: "#/components/schemas/ProfileData"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '403':
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '500':
+                $ref: "#/components/schemas/ProblemJson"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
+                $ref: "#/components/schemas/InternalServerError"
   /session-state:
     get:
       operationId: getUserSessionState
@@ -165,23 +165,23 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionState'
-        '403':
+                $ref: "#/components/schemas/SessionState"
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
-        '502':
+                $ref: "#/components/schemas/InternalServerError"
+        "502":
           description: Bad Gateway
-        '504':
+        "504":
           description: Gateway Timeout
   /exchange:
     post:
@@ -191,35 +191,35 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExchangeToken'
-        '400':
+                $ref: "#/components/schemas/ExchangeToken"
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadRequest'
-        '401':
+                $ref: "#/components/schemas/BadRequest"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '403':
+                $ref: "#/components/schemas/Unauthorized"
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
-        '502':
+                $ref: "#/components/schemas/InternalServerError"
+        "502":
           description: Bad Gateway
-        '504':
+        "504":
           description: Gateway Timeout
 components:
   securitySchemes:
@@ -230,7 +230,7 @@ components:
   schemas:
     InternalServerError:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -245,7 +245,7 @@ components:
             - status
     BadRequest:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -260,7 +260,7 @@ components:
             - status
     Unauthorized:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -274,26 +274,26 @@ components:
           required:
             - status
     AuthBearer:
-        type: string
-        pattern: ^Bearer [a-zA-Z0-9-_].+
-        description: A JWT auth custom header as `Bearer <JWT Token>`
-        example: >-
-          Bearer
-          eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      type: string
+      pattern: ^Bearer [a-zA-Z0-9-_].+
+      description: A JWT auth custom header as `Bearer <JWT Token>`
+      example: >-
+        Bearer
+        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
     UnlockCode:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/UnlockCode'
+      $ref: "https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/UnlockCode"
     LockSessionData:
       type: object
       properties:
         unlock_code:
-          $ref: '#/components/schemas/UnlockCode'
+          $ref: "#/components/schemas/UnlockCode"
       required:
         - unlock_code
     UnlockSessionData:
       type: object
       properties:
         unlock_code:
-          $ref: '#/components/schemas/UnlockCode'
+          $ref: "#/components/schemas/UnlockCode"
     ProfileData:
       description: |-
         Describes the citizen's profile.
@@ -304,9 +304,9 @@ components:
           format: email
           example: foobar@example.com
     SessionInfo:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionInfo'
+      $ref: "https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionInfo"
     SessionState:
-      $ref: 'https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionState'
+      $ref: "https://raw.githubusercontent.com/pagopa/io-functions-fast-login/main/api/internal.yaml#/components/schemas/SessionState"
     ExchangeToken:
       description: Exchanged token
       type: object
@@ -331,9 +331,9 @@ components:
           description: >-
             A short, summary of the problem type. Written in english and
             readable
-  
+
             for engineers (usually not suited for non technical stakeholders and
-  
+
             not localized); example: Service Unavailable
         status:
           type: integer
@@ -341,7 +341,7 @@ components:
           description: >-
             The HTTP status code generated by the origin server for this
             occurrence
-  
+
             of the problem.
           minimum: 100
           maximum: 600
@@ -359,5 +359,5 @@ components:
           description: >-
             An absolute URI that identifies the specific occurrence of the
             problem.
-  
+
             It may or may not yield further information if dereferenced.
