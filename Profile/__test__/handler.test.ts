@@ -54,7 +54,7 @@ describe("Profile", () => {
 
       expect(getProfileMock).toHaveBeenCalledTimes(1);
       expect(getProfileMock).toHaveBeenCalledWith({
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: user.fiscal_number
       });
       expect(res).toMatchObject({
         kind: "IResponseSuccessJson",

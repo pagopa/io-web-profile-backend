@@ -71,7 +71,7 @@ describe("SessionState", () => {
       expect(sessionStateMock).toHaveBeenCalledTimes(1);
       expect(sessionStateMock).toHaveBeenCalledWith({
         body: {
-          fiscal_code: aValidUser.fiscal_number
+          fiscal_code: user.fiscal_number
         }
       });
       expect(res).toMatchObject({
