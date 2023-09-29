@@ -17,19 +17,19 @@ import { MagicLinkPayload } from "./exchange-jwt";
  */
 export type GetGenerateJWE = <T extends jose.JWTPayload>(
   issuer: NonEmptyString,
-  primaryPrivateKey: NonEmptyString
+  primaryPublicKey: NonEmptyString
 ) => (payload: T, ttl: Second) => TE.TaskEither<Error, NonEmptyString>;
 
 export const secondsFromEpoch = (secondsToAdd: number): Second =>
   getUnixTime(addSeconds(new Date(), secondsToAdd)) as Second;
 
-export const getGenerateJWE: GetGenerateJWE = (issuer, primaryPrivateKey) => (
+export const getGenerateJWE: GetGenerateJWE = (issuer, primaryPublicKey) => (
   payload,
   ttl
 ): TE.TaskEither<Error, NonEmptyString> =>
   pipe(
-    TE.of(crypto.createPrivateKey(primaryPrivateKey)),
-    TE.chain(ecPrivateKey =>
+    TE.of(crypto.createPublicKey(primaryPublicKey)),
+    TE.chain(cryptoPublicKey =>
       TE.tryCatch(
         () =>
           new jose.EncryptJWT(payload)
@@ -42,7 +42,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, primaryPrivateKey) => (
             .setIssuer(issuer)
             .setIssuedAt()
             .setExpirationTime(secondsFromEpoch(ttl))
-            .encrypt(ecPrivateKey),
+            .encrypt(cryptoPublicKey),
         e => E.toError(`Cannot generate JWE. ${e}`)
       )
     ),

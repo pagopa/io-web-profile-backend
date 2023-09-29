@@ -37,12 +37,14 @@ export const JWTConfig = t.intersection([
     MAGIC_LINK_BASE_URL: NonEmptyString,
     MAGIC_LINK_JWE_ISSUER: NonEmptyString,
     MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_PRIMARY_PUB_KEY: NonEmptyString,
     // Default 7d = 604800 seconds
     MAGIC_LINK_JWE_TTL: withDefault(t.string, "604800").pipe(NumberFromString)
   }),
   t.partial({
     EXCHANGE_JWT_SECONDARY_PUB_KEY: NonEmptyString,
-    MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: NonEmptyString
+    MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: NonEmptyString,
+    MAGIC_LINK_JWE_SECONDARY_PUB_KEY: NonEmptyString
   })
 ]);
 

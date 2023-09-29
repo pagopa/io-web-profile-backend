@@ -89,8 +89,10 @@ The following table contains the required ENV variables that the function requir
 | EXCHANGE_JWT_PRIMARY_PRIVATE_KEY| Exchange JWT Private Key (token generation)         | string|
 | EXCHANGE_JWT_ISSUER             | Exchange JWT ISSUER                                 | string|
 | EXCHANGE_JWT_TTL                | Exchange JWT TTL in seconds                         | string|
-| MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY| Magic Link JWE Private Key (token gen/validation)   | string|
-| MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY| Magic Link JWE Private Key (token gen/validation)   | string|
+| MAGIC_LINK_JWE_PRIMARY_PUB_KEY  | Magic Link JWE Public Key (token genereation)       | string|
+| MAGIC_LINK_JWE_SECONDARY_PUB_KEY| Magic Link JWE Private Key (token generation)       | string|
+| MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY| Magic Link JWE Private Key (token validation)     | string|
+| MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY| Magic Link JWE Private Key (token validation)   | string|
 | MAGIC_LINK_JWE_ISSUER           | Magic Link JWE ISSUER                               | string|
 | MAGIC_LINK_JWE_TTL              | Magic Link JWE in seconds                           | string|
 | MAGIC_LINK_BASE_URL             | Magic Link baseUrl                                  | string|

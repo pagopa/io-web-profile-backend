@@ -102,6 +102,8 @@ export const jwtConfig: JWTConfig = {
   MAGIC_LINK_JWE_ISSUER: magicLinkIssuer as NonEmptyString,
   MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY: magicLinkPrimaryPrivateKey as NonEmptyString,
   MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY: magicLinkSecondaryPrivateKey as NonEmptyString,
+  MAGIC_LINK_JWE_PRIMARY_PUB_KEY: magicLinkPrimaryPublicKey as NonEmptyString,
+  MAGIC_LINK_JWE_SECONDARY_PUB_KEY: magicLinkSecondaryPublicKey as NonEmptyString,
   MAGIC_LINK_JWE_TTL: 604800 as Second,
   MAGIC_LINK_BASE_URL: "http://localhost:3000/it/magic-link" as NonEmptyString
 };
