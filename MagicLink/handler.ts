@@ -52,7 +52,7 @@ export const magicLinkHandler = (
 export const getMagicLinkHandler = (
   issuer: NonEmptyString,
   publicKey: NonEmptyString,
-  ttl: NumberFromString,
+  ttl: number,
   magicLinkBaseUrl: NonEmptyString
 ): express.RequestHandler => {
   const handler = magicLinkHandler(issuer, publicKey, ttl, magicLinkBaseUrl);
