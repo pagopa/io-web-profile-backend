@@ -1,6 +1,5 @@
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as E from "fp-ts/lib/Either";
-import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
+import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
@@ -25,17 +24,8 @@ const sessionStateClientMock = ({
   getUserSessionState: sessionStateMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidUser: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
-};
-
-const aNotValidUser: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
+const aL1User: HslJwtPayloadExtended = {
+  ...aValidL2User,
   spid_level: SpidLevel.L1
 };
 
@@ -51,31 +41,34 @@ describe("SessionState", () => {
     jest.clearAllMocks();
   });
 
-  test(`GIVEN a valid user decoded from JWT
+  test.each([aValidL2User, aValidExchangeUser])(
+    `GIVEN a valid user decoded from JWT
         WHEN all checks passed
-        THEN the response is 200`, async () => {
-    const handler = sessionStateHandler(sessionStateClientMock);
+        THEN the response is 200`,
+    async user => {
+      const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aValidUser);
+      const res = await handler(user);
 
-    expect(sessionStateMock).toHaveBeenCalledTimes(1);
-    expect(sessionStateMock).toHaveBeenCalledWith({
-      body: {
-        fiscal_code: aValidUser.fiscal_number
-      }
-    });
-    expect(res).toMatchObject({
-      kind: "IResponseSuccessJson",
-      value: aValidSessionState
-    });
-  });
+      expect(sessionStateMock).toHaveBeenCalledTimes(1);
+      expect(sessionStateMock).toHaveBeenCalledWith({
+        body: {
+          fiscal_code: user.fiscal_number
+        }
+      });
+      expect(res).toMatchObject({
+        kind: "IResponseSuccessJson",
+        value: aValidSessionState
+      });
+    }
+  );
 
   test(`GIVEN a valid user decoded from JWT
         WHEN checks don't pass
         THEN the response is 403`, async () => {
     const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aNotValidUser);
+    const res = await handler(aL1User);
 
     expect(sessionStateMock).toHaveBeenCalledTimes(0);
     expect(res).toMatchObject({
@@ -95,12 +88,12 @@ describe("SessionState", () => {
     );
     const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(sessionStateMock).toHaveBeenCalledTimes(1);
     expect(sessionStateMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({
@@ -120,12 +113,12 @@ describe("SessionState", () => {
     );
     const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(sessionStateMock).toHaveBeenCalledTimes(1);
     expect(sessionStateMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({
@@ -145,12 +138,12 @@ describe("SessionState", () => {
     );
     const handler = sessionStateHandler(sessionStateClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(sessionStateMock).toHaveBeenCalledTimes(1);
     expect(sessionStateMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({

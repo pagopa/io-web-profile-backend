@@ -1,23 +1,14 @@
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { config as mockedConfig } from "../../__mocks__/config.mock";
 import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
-import { TokenTypes } from "../../utils/enums/TokenTypes";
-import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
-import { exchangeHandler } from "../handler";
 import { MagicLinkPayload } from "../../utils/exchange-jwt";
+import { exchangeHandler } from "../handler";
 
 // #region mocks
 const aValidUser: MagicLinkPayload = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString
-};
-
-const aValidExchangeUser: ExchangeJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
 };
 // #endregion
 
