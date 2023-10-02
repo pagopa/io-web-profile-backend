@@ -1,13 +1,10 @@
 import * as E from "fp-ts/lib/Either";
-import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
+import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { UnlockCode } from "../../generated/definitions/fast-login/UnlockCode";
+import { Client } from "../../generated/definitions/fast-login/client";
+import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { lockSessionHandler } from "../handler";
-import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { Client } from "../../generated/definitions/fast-login/client";
-import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
-import { TokenTypes } from "../../utils/enums/TokenTypes";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 // #region mocks
 const lockSessionMock = jest.fn(async () =>
@@ -19,23 +16,9 @@ const fastLoginClientMock = ({
   lockUserSession: lockSessionMock
 } as unknown) as Client<"ApiKeyAuth">;
 
-const aValidUser: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
-};
 const aL1User: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
+  ...aValidL2User,
   spid_level: SpidLevel.L1
-};
-const aValidExchangeUser: ExchangeJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
 };
 
 const aValidPayload = {
@@ -54,12 +37,12 @@ describe("LockSession", () => {
         THEN the response is 204`, async () => {
     const handler = lockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidPayload);
 
     expect(lockSessionMock).toHaveBeenCalledTimes(1);
     expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number,
+        fiscal_code: aValidL2User.fiscal_number,
         unlock_code: aValidPayload.unlock_code
       }
     });
@@ -74,12 +57,12 @@ describe("LockSession", () => {
     lockSessionMock.mockResolvedValueOnce(E.right({ status: 409 }));
     const handler = lockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidPayload);
 
     expect(lockSessionMock).toHaveBeenCalledTimes(1);
     expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number,
+        fiscal_code: aValidL2User.fiscal_number,
         unlock_code: aValidPayload.unlock_code
       }
     });
@@ -94,12 +77,12 @@ describe("LockSession", () => {
     lockSessionMock.mockResolvedValueOnce(E.right({ status: 502 }));
     const handler = lockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidPayload);
 
     expect(lockSessionMock).toHaveBeenCalledTimes(1);
     expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number,
+        fiscal_code: aValidL2User.fiscal_number,
         unlock_code: aValidPayload.unlock_code
       }
     });
@@ -115,12 +98,12 @@ describe("LockSession", () => {
     lockSessionMock.mockResolvedValueOnce(E.right({ status: 504 }));
     const handler = lockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidPayload);
 
     expect(lockSessionMock).toHaveBeenCalledTimes(1);
     expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number,
+        fiscal_code: aValidL2User.fiscal_number,
         unlock_code: aValidPayload.unlock_code
       }
     });
@@ -139,12 +122,12 @@ describe("LockSession", () => {
     lockSessionMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
     const handler = lockSessionHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser, aValidPayload);
+    const res = await handler(aValidL2User, aValidPayload);
 
     expect(lockSessionMock).toHaveBeenCalledTimes(1);
     expect(lockSessionMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number,
+        fiscal_code: aValidL2User.fiscal_number,
         unlock_code: aValidPayload.unlock_code
       }
     });
