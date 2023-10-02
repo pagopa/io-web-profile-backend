@@ -22,12 +22,12 @@ const jweIssuer = config.MAGIC_LINK_JWE_ISSUER;
 
 describe("MagicLinkJweValidationMiddleware", () => {
   const today = new Date();
-  const primaryPrivateKey = crypto.createPrivateKey(
-    config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY
+  const primaryPublicKey = crypto.createPublicKey(
+    config.MAGIC_LINK_JWE_PRIMARY_PUB_KEY
   );
-  const secondaryPrivateKey = crypto.createPrivateKey(
-    config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY as NonEmptyString
-  )
+  const secondaryPublicKey = crypto.createPublicKey(
+    config.MAGIC_LINK_JWE_SECONDARY_PUB_KEY as NonEmptyString
+  );
 
   it("GIVEN a valid jwePayload WHEN magicLinkJweValidationMiddleware is called THEN it should return a valid response", async () => {
     const token = await new jose.EncryptJWT(aJwePayload)
@@ -35,7 +35,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       .setIssuer(jweIssuer)
       .setIssuedAt()
       .setExpirationTime(getUnixTime(addSeconds(today, 3000)))
-      .encrypt(primaryPrivateKey);
+      .encrypt(primaryPublicKey);
 
     const mockReq = ({
       headers: {
@@ -43,12 +43,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       }
     } as unknown) as express.Request;
 
-    const middleware = magicLinkJweValidationMiddleware(
-      config.BEARER_AUTH_HEADER,
-      config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
-      config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
-    );
+    const middleware = getMagicLinkValidationMiddleware();
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
       _tag: "Right",
@@ -62,7 +57,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       .setIssuer(jweIssuer)
       .setIssuedAt()
       .setExpirationTime(getUnixTime(addSeconds(today, 3000)))
-      .encrypt(secondaryPrivateKey);
+      .encrypt(secondaryPublicKey);
 
     const mockReq = ({
       headers: {
@@ -70,12 +65,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       }
     } as unknown) as express.Request;
 
-    const middleware = magicLinkJweValidationMiddleware(
-      config.BEARER_AUTH_HEADER,
-      config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
-      config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
-    );
+    const middleware = getMagicLinkValidationMiddleware();
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
       _tag: "Right",
@@ -88,8 +78,8 @@ describe("MagicLinkJweValidationMiddleware", () => {
       .setProtectedHeader(jweProtectedHeader)
       .setIssuer(jweIssuer)
       .setIssuedAt()
-      .setExpirationTime(getUnixTime(subSeconds(today, 3000)))
-      .encrypt(primaryPrivateKey);
+      .setExpirationTime(getUnixTime(subSeconds(today, 1)))
+      .encrypt(primaryPublicKey);
 
     const mockReq = ({
       headers: {
@@ -97,12 +87,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       }
     } as unknown) as express.Request;
 
-    const middleware = magicLinkJweValidationMiddleware(
-      config.BEARER_AUTH_HEADER,
-      config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
-      config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
-    );
+    const middleware = getMagicLinkValidationMiddleware();
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
       _tag: "Left",
@@ -119,7 +104,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       .setIssuer("INVALIDISSUER")
       .setIssuedAt()
       .setExpirationTime(getUnixTime(addSeconds(today, 3000)))
-      .encrypt(primaryPrivateKey);
+      .encrypt(primaryPublicKey);
 
     const mockReq = ({
       headers: {
@@ -127,12 +112,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       }
     } as unknown) as express.Request;
 
-    const middleware = magicLinkJweValidationMiddleware(
-      config.BEARER_AUTH_HEADER,
-      config.MAGIC_LINK_JWE_ISSUER,
-      config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
-      config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
-    );
+    const middleware = getMagicLinkValidationMiddleware();
 
     await expect(middleware(mockReq)).resolves.toMatchObject({
       _tag: "Left",
@@ -143,3 +123,12 @@ describe("MagicLinkJweValidationMiddleware", () => {
     });
   });
 });
+
+const getMagicLinkValidationMiddleware = () => {
+  return magicLinkJweValidationMiddleware(
+    config.BEARER_AUTH_HEADER,
+    config.MAGIC_LINK_JWE_ISSUER,
+    config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
+    config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
+  );
+};
