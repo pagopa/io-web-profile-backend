@@ -8,7 +8,6 @@ import {
   withRequestMiddlewares,
   wrapRequestHandler
 } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
-import { NumberFromString } from "@pagopa/ts-commons/lib/numbers";
 import {
   IResponseErrorInternal,
   IResponseSuccessJson,
