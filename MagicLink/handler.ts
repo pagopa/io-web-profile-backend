@@ -31,7 +31,7 @@ type MagicLinkHandlerT = (
 export const magicLinkHandler = (
   issuer: NonEmptyString,
   publicKey: NonEmptyString,
-  ttl: NumberFromString,
+  ttl: number,
   magicLinkBaseUrl: NonEmptyString
 ): MagicLinkHandlerT => (reqPayload): ReturnType<MagicLinkHandlerT> =>
   pipe(

@@ -1,11 +1,10 @@
 import * as E from "fp-ts/Either";
-import { exportSPKI, generateKeyPair } from "jose";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 
-import { getGenerateJWE } from "../jwe";
 import { config } from "../../__mocks__/config.mock";
+import { getGenerateJWE } from "../jwe";
 
 describe(`getGenerateJWE`, () => {
   it("should return a valid JWE", async () => {

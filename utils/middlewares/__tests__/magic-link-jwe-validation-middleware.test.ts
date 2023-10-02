@@ -78,7 +78,7 @@ describe("MagicLinkJweValidationMiddleware", () => {
       .setProtectedHeader(jweProtectedHeader)
       .setIssuer(jweIssuer)
       .setIssuedAt()
-      .setExpirationTime(getUnixTime(subSeconds(today, 3000)))
+      .setExpirationTime(getUnixTime(subSeconds(today, 1)))
       .encrypt(primaryPublicKey);
 
     const mockReq = ({
