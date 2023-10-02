@@ -67,12 +67,10 @@ export const sessionStateHandler = (
 ): ReturnType<SessionStateHandlerT> =>
   pipe(
     reqJwtPayload,
-    TE.fromPredicate(
-      canSeeProfile,
-      () =>
-        getResponseErrorForbiddenNotAuthorized(
-          `Could not perform session-state. Required SpidLevel at least: [${SpidLevel.L2}] or exchange token`
-        )
+    TE.fromPredicate(canSeeProfile, () =>
+      getResponseErrorForbiddenNotAuthorized(
+        `Could not perform session-state. Required SpidLevel at least: [${SpidLevel.L2}] or exchange token`
+      )
     ),
     defaultLog.taskEither.errorLeft(errorResponse => `${errorResponse.detail}`),
     TE.chainW(user_data =>
