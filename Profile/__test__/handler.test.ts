@@ -1,12 +1,7 @@
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as E from "fp-ts/lib/Either";
-import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
+import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { Client } from "../../generated/definitions/io-functions-app/client";
-import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { profileHandler } from "../handler";
-import { TokenTypes } from "../../utils/enums/TokenTypes";
-import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
 
 // #region mocks
 const aValidEmailResponse = {
@@ -22,19 +17,6 @@ const getProfileMock = jest.fn(async () =>
 const functionsAppClientMock = ({
   getProfile: getProfileMock
 } as unknown) as Client<"SubscriptionKey">;
-
-const aValidUser: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
-};
-const aValidExchangeUser: ExchangeJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
-};
 // #endregion
 
 // #region tests
@@ -43,7 +25,7 @@ describe("Profile", () => {
     jest.clearAllMocks();
   });
 
-  test.each([aValidUser, aValidExchangeUser])(
+  test.each([aValidL2User, aValidExchangeUser])(
     `GIVEN a valid user decoded from JWT
         WHEN all checks passed
         THEN the response is 200 and contains the email`,
@@ -72,11 +54,11 @@ describe("Profile", () => {
     );
     const handler = profileHandler(functionsAppClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(getProfileMock).toHaveBeenCalledTimes(1);
     expect(getProfileMock).toHaveBeenCalledWith({
-      fiscal_code: aValidUser.fiscal_number
+      fiscal_code: aValidL2User.fiscal_number
     });
     expect(res).toMatchObject({
       kind: "IResponseErrorNotFound"
@@ -92,11 +74,11 @@ describe("Profile", () => {
     );
     const handler = profileHandler(functionsAppClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(getProfileMock).toHaveBeenCalledTimes(1);
     expect(getProfileMock).toHaveBeenCalledWith({
-      fiscal_code: aValidUser.fiscal_number
+      fiscal_code: aValidL2User.fiscal_number
     });
     expect(res).toMatchObject({
       kind: "IResponseErrorInternal"

@@ -1,12 +1,7 @@
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as E from "fp-ts/lib/Either";
-import { FiscalCode } from "../../generated/definitions/fast-login/FiscalCode";
+import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { Client } from "../../generated/definitions/fast-login/client";
-import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { logoutHandler } from "../handler";
-import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
-import { TokenTypes } from "../../utils/enums/TokenTypes";
 
 // #region mocks
 const logoutMock = jest.fn(async () =>
@@ -17,19 +12,6 @@ const logoutMock = jest.fn(async () =>
 const fastLoginClientMock = ({
   logoutFromIOApp: logoutMock
 } as unknown) as Client<"ApiKeyAuth">;
-
-const aValidUser: HslJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
-};
-const aExchangeUser: ExchangeJwtPayloadExtended = {
-  family_name: "family_name" as NonEmptyString,
-  fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
-};
 // #endregion
 
 // #region tests
@@ -38,7 +20,7 @@ describe("Logout", () => {
     jest.clearAllMocks();
   });
 
-  test.each([aValidUser, aExchangeUser])(
+  test.each([aValidL2User, aValidExchangeUser])(
     `GIVEN a valid user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`,
@@ -66,12 +48,12 @@ describe("Logout", () => {
     logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
     const handler = logoutHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(logoutMock).toHaveBeenCalledTimes(1);
     expect(logoutMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({
@@ -87,12 +69,12 @@ describe("Logout", () => {
     logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
     const handler = logoutHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(logoutMock).toHaveBeenCalledTimes(1);
     expect(logoutMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({
@@ -107,12 +89,12 @@ describe("Logout", () => {
     logoutMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
     const handler = logoutHandler(fastLoginClientMock);
 
-    const res = await handler(aValidUser);
+    const res = await handler(aValidL2User);
 
     expect(logoutMock).toHaveBeenCalledTimes(1);
     expect(logoutMock).toHaveBeenCalledWith({
       body: {
-        fiscal_code: aValidUser.fiscal_number
+        fiscal_code: aValidL2User.fiscal_number
       }
     });
     expect(res).toMatchObject({
