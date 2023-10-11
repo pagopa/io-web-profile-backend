@@ -134,10 +134,13 @@ components:
       properties:
         family_name:
           type: string
+          minLength: 1
         fiscal_number:
           type: string
+          minLength: 1
         name:
           type: string
+          minLength: 1
       required:
         - family_name
         - fiscal_number
@@ -147,6 +150,7 @@ components:
       properties:
         magic_link:
           type: string
+          minLength: 1
       required:
         - magic_link
     ProblemJson:
