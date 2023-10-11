@@ -140,7 +140,7 @@ components:
           type: string
       required:
         - family_name
-        - fiscal_code
+        - fiscal_number
         - name
     MagicLinkToken:
       type: object
