@@ -134,21 +134,30 @@ components:
       properties:
         family_name:
           type: string
+          minLength: 1
         fiscal_number:
-          type: string
+          $ref: "#/components/schemas/FiscalCode"
         name:
           type: string
+          minLength: 1
       required:
         - family_name
-        - fiscal_code
+        - fiscal_number
         - name
     MagicLinkToken:
       type: object
       properties:
         magic_link:
           type: string
+          minLength: 1
       required:
         - magic_link
+    FiscalCode:
+      type: string
+      description: User's fiscal code.
+      format: FiscalCode
+      x-import: '@pagopa/ts-commons/lib/strings'
+      example: SPNDNL80R13C555X
     ProblemJson:
       type: object
       properties:

@@ -42,7 +42,8 @@ export const magicLinkHandler = (
     ),
     TE.map(jwe =>
       ResponseSuccessJson({
-        magic_link: `${magicLinkBaseUrl}#token=${jwe}`
+        // safe cast because the variables referenced are both non-empty strings
+        magic_link: `${magicLinkBaseUrl}#token=${jwe}` as NonEmptyString
       })
     ),
     TE.toUnion

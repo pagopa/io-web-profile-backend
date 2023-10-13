@@ -1,14 +1,14 @@
+import { FiscalCode, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { magicLinkHandler } from "../handler";
 
 import { config } from "../../__mocks__/config.mock";
 
-// TODO: jest has some problems with Uint8Array, making the test fail
 describe("MagicLink", () => {
   it(`should generate a valid magic link token`, async () => {
     const aValidPayload = {
-      family_name: "Rossi",
-      fiscal_number: "ISPXNB32R82Y766D",
-      name: "Carla"
+      family_name: "Rossi" as NonEmptyString,
+      fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
+      name: "Carla" as NonEmptyString
     };
     const handler = magicLinkHandler(
       config.MAGIC_LINK_JWE_ISSUER,
