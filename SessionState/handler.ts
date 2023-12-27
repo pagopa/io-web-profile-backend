@@ -26,7 +26,7 @@ import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import { defaultLog } from "@pagopa/winston-ts";
 
 import { IConfig } from "../utils/config";
-import { SpidLevel, gte } from "../utils/enums/SpidLevels";
+import { SpidLevel } from "../utils/enums/SpidLevels";
 import { TokenTypes } from "../utils/enums/TokenTypes";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import {
@@ -58,7 +58,7 @@ const canSeeProfile = (
 ): boolean =>
   (ExchangeJwtPayloadExtended.is(user) &&
     user.token_type === TokenTypes.EXCHANGE) ||
-  (HslJwtPayloadExtended.is(user) && gte(user.spid_level, SpidLevel.L2));
+  HslJwtPayloadExtended.is(user);
 
 export const sessionStateHandler = (
   client: SessionStateClient
