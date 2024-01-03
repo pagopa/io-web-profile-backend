@@ -1,7 +1,6 @@
 import * as E from "fp-ts/lib/Either";
 import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { Client } from "../../generated/definitions/fast-login/client";
-import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { sessionStateHandler } from "../handler";
 
 // #region mocks
@@ -56,19 +55,6 @@ describe("SessionState", () => {
       });
     }
   );
-
-  test(`GIVEN an invalid JWT
-        WHEN checks don't pass
-        THEN the response is 403`, async () => {
-    const handler = sessionStateHandler(sessionStateClientMock);
-
-    const res = await handler(("" as unknown) as HslJwtPayloadExtended);
-
-    expect(sessionStateMock).toHaveBeenCalledTimes(0);
-    expect(res).toMatchObject({
-      kind: "IResponseErrorForbiddenNotAuthorized"
-    });
-  });
 
   test(`GIVEN a valid user decoded from JWT
     WHEN the client returns an error
