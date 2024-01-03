@@ -19,15 +19,12 @@ import {
   ResponseErrorForbiddenNotAuthorized,
   ResponseErrorGatewayTimeout,
   ResponseErrorInternal,
-  ResponseSuccessJson,
-  getResponseErrorForbiddenNotAuthorized
+  ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { SequenceMiddleware } from "@pagopa/ts-commons/lib/sequence_middleware";
 import { defaultLog } from "@pagopa/winston-ts";
 
 import { IConfig } from "../utils/config";
-import { SpidLevel } from "../utils/enums/SpidLevels";
-import { TokenTypes } from "../utils/enums/TokenTypes";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
 import {
   ExchangeJwtPayloadExtended,
@@ -53,26 +50,13 @@ type SessionStateHandlerT = (
 
 type SessionStateClient = Client<"ApiKeyAuth">;
 
-const canSeeProfile = (
-  user: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
-): boolean =>
-  (ExchangeJwtPayloadExtended.is(user) &&
-    user.token_type === TokenTypes.EXCHANGE) ||
-  HslJwtPayloadExtended.is(user);
-
 export const sessionStateHandler = (
   client: SessionStateClient
 ): SessionStateHandlerT => (
   reqJwtPayload: HslJwtPayloadExtended | ExchangeJwtPayloadExtended
 ): ReturnType<SessionStateHandlerT> =>
   pipe(
-    reqJwtPayload,
-    TE.fromPredicate(canSeeProfile, () =>
-      getResponseErrorForbiddenNotAuthorized(
-        `Could not perform session-state. Required SpidLevel at least: [${SpidLevel.L2}] or exchange token`
-      )
-    ),
-    defaultLog.taskEither.errorLeft(errorResponse => `${errorResponse.detail}`),
+    TE.of(reqJwtPayload),
     TE.chainW(user_data =>
       TE.tryCatch(
         () =>
