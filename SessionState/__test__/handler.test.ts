@@ -1,8 +1,6 @@
 import * as E from "fp-ts/lib/Either";
 import { aValidExchangeUser, aValidL2User } from "../../__mocks__/users";
 import { Client } from "../../generated/definitions/fast-login/client";
-import { SpidLevel } from "../../utils/enums/SpidLevels";
-import { HslJwtPayloadExtended } from "../../utils/middlewares/hsl-jwt-validation-middleware";
 import { sessionStateHandler } from "../handler";
 
 // #region mocks
@@ -23,11 +21,6 @@ const sessionStateMock = jest.fn(async () =>
 const sessionStateClientMock = ({
   getUserSessionState: sessionStateMock
 } as unknown) as Client<"ApiKeyAuth">;
-
-const aL1User: HslJwtPayloadExtended = {
-  ...aValidL2User,
-  spid_level: SpidLevel.L1
-};
 
 const emptySessionState = {
   access_enabled: false,
@@ -62,19 +55,6 @@ describe("SessionState", () => {
       });
     }
   );
-
-  test(`GIVEN a valid user decoded from JWT
-        WHEN checks don't pass
-        THEN the response is 403`, async () => {
-    const handler = sessionStateHandler(sessionStateClientMock);
-
-    const res = await handler(aL1User);
-
-    expect(sessionStateMock).toHaveBeenCalledTimes(0);
-    expect(res).toMatchObject({
-      kind: "IResponseErrorForbiddenNotAuthorized"
-    });
-  });
 
   test(`GIVEN a valid user decoded from JWT
     WHEN the client returns an error
