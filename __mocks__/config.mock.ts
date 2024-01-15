@@ -18,7 +18,8 @@ const iconfig = {
   AzureWebJobsStorage: "azureWebJobsStorage" as NonEmptyString,
   BETA_TESTERS: [aFiscalCode],
   FF_API_ENABLED: FeatureFlagEnum.ALL,
-  isProduction: false
+  isProduction: false,
+  AUDIT_LOG_CONNECTION_STRING: "" as NonEmptyString
 };
 
 const {

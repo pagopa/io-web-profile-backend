@@ -103,3 +103,5 @@ The following table contains the required ENV variables that the function requir
 | FAST_LOGIN_CLIENT_BASE_URL      | Fast Login baseUrl                                  | string|
 | FUNCTIONS_APP_API_KEY           | Io Functions App Api Key                            | string|
 | FUNCTIONS_APP_CLIENT_BASE_URL   | Io Functions App baseUrl                            | string|
+| AUDIT_LOG_CONNECTION_STRING | Audit logs blob connection string            | string  |
+
