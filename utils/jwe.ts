@@ -41,6 +41,7 @@ export const getGenerateJWE: GetGenerateJWE = (issuer, primaryPublicKey) => (
             })
             .setIssuer(issuer)
             .setIssuedAt()
+            .setJti(crypto.randomUUID())
             .setExpirationTime(secondsFromEpoch(ttl))
             .encrypt(cryptoPublicKey),
         e => E.toError(`Cannot generate JWE. ${e}`)
