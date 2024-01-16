@@ -78,6 +78,7 @@ export type FunctionsAppClientConfig = t.TypeOf<
 export const IConfig = t.intersection([
   t.interface({
     AUDIT_LOG_CONNECTION_STRING: NonEmptyString,
+    AUDIT_LOG_CONTAINER: NonEmptyString,
     AzureWebJobsStorage: NonEmptyString,
     BETA_TESTERS: CommaSeparatedListOf(FiscalCode),
     FF_API_ENABLED: withFallback(FeatureFlag, FeatureFlagEnum.NONE),
