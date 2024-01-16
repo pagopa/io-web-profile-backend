@@ -19,7 +19,8 @@ const iconfig = {
   BETA_TESTERS: [aFiscalCode],
   FF_API_ENABLED: FeatureFlagEnum.ALL,
   isProduction: false,
-  AUDIT_LOG_CONNECTION_STRING: "" as NonEmptyString
+  AUDIT_LOG_CONNECTION_STRING: "" as NonEmptyString,
+  AUDIT_LOG_CONTAINER: "" as NonEmptyString
 };
 
 const {
