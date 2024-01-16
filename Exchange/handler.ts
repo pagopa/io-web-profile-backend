@@ -1,6 +1,8 @@
 import * as express from "express";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
+import * as t from "io-ts";
+import * as jsonwebtoken from "jsonwebtoken";
 
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
@@ -15,6 +17,8 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { defaultLog } from "@pagopa/winston-ts";
 
+import { IPString, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { Context } from "@azure/functions";
 import { IConfig } from "../utils/config";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
@@ -24,13 +28,36 @@ import {
   getGenerateExchangeJWT
 } from "../utils/exchange-jwt";
 import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-link-jwe-validation-middleware";
+import { storeAuditLog } from "../utils/audit-log";
+import { BaseJwtPayload } from "../utils/jwt";
+
+export type JwtPayloadExtended = t.TypeOf<typeof JwtPayloadExtended>;
+export const JwtPayloadExtended = t.intersection([
+  BaseJwtPayload,
+  t.type({
+    iat: t.number,
+    jti: NonEmptyString
+  })
+]);
+
+export const decodeToken = (
+  token: NonEmptyString
+): TE.TaskEither<Error, JwtPayloadExtended> =>
+  pipe(
+    jsonwebtoken.decode(token),
+    JwtPayloadExtended.decode,
+    TE.fromEither,
+    TE.mapLeft(() => new Error("Unable to decode JWT"))
+  );
 
 type ExchangeHandlerT = (
-  user: MagicLinkPayload
+  user: MagicLinkPayload,
+  context: Context
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
 export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
-  user_data: MagicLinkPayload
+  user_data: MagicLinkPayload,
+  context: Context
 ): ReturnType<ExchangeHandlerT> =>
   pipe(
     getGenerateExchangeJWT(config)({
@@ -44,6 +71,38 @@ export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
     ),
     defaultLog.taskEither.errorLeft(
       r => r.detail ?? "Cannot generate Exchange JWT"
+    ),
+    TE.chain(jwt =>
+      pipe(
+        decodeToken(jwt),
+        TE.chain(decodedToken =>
+          storeAuditLog(
+            config,
+            {
+              ip: context.req
+                ? (JSON.stringify(
+                    context.req.headers["x-forwarded-client-ip"]
+                  ) as IPString)
+                : ("" as IPString),
+              tokenId: decodedToken.jti,
+              tokenIssuingTime: new Date(decodedToken.iat * 1000).toISOString()
+            },
+            {
+              DateTime: new Date(decodedToken.iat * 1000).toISOString(),
+              FatherIDToken: user_data.jti,
+              FiscalCode: decodedToken.fiscal_number,
+              IDToken: decodedToken.jti,
+              Type: TokenTypes.EXCHANGE
+            }
+          )
+        ),
+        TE.mapLeft(err =>
+          ResponseErrorInternal(
+            `Cannot store audit log | ERROR= ${err.message}`
+          )
+        ),
+        TE.map(_ => jwt)
+      )
     ),
     TE.map(jwt => ResponseSuccessJson({ jwt } as ExchangeToken)),
     TE.toUnion
@@ -61,5 +120,5 @@ export const getExchangeHandler = (config: IConfig): express.RequestHandler => {
     )
   );
 
-  return wrapRequestHandler(middlewaresWrap((_, user) => handler(user)));
+  return wrapRequestHandler(middlewaresWrap((_, user) => handler(user, _)));
 };

@@ -87,7 +87,7 @@ const exchangeIssuer = "pagopa";
 const magicLinkIssuer = "pagopa";
 
 const jwt = sign(
-  { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode },
+  { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode, jti: "AAA" },
   hslPrivateKey,
   { algorithm: "RS256", issuer: hslIssuer }
 );
