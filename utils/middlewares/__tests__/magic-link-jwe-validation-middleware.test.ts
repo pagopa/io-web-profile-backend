@@ -10,7 +10,8 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 const aJwePayload = {
   family_name: "fn",
   fiscal_number: "ISPXNB32R82Y766D",
-  name: "name"
+  name: "name",
+  jti: "AAAAAAAAA"
 };
 const jweProtectedHeader = {
   alg: "ECDH-ES+A256KW",
