@@ -1,13 +1,11 @@
 import { randomBytes } from "crypto";
 import * as t from "io-ts";
-import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/TaskEither";
 import {
   BlockBlobUploadResponse,
   ContainerClient,
   RestError
 } from "@azure/storage-blob";
-import { left } from "fp-ts/lib/Either";
 import { TokenTypes } from "./enums/TokenTypes";
 
 /**
@@ -46,15 +44,7 @@ const AuditLogTags = t.type({
 export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
 export type AuditLogTags = t.TypeOf<typeof AuditLogTags>;
 
-export const checkContainerExists = (
-  containerClient: ContainerClient
-): TE.TaskEither<RestError, boolean> =>
-  TE.tryCatch(
-    () => containerClient.exists(),
-    err => (err instanceof RestError ? err : new RestError(String(err)))
-  );
-
-export const uploadContent = (
+export const storeAuditLog = (
   containerClient: ContainerClient,
   auditLogDoc: AuditExchangeDoc,
   tags: AuditLogTags
@@ -62,30 +52,10 @@ export const uploadContent = (
   TE.tryCatch(
     () => {
       const content = JSON.stringify(AuditExchangeDoc.encode(auditLogDoc));
-
       const blockBlobClient = containerClient.getBlockBlobClient(
         generateBlobName(tags.FiscalCode, tags.Type, tags.IDToken)
       );
-
       return blockBlobClient.upload(content, content.length, { tags });
     },
     err => (err instanceof RestError ? err : new RestError(String(err)))
-  );
-
-export const storeAuditLog: (
-  containerClient: ContainerClient,
-  auditLogDoc: AuditExchangeDoc,
-  tags: AuditLogTags
-) => TE.TaskEither<RestError, BlockBlobUploadResponse> = (
-  containerClient: ContainerClient,
-  auditLogDoc: AuditExchangeDoc,
-  tags: AuditLogTags
-) =>
-  pipe(
-    checkContainerExists(containerClient),
-    TE.chain(exists =>
-      exists
-        ? uploadContent(containerClient, auditLogDoc, tags)
-        : TE.fromEither(left(new RestError("Container does not exist")))
-    )
   );

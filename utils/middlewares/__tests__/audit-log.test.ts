@@ -34,33 +34,28 @@ describe('Audit Logs Utils' , () => {
     jest.clearAllMocks();
   });
 
-    test('storeAuditLog failed if container not exists', async () => {
+    test('storeAuditLog fail return RestError', async () => {
 
-        const mockCheckContainerExists = jest
-        .spyOn(auditLog, "checkContainerExists")
-        .mockReturnValueOnce(TE.right(false));
+        const mockStoreAuditLog = jest
+        .spyOn(auditLog, "storeAuditLog")
+        .mockReturnValueOnce(TE.left({} as RestError));
                   
         const result = await storeAuditLog(containerClient, aValidAuditLogDoc, aValidAuditLogTags)();
 
-        expect(mockCheckContainerExists).toHaveBeenCalledTimes(1);
+        expect(mockStoreAuditLog).toHaveBeenCalledTimes(1);
         expect(isLeft(result)).toBe(true);
     });
     
-    test('storeAuditLog success when container exists', async () => {
+    test('storeAuditLog success' , async () => {
 
-        const mockCheckContainerExists = jest
-        .spyOn(auditLog, "checkContainerExists")
-        .mockReturnValueOnce(TE.right(true));
-        
-        const mockUploadContent = jest
-        .spyOn(auditLog, "uploadContent")
+        const mockStoreAuditLog = jest
+        .spyOn(auditLog, "storeAuditLog")
         .mockReturnValueOnce(TE.right({} as BlockBlobUploadResponse));
     
             
         const result = await storeAuditLog(containerClient, aValidAuditLogDoc, aValidAuditLogTags)();
         console.log('result', result);
-        expect(mockCheckContainerExists).toHaveBeenCalledTimes(1); 
-        expect(mockUploadContent).toHaveBeenCalledTimes(1); 
+        expect(mockStoreAuditLog).toHaveBeenCalledTimes(1); 
 
         expect(isRight(result)).toBe(true);
     });
