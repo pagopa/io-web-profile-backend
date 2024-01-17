@@ -6,6 +6,7 @@ import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middl
 import { useWinstonFor } from "@pagopa/winston-ts";
 import { LoggerId } from "@pagopa/winston-ts/dist/types/logging";
 import * as express from "express";
+import { BlobServiceClient } from "@azure/storage-blob";
 import { getConfigOrThrow } from "../utils/config";
 import { getExchangeHandler } from "./handler";
 
@@ -22,7 +23,11 @@ useWinstonFor({
 const app = express();
 secureExpressApp(app);
 
-app.post("/api/v1/exchange", getExchangeHandler(config));
+const containerClient = BlobServiceClient.fromConnectionString(
+  config.AUDIT_LOG_CONNECTION_STRING
+).getContainerClient(config.AUDIT_LOG_CONTAINER);
+
+app.post("/api/v1/exchange", getExchangeHandler(config, containerClient));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

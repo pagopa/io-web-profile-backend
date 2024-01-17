@@ -1,5 +1,6 @@
 import * as auditLog from '../../audit-log';
-import { BlockBlobUploadResponse, RestError } from '@azure/storage-blob';
+import * as handler from '../../audit-log';
+import { BlobServiceClient, BlockBlobUploadResponse, ContainerClient, RestError } from '@azure/storage-blob';
 import { AuditExchangeDoc, AuditLogTags, generateBlobName, storeAuditLog } from '../../audit-log'; 
 import * as TE from "fp-ts/TaskEither";
 import { config as mockedConfig } from "../../../__mocks__/config.mock";
@@ -25,6 +26,10 @@ describe('Audit Logs Utils' , () => {
     Type: 'exchange' as TokenTypes,
   };
 
+  const containerClient = BlobServiceClient.fromConnectionString(
+    config.AUDIT_LOG_CONNECTION_STRING
+  ).getContainerClient(config.AUDIT_LOG_CONTAINER);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -34,8 +39,8 @@ describe('Audit Logs Utils' , () => {
         const mockCheckContainerExists = jest
         .spyOn(auditLog, "checkContainerExists")
         .mockReturnValueOnce(TE.right(false));
-            
-        const result = await storeAuditLog(config, aValidAuditLogDoc, aValidAuditLogTags)();
+                  
+        const result = await storeAuditLog(containerClient, aValidAuditLogDoc, aValidAuditLogTags)();
 
         expect(mockCheckContainerExists).toHaveBeenCalledTimes(1);
         expect(isLeft(result)).toBe(true);
@@ -50,9 +55,10 @@ describe('Audit Logs Utils' , () => {
         const mockUploadContent = jest
         .spyOn(auditLog, "uploadContent")
         .mockReturnValueOnce(TE.right({} as BlockBlobUploadResponse));
+    
             
-        const result = await storeAuditLog(config, aValidAuditLogDoc, aValidAuditLogTags)();
-
+        const result = await storeAuditLog(containerClient, aValidAuditLogDoc, aValidAuditLogTags)();
+        console.log('result', result);
         expect(mockCheckContainerExists).toHaveBeenCalledTimes(1); 
         expect(mockUploadContent).toHaveBeenCalledTimes(1); 
 

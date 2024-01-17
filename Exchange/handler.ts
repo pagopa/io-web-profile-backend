@@ -19,6 +19,7 @@ import { defaultLog } from "@pagopa/winston-ts";
 
 import { IPString, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Context } from "@azure/functions";
+import { ContainerClient } from "@azure/storage-blob";
 import { IConfig } from "../utils/config";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
@@ -55,7 +56,10 @@ type ExchangeHandlerT = (
   context: Context
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
-export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
+export const exchangeHandler = (
+  config: IConfig,
+  containerClient: ContainerClient
+): ExchangeHandlerT => (
   user_data: MagicLinkPayload,
   context: Context
 ): ReturnType<ExchangeHandlerT> =>
@@ -77,7 +81,7 @@ export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
         decodeToken(jwt),
         TE.chain(decodedToken =>
           storeAuditLog(
-            config,
+            containerClient,
             {
               ip: context.req
                 ? (JSON.stringify(
@@ -108,8 +112,11 @@ export const exchangeHandler = (config: IConfig): ExchangeHandlerT => (
     TE.toUnion
   )();
 
-export const getExchangeHandler = (config: IConfig): express.RequestHandler => {
-  const handler = exchangeHandler(config);
+export const getExchangeHandler = (
+  config: IConfig,
+  containerClient: ContainerClient
+): express.RequestHandler => {
+  const handler = exchangeHandler(config, containerClient);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
     magicLinkJweValidationMiddleware(

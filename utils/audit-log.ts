@@ -4,14 +4,13 @@ import * as t from "io-ts";
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/TaskEither";
 import {
-  BlobServiceClient,
   BlockBlobUploadResponse,
+  ContainerClient,
   RestError
 } from "@azure/storage-blob";
 import { FiscalCode, IPString } from "@pagopa/ts-commons/lib/strings";
 import { left } from "fp-ts/lib/Either";
 import { TokenTypes } from "./enums/TokenTypes";
-import { IConfig } from "./config";
 
 /**
  * File name pattern "${hash(CF)}-${UTCDateTime}-tokentype-IdToken-randomBytes(3)".
@@ -53,35 +52,20 @@ export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
 export type AuditLogTags = t.TypeOf<typeof AuditLogTags>;
 
 export const checkContainerExists = (
-  config: IConfig
+  containerClient: ContainerClient
 ): TE.TaskEither<RestError, boolean> =>
   TE.tryCatch(
-    () => {
-      const blobServiceClient = BlobServiceClient.fromConnectionString(
-        config.AUDIT_LOG_CONNECTION_STRING
-      );
-      const containerClient = blobServiceClient.getContainerClient(
-        config.AUDIT_LOG_CONTAINER
-      );
-      return containerClient.exists();
-    },
+    () => containerClient.exists(),
     err => (err instanceof RestError ? err : new RestError(String(err)))
   );
 
 export const uploadContent = (
-  config: IConfig,
+  containerClient: ContainerClient,
   auditLogDoc: AuditExchangeDoc,
   tags: AuditLogTags
 ): TE.TaskEither<RestError, BlockBlobUploadResponse> =>
   TE.tryCatch(
     () => {
-      const blobServiceClient = BlobServiceClient.fromConnectionString(
-        config.AUDIT_LOG_CONNECTION_STRING
-      );
-      const containerClient = blobServiceClient.getContainerClient(
-        config.AUDIT_LOG_CONTAINER
-      );
-
       const content = JSON.stringify(AuditExchangeDoc.encode(auditLogDoc));
 
       const blockBlobClient = containerClient.getBlockBlobClient(
@@ -94,19 +78,19 @@ export const uploadContent = (
   );
 
 export const storeAuditLog: (
-  config: IConfig,
+  containerClient: ContainerClient,
   auditLogDoc: AuditExchangeDoc,
   tags: AuditLogTags
 ) => TE.TaskEither<RestError, BlockBlobUploadResponse> = (
-  config: IConfig,
+  containerClient: ContainerClient,
   auditLogDoc: AuditExchangeDoc,
   tags: AuditLogTags
 ) =>
   pipe(
-    checkContainerExists(config),
+    checkContainerExists(containerClient),
     TE.chain(exists =>
       exists
-        ? uploadContent(config, auditLogDoc, tags)
+        ? uploadContent(containerClient, auditLogDoc, tags)
         : TE.fromEither(left(new RestError("Container does not exist")))
     )
   );

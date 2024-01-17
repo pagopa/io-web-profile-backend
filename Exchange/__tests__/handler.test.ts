@@ -4,7 +4,7 @@ import { MagicLinkPayload } from "../../utils/exchange-jwt";
 import { exchangeHandler } from "../handler";
 import { Context } from "@azure/functions";
 import * as auditLog from "../../utils/audit-log";
-import { BlockBlobUploadResponse, RestError } from "@azure/storage-blob";
+import { BlobServiceClient, BlockBlobUploadResponse, RestError } from "@azure/storage-blob";
 import * as TE from "fp-ts/TaskEither";
 
 // #region mocks
@@ -21,6 +21,10 @@ beforeEach(() => {
   context = { log: jest.fn() } as unknown as Context;
 });
 
+const containerClient = BlobServiceClient.fromConnectionString(
+  mockedConfig.AUDIT_LOG_CONNECTION_STRING
+).getContainerClient(mockedConfig.AUDIT_LOG_CONTAINER);
+
 // #region tests
 describe("Exchange", () => {
   beforeEach(() => {
@@ -34,7 +38,7 @@ describe("Exchange", () => {
       .spyOn(auditLog, "storeAuditLog")
       .mockReturnValueOnce(TE.right({} as BlockBlobUploadResponse));
 
-    const handler = exchangeHandler(mockedConfig);
+    const handler = exchangeHandler(mockedConfig,containerClient);
     const response = await handler(aValidUser, context);
     expect(mockAuditLog).toHaveBeenCalledTimes(1);
     expect(response).toMatchObject({
@@ -50,7 +54,7 @@ describe("Exchange", () => {
       .spyOn(auditLog, "storeAuditLog")
       .mockReturnValueOnce(TE.left("" as unknown as RestError));
 
-    const handler = exchangeHandler(mockedConfig);
+    const handler = exchangeHandler(mockedConfig,containerClient);
     const response = await handler(aValidUser, context);
     expect(mockAuditLog).toHaveBeenCalledTimes(1);
     expect(response).toMatchObject({
