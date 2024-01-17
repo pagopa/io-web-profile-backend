@@ -120,5 +120,7 @@ export const getExchangeHandler = (config: IConfig): express.RequestHandler => {
     )
   );
 
-  return wrapRequestHandler(middlewaresWrap((_, user) => handler(user, _)));
+  return wrapRequestHandler(
+    middlewaresWrap((context, user) => handler(user, context))
+  );
 };
