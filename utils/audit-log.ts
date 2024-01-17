@@ -7,7 +7,6 @@ import {
   ContainerClient,
   RestError
 } from "@azure/storage-blob";
-import { IPString } from "@pagopa/ts-commons/lib/strings";
 import { left } from "fp-ts/lib/Either";
 import { TokenTypes } from "./enums/TokenTypes";
 
@@ -31,7 +30,7 @@ export const generateBlobName = (
 };
 
 const AuditExchangeDoc = t.type({
-  ip: IPString,
+  ip: t.string,
   tokenId: t.string,
   tokenIssuingTime: t.string
 });

@@ -4,7 +4,7 @@ import { BlobServiceClient, BlockBlobUploadResponse, ContainerClient, RestError 
 import { AuditExchangeDoc, AuditLogTags, generateBlobName, storeAuditLog } from '../../audit-log'; 
 import * as TE from "fp-ts/TaskEither";
 import { config as mockedConfig } from "../../../__mocks__/config.mock";
-import { FiscalCode, IPString } from '@pagopa/ts-commons/lib/strings';
+import { FiscalCode } from '@pagopa/ts-commons/lib/strings';
 import { TokenTypes } from '../../enums/TokenTypes';
 import { isLeft, isRight } from 'fp-ts/lib/Either';
 
@@ -13,7 +13,7 @@ const config = { ...mockedConfig }
 describe('Audit Logs Utils' , () => {
 
   const aValidAuditLogDoc: AuditExchangeDoc = {
-    ip: '127.0.0.1' as IPString,
+    ip: '127.0.0.1',
     tokenId: 'token123',
     tokenIssuingTime: '2022-01-01T12:00:00Z',
   };

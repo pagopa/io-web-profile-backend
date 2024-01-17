@@ -16,7 +16,7 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { defaultLog } from "@pagopa/winston-ts";
 
-import { IPString, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Context } from "@azure/functions";
 import { ContainerClient } from "@azure/storage-blob";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
@@ -83,7 +83,7 @@ export const exchangeHandler = (
           storeAuditLog(
             containerClient,
             {
-             ip: context.req?.headers["x-forwarded-client-ip"] ?? "",
+              ip: context.req?.headers["X-Forwarded-For"] ?? "",
               tokenId: decodedToken.jti,
               tokenIssuingTime: new Date(decodedToken.iat * 1000).toISOString()
             },
