@@ -14,11 +14,15 @@ import { FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
 const aFiscalCode = "ISPXNB32R82Y766D";
 const aName = "Carla";
 const aFamilyName = "Rossi";
+const auditLogConnectionString="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
+const auditLogContainer="logs"
 const iconfig = {
   AzureWebJobsStorage: "azureWebJobsStorage" as NonEmptyString,
   BETA_TESTERS: [aFiscalCode],
   FF_API_ENABLED: FeatureFlagEnum.ALL,
-  isProduction: false
+  isProduction: false,
+  AUDIT_LOG_CONNECTION_STRING: auditLogConnectionString as NonEmptyString,
+  AUDIT_LOG_CONTAINER: auditLogContainer as NonEmptyString
 };
 
 const {
@@ -85,7 +89,7 @@ const exchangeIssuer = "pagopa";
 const magicLinkIssuer = "pagopa";
 
 const jwt = sign(
-  { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode },
+  { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode, jti: "AAA" },
   hslPrivateKey,
   { algorithm: "RS256", issuer: hslIssuer }
 );
