@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import { randomBytes } from "crypto";
 import * as t from "io-ts";
 import { pipe } from "fp-ts/lib/function";
@@ -8,7 +7,7 @@ import {
   ContainerClient,
   RestError
 } from "@azure/storage-blob";
-import { FiscalCode, IPString } from "@pagopa/ts-commons/lib/strings";
+import { IPString } from "@pagopa/ts-commons/lib/strings";
 import { left } from "fp-ts/lib/Either";
 import { TokenTypes } from "./enums/TokenTypes";
 
@@ -22,16 +21,13 @@ import { TokenTypes } from "./enums/TokenTypes";
  */
 
 export const generateBlobName = (
-  fiscal_number: FiscalCode,
+  fiscal_number_hashed: string,
   token_type: TokenTypes,
   token_id: string
 ): string => {
   const UTCDateTime = new Date().toISOString();
-  const hash = createHash("md5")
-    .update(fiscal_number)
-    .digest("hex");
   const randomBytesPart = randomBytes(3).toString("hex");
-  return `${hash}-${UTCDateTime}-${token_type}-${token_id}-${randomBytesPart}`;
+  return `${fiscal_number_hashed}-${UTCDateTime}-${token_type}-${token_id}-${randomBytesPart}`;
 };
 
 const AuditExchangeDoc = t.type({
@@ -43,7 +39,7 @@ const AuditExchangeDoc = t.type({
 const AuditLogTags = t.type({
   DateTime: t.string,
   FatherIDToken: t.string,
-  FiscalCode,
+  FiscalCode: t.string,
   IDToken: t.string,
   Type: t.keyof({ [TokenTypes.EXCHANGE]: null })
 });

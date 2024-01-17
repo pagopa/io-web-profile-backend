@@ -3,7 +3,6 @@ import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as jsonwebtoken from "jsonwebtoken";
-
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
   withRequestMiddlewares,
@@ -20,6 +19,7 @@ import { defaultLog } from "@pagopa/winston-ts";
 import { IPString, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Context } from "@azure/functions";
 import { ContainerClient } from "@azure/storage-blob";
+import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
 import { IConfig } from "../utils/config";
 
 import { ExchangeToken } from "../generated/definitions/external/ExchangeToken";
@@ -94,7 +94,7 @@ export const exchangeHandler = (
             {
               DateTime: new Date(decodedToken.iat * 1000).toISOString(),
               FatherIDToken: user_data.jti,
-              FiscalCode: decodedToken.fiscal_number,
+              FiscalCode: hashFiscalCode(decodedToken.fiscal_number),
               IDToken: decodedToken.jti,
               Type: TokenTypes.EXCHANGE
             }
