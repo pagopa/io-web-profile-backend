@@ -83,11 +83,7 @@ export const exchangeHandler = (
           storeAuditLog(
             containerClient,
             {
-              ip: context.req
-                ? (JSON.stringify(
-                    context.req.headers["x-forwarded-client-ip"]
-                  ) as IPString)
-                : ("" as IPString),
+             ip: context.req?.headers["x-forwarded-client-ip"] ?? "",
               tokenId: decodedToken.jti,
               tokenIssuingTime: new Date(decodedToken.iat * 1000).toISOString()
             },
