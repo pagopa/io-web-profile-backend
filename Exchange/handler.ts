@@ -68,7 +68,7 @@ export const exchangeHandler = (
 ): ExchangeHandlerT => (
   user_data,
   _context,
-  clientIp
+  maybeClientIp
 ): ReturnType<ExchangeHandlerT> =>
   pipe(
     getGenerateExchangeJWT(config)({
@@ -90,7 +90,7 @@ export const exchangeHandler = (
           storeAuditLog(
             containerClient,
             {
-              ip: O.getOrElse(() => "UNKNOWN")(clientIp),
+              ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
               tokenId: decodedToken.jti,
               tokenIssuingTime: new Date(decodedToken.iat * 1000).toISOString()
             },
