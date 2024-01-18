@@ -14,7 +14,7 @@ describe('Audit Logs Utils' , () => {
 
   const aValidAuditLogDoc: AuditExchangeDoc = {
     ip: '127.0.0.1',
-    tokenId: 'token123',
+    fatherTokenId: 'token123',
     tokenIssuingTime: '2022-01-01T12:00:00Z',
   };
 

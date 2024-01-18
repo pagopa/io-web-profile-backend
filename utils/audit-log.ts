@@ -28,8 +28,8 @@ export const generateBlobName = (
 };
 
 const AuditExchangeDoc = t.type({
+  fatherTokenId: t.string,
   ip: t.string,
-  tokenId: t.string,
   tokenIssuingTime: t.string
 });
 

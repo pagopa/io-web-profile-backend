@@ -15,6 +15,7 @@ export type MagicLinkPayload = t.TypeOf<typeof MagicLinkPayload>;
 export const MagicLinkPayload = t.strict({
   family_name: NonEmptyString,
   fiscal_number: FiscalCode,
+  iat: t.number,
   jti: NonEmptyString,
   name: NonEmptyString
 });

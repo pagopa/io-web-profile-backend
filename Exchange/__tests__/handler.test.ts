@@ -21,7 +21,8 @@ const aValidUser: MagicLinkPayload = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  jti: "AAAA" as NonEmptyString
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };
 // #endregion
 let context: Context;
