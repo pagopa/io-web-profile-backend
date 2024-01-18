@@ -1,8 +1,13 @@
 import * as express from "express";
 import * as TE from "fp-ts/TaskEither";
+import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 import * as jsonwebtoken from "jsonwebtoken";
+import {
+  ClientIp,
+  ClientIpMiddleware
+} from "@pagopa/io-functions-commons/dist/src/utils/middlewares/client_ip_middleware";
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import {
   withRequestMiddlewares,
@@ -53,15 +58,17 @@ export const decodeToken = (
 
 type ExchangeHandlerT = (
   user: MagicLinkPayload,
-  context: Context
+  context: Context,
+  maybeClientIp: ClientIp
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
 export const exchangeHandler = (
   config: IConfig,
   containerClient: ContainerClient
 ): ExchangeHandlerT => (
-  user_data: MagicLinkPayload,
-  context: Context
+  user_data,
+  _context,
+  maybeClientIp
 ): ReturnType<ExchangeHandlerT> =>
   pipe(
     getGenerateExchangeJWT(config)({
@@ -83,7 +90,7 @@ export const exchangeHandler = (
           storeAuditLog(
             containerClient,
             {
-              ip: context.req?.headers["X-Forwarded-For"] ?? "",
+              ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
               tokenId: decodedToken.jti,
               tokenIssuingTime: new Date(decodedToken.iat * 1000).toISOString()
             },
@@ -115,6 +122,8 @@ export const getExchangeHandler = (
   const handler = exchangeHandler(config, containerClient);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
+    // extracts the client IP from the request
+    ClientIpMiddleware,
     magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
@@ -124,6 +133,8 @@ export const getExchangeHandler = (
   );
 
   return wrapRequestHandler(
-    middlewaresWrap((context, user) => handler(user, context))
+    middlewaresWrap((context, clientIp, user) =>
+      handler(user, context, clientIp)
+    )
   );
 };
