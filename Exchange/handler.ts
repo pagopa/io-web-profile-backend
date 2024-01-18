@@ -90,9 +90,9 @@ export const exchangeHandler = (
           storeAuditLog(
             containerClient,
             {
-              ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
               fatherTokenId: user_data.jti,
-              fatherTokenIssuingTime: new Date(user_data.iat * 1000).toISOString()
+              ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
+              tokenIssuingTime: new Date(user_data.iat * 1000).toISOString()
             },
             {
               DateTime: new Date(decodedToken.iat * 1000).toISOString(),
