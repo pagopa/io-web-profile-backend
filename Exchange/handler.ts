@@ -59,7 +59,7 @@ export const decodeToken = (
 type ExchangeHandlerT = (
   user: MagicLinkPayload,
   context: Context,
-  clientIp: ClientIp
+  maybeClientIp: ClientIp
 ) => Promise<IResponseErrorInternal | IResponseSuccessJson<ExchangeToken>>;
 
 export const exchangeHandler = (
