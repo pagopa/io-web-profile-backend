@@ -23,6 +23,7 @@ describe('Audit Logs Utils' , () => {
     FiscalCode: '12345678901' as FiscalCode,
     DateTime: '2022-01-01T12:00:00Z',
     IDToken: 'token123',
+    Ip: '127.0.0.1',
     Type: 'exchange' as TokenTypes,
   };
 

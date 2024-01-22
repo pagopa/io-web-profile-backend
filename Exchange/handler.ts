@@ -99,6 +99,7 @@ export const exchangeHandler = (
               FatherIDToken: user_data.jti,
               FiscalCode: hashFiscalCode(decodedToken.fiscal_number),
               IDToken: decodedToken.jti,
+              Ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
               Type: TokenTypes.EXCHANGE
             }
           )
