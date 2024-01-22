@@ -38,6 +38,7 @@ const AuditLogTags = t.type({
   FatherIDToken: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
+  Ip: t.string,
   Type: t.keyof({ [TokenTypes.EXCHANGE]: null })
 });
 
