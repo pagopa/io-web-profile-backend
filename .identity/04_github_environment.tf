@@ -1,10 +1,10 @@
 resource "github_repository_environment" "prod_opex_ci" {
-  environment = "${var.env}-ci"
+  environment = "opex-${var.env}-ci"
   repository  = local.github.repository
 }
 
 resource "github_repository_environment" "prod_opex_cd" {
-  environment = "${var.env}-cd"
+  environment = "opex-${var.env}-cd"
   repository  = local.github.repository
 }
 
