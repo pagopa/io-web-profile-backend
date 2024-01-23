@@ -15,8 +15,8 @@ module "identity_ci" {
   ]
 
   ci_rbac_roles = {
-    subscription_roles = var.environment_ci_roles.subscription
-    resource_groups    = var.environment_ci_roles.resource_groups
+    subscription_roles = var.opex_environment_ci_roles.subscription
+    resource_groups    = var.opex_environment_ci_roles.resource_groups
   }
 
   tags = var.tags

@@ -11,7 +11,7 @@ tags = {
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
 }
 
-environment_ci_roles = {
+opex_environment_ci_roles = {
   subscription = ["Reader"]
   resource_groups = {
     "terraform-state-rg" = [
@@ -23,7 +23,7 @@ environment_ci_roles = {
   }
 }
 
-environment_cd_roles = {
+opex_environment_cd_roles = {
   subscription = ["Reader"]
   resource_groups = {
     "terraform-state-rg" = [
