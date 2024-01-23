@@ -27,12 +27,12 @@ variable "ci_github_federations" {
   description = "GitHub Organization, repository name and scope permissions"
 }
 
-variable "environment_ci_roles" {
+variable "opex_environment_ci_roles" {
   type = object({
     subscription    = list(string)
     resource_groups = map(list(string))
   })
-  description = "GitHub Continous Delivery roles"
+  description = "GitHub Continous Integration roles"
 }
 
 variable "cd_github_federations" {
@@ -44,7 +44,7 @@ variable "cd_github_federations" {
   description = "GitHub Organization, repository name and scope permissions"
 }
 
-variable "environment_cd_roles" {
+variable "opex_environment_cd_roles" {
   type = object({
     subscription    = list(string)
     resource_groups = map(list(string))

@@ -1,9 +1,9 @@
-resource "github_repository_environment" "prod_ci" {
+resource "github_repository_environment" "prod_opex_ci" {
   environment = "${var.env}-ci"
   repository  = local.github.repository
 }
 
-resource "github_repository_environment" "prod_cd" {
+resource "github_repository_environment" "prod_opex_cd" {
   environment = "${var.env}-cd"
   repository  = local.github.repository
 }
