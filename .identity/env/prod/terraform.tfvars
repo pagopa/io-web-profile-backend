@@ -1,7 +1,7 @@
 prefix    = "io"
 env       = "prod"
 env_short = "p"
-domain    = "io-web"
+domain    = "web-profile-backend"
 
 tags = {
   CreatedBy   = "Terraform"
