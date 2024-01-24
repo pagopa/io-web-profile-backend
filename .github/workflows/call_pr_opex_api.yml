@@ -4,12 +4,15 @@ on:
       api_name:
         type: string
         required: true
+      environment:
+        type: string
+        required: true
 
 jobs:
   plan:
     name: Terraform Plan
     runs-on: ubuntu-22.04
-    environment: prod-ci
+    environment: ${{ inputs.environment }}
     env:
       API_NAME: ${{ inputs.api_name }}
       DOCKER_IMAGE_TAG: sha256:04d8ead53c772d23b094c2a395292dc159e6f2905e1b13b5f828f31eac6eb27f
@@ -23,7 +26,6 @@ jobs:
       pull-requests: write
 
     steps:
-
       - name: Checkout
         id: checkout
         uses: actions/checkout@1f9a0c22da41e6ebfa534300ef656657ea2c6707
