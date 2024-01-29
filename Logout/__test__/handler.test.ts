@@ -1,5 +1,9 @@
 import * as E from "fp-ts/lib/Either";
-import { BlobServiceClient, BlockBlobUploadResponse, RestError } from "@azure/storage-blob";
+import {
+  BlobServiceClient,
+  BlockBlobUploadResponse,
+  RestError
+} from "@azure/storage-blob";
 import { IPString } from "@pagopa/ts-commons/lib/strings";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
