@@ -8,12 +8,16 @@ export const aValidL2User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
+  spid_level: SpidLevel.L2,
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };
 
 export const aValidExchangeUser: ExchangeJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
+  token_type: TokenTypes.EXCHANGE,
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };

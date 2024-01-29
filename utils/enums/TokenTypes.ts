@@ -1,3 +1,4 @@
 export enum TokenTypes {
-  EXCHANGE = "exchange"
+  EXCHANGE = "exchange",
+  LOGOUT = "logout"
 }

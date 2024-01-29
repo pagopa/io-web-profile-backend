@@ -33,26 +33,54 @@ const AuditExchangeDoc = t.type({
   tokenIssuingTime: t.string
 });
 
-const AuditLogTags = t.type({
+const AuditActionDoc = t.type({
+  family_name: t.string,
+  fiscal_number: t.string,
+  ip: t.string,
+  name: t.string
+});
+
+const BaseAuditLogTags = t.type({
   DateTime: t.string,
-  FatherIDToken: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
-  Ip: t.string,
-  Type: t.keyof({ [TokenTypes.EXCHANGE]: null })
+  Type: t.keyof({ [TokenTypes.EXCHANGE]: null, [TokenTypes.LOGOUT]: null })
 });
+
+const FatherIDTokenAuditLogTags = t.intersection([
+  BaseAuditLogTags,
+  t.type({ FatherIDToken: t.string })
+]);
+
+const IpAuditLogTags = t.intersection([
+  BaseAuditLogTags,
+  t.type({ Ip: t.string })
+]);
+
+const AuditLogTags = t.union([FatherIDTokenAuditLogTags, IpAuditLogTags]);
 
 export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
 export type AuditLogTags = t.TypeOf<typeof AuditLogTags>;
+export type AuditActionDoc = t.TypeOf<typeof AuditActionDoc>;
+
+const encodeAuditLogDoc = (doc: AuditExchangeDoc | AuditActionDoc): string => {
+  if (AuditExchangeDoc.is(doc)) {
+    return JSON.stringify(AuditExchangeDoc.encode(doc));
+  } else if (AuditActionDoc.is(doc)) {
+    return JSON.stringify(AuditActionDoc.encode(doc));
+  } else {
+    throw new Error("Invalid type");
+  }
+};
 
 export const storeAuditLog = (
   containerClient: ContainerClient,
-  auditLogDoc: AuditExchangeDoc,
+  auditLogDoc: AuditExchangeDoc | AuditActionDoc,
   tags: AuditLogTags
 ): TE.TaskEither<RestError, BlockBlobUploadResponse> =>
   TE.tryCatch(
     () => {
-      const content = JSON.stringify(AuditExchangeDoc.encode(auditLogDoc));
+      const content = encodeAuditLogDoc(auditLogDoc);
       const blockBlobClient = containerClient.getBlockBlobClient(
         generateBlobName(tags.FiscalCode, tags.Type, tags.IDToken)
       );
