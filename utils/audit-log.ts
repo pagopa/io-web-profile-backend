@@ -6,6 +6,7 @@ import {
   ContainerClient,
   RestError
 } from "@azure/storage-blob";
+import { enumType } from "@pagopa/ts-commons/lib/types";
 import { TokenTypes } from "./enums/TokenTypes";
 
 /**
@@ -44,7 +45,7 @@ const BaseAuditLogTags = t.type({
   DateTime: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
-  Type: t.keyof({ [TokenTypes.EXCHANGE]: null, [TokenTypes.LOGOUT]: null })
+  Type: enumType(TokenTypes, "tokenType")
 });
 
 const FatherIDTokenAuditLogTags = t.intersection([
