@@ -42,7 +42,7 @@ import {
 
 import { Client } from "../generated/definitions/fast-login/client";
 import { storeAuditLog } from "../utils/audit-log";
-import { TokenTypes } from "../utils/enums/TokenTypes";
+import { OperationTypes } from "../utils/enums/OperationTypes";
 
 type LogoutErrorResponsesT =
   | IResponseErrorInternal
@@ -103,7 +103,7 @@ export const logoutHandler = (
                     FiscalCode: hashFiscalCode(user_data.fiscal_number),
                     IDToken: user_data.jti,
                     Ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
-                    Type: TokenTypes.LOGOUT
+                    Type: OperationTypes.LOGOUT
                   }
                 ),
                 TE.mapLeft(err =>

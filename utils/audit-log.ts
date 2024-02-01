@@ -7,7 +7,7 @@ import {
   RestError
 } from "@azure/storage-blob";
 import { enumType } from "@pagopa/ts-commons/lib/types";
-import { TokenTypes } from "./enums/TokenTypes";
+import { OperationTypes } from "./enums/OperationTypes";
 
 /**
  * File name pattern "${hash(CF)}-${UTCDateTime}-tokentype-IdToken-randomBytes(3)".
@@ -20,7 +20,7 @@ import { TokenTypes } from "./enums/TokenTypes";
 
 export const generateBlobName = (
   fiscal_number_hashed: string,
-  token_type: TokenTypes,
+  token_type: OperationTypes,
   token_id: string
 ): string => {
   const UTCDateTime = new Date().toISOString();
@@ -45,7 +45,7 @@ const BaseAuditLogTags = t.type({
   DateTime: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
-  Type: enumType(TokenTypes, "tokenType")
+  Type: enumType(OperationTypes, "operationType")
 });
 
 const FatherIDTokenAuditLogTags = t.intersection([
