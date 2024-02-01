@@ -39,9 +39,10 @@ describe("Logout", () => {
         WHEN audit log failed
         THEN the response is 500`,
     async user => {
+      const anError = "anError";
       const mockAuditLog = jest
         .spyOn(auditLog, "storeAuditLog")
-        .mockReturnValueOnce(TE.left(("" as unknown) as RestError));
+        .mockReturnValueOnce(TE.left(new RestError(anError)));
       const handler = logoutHandler(fastLoginClientMock, containerClient);
 
       const res = await handler(user, O.some("127.0.0.1" as IPString));
