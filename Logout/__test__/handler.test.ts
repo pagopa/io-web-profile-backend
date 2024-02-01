@@ -50,8 +50,8 @@ describe("Logout", () => {
       expect(mockAuditLog).toHaveBeenCalledTimes(1);
       expect(logoutMock).toHaveBeenCalledTimes(1);
       expect(res).toMatchObject({
-        kind: "IResponseErrorInternal",
-        detail: expect.stringContaining(anError)
+        detail: expect.stringContaining(anError),
+        kind: "IResponseErrorInternal"
       });
     }
   );
