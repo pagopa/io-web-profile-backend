@@ -9,7 +9,6 @@ import { enumType } from "@pagopa/ts-commons/lib/types";
 
 import { JWTConfig } from "./config";
 import { TokenTypes } from "./enums/TokenTypes";
-import { BaseJwtPayload } from "./jwt";
 
 export type MagicLinkPayload = t.TypeOf<typeof MagicLinkPayload>;
 export const MagicLinkPayload = t.strict({
@@ -21,12 +20,12 @@ export const MagicLinkPayload = t.strict({
 });
 
 export type ExchangeJWT = t.TypeOf<typeof ExchangeJWT>;
-export const ExchangeJWT = t.intersection([
-  BaseJwtPayload,
-  t.type({
-    token_type: enumType(TokenTypes, "tokenType")
-  })
-]);
+export const ExchangeJWT = t.strict({
+  family_name: NonEmptyString,
+  fiscal_number: FiscalCode,
+  name: NonEmptyString,
+  token_type: enumType(TokenTypes, "tokenType")
+});
 
 export type GenerateExchangeJWT = (
   exchangeJwt: ExchangeJWT

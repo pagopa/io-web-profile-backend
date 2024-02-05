@@ -8,7 +8,7 @@ import { config as mockedConfig } from "../../../__mocks__/config.mock";
 
 import { Second } from "@pagopa/ts-commons/lib/units";
 import { TokenTypes } from "../../enums/TokenTypes";
-import { getGenerateExchangeJWT } from "../../exchange-jwt";
+import { ExchangeJWT, getGenerateExchangeJWT } from "../../exchange-jwt";
 import {
   ExchangeJwtPayloadExtended,
   exchangeJwtValidation,
@@ -18,11 +18,11 @@ import {
 const standardJWTTTL = mockedConfig.EXCHANGE_JWT_TTL as Second;
 const issuer = mockedConfig.EXCHANGE_JWT_ISSUER;
 
-const aPayload: ExchangeJwtPayloadExtended = {
+const aPayload: ExchangeJWT = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  token_type: TokenTypes.EXCHANGE
+  token_type: TokenTypes.EXCHANGE,
 };
 
 describe("exchangeJwtValidation - Success", () => {

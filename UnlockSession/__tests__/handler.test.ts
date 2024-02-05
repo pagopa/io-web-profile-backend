@@ -24,14 +24,18 @@ const aValidL1User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L1
+  spid_level: SpidLevel.L1,
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };
 
 const aValidL2User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L2
+  spid_level: SpidLevel.L2,
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };
 
 const aValidL2Payload = {
@@ -42,7 +46,9 @@ const aValidL3User: HslJwtPayloadExtended = {
   family_name: "family_name" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
   name: "name" as NonEmptyString,
-  spid_level: SpidLevel.L3
+  spid_level: SpidLevel.L3,
+  jti: "AAAA" as NonEmptyString,
+  iat: 123456789
 };
 
 const aValidL3Payload: UnlockSessionData = {};
