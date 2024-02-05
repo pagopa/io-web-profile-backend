@@ -35,6 +35,7 @@ import {
 import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-link-jwe-validation-middleware";
 import { storeAuditLog } from "../utils/audit-log";
 import { BaseJwtPayload } from "../utils/jwt";
+import { OperationTypes } from "../utils/enums/OperationTypes";
 
 export const decodeToken = (
   token: NonEmptyString
@@ -90,7 +91,7 @@ export const exchangeHandler = (
               FiscalCode: hashFiscalCode(decodedToken.fiscal_number),
               IDToken: decodedToken.jti,
               Ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
-              Type: TokenTypes.EXCHANGE
+              Type: OperationTypes.EXCHANGE
             }
           )
         ),

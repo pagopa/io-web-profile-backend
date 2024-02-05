@@ -140,10 +140,8 @@ export const lockSessionHandler = (
                 storeAuditLog(
                   containerClient,
                   {
-                    family_name: reqJwtData.family_name,
-                    fiscal_number: reqJwtData.fiscal_number,
                     ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
-                    name: reqJwtData.name
+                    jwtPayload: reqJwtData
                   },
                   {
                     DateTime: new Date(reqJwtData.iat * 1000).toISOString(),

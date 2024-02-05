@@ -6,7 +6,6 @@ import {
   ContainerClient,
   RestError
 } from "@azure/storage-blob";
-import { enumType } from "@pagopa/ts-commons/lib/types";
 import { OperationTypes } from "./enums/OperationTypes";
 import { BaseJwtPayload } from "./jwt";
 
@@ -40,16 +39,13 @@ const AuditActionDoc = t.type({
   jwtPayload: BaseJwtPayload
 });
 
-// TO DO IOPID-1382
-// SPECIFY SPECIFIC TOKEN TYPE TAG TYPE
-
 const ExchangeTag = t.type({
   DateTime: t.string,
   FatherIDToken: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
   Ip: t.string,
-  Type: enumType(OperationTypes, "operationType")
+  Type: t.literal(OperationTypes.EXCHANGE)
 });
 
 const ActionTag = t.type({
@@ -57,7 +53,10 @@ const ActionTag = t.type({
   FiscalCode: t.string,
   IDToken: t.string,
   Ip: t.string,
-  Type: enumType(OperationTypes, "operationType")
+  Type: t.union([
+    t.literal(OperationTypes.LOGOUT),
+    t.literal(OperationTypes.LOCK)
+  ])
 });
 
 export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
