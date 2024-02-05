@@ -40,6 +40,9 @@ const AuditActionDoc = t.type({
   jwtPayload: BaseJwtPayload
 });
 
+// TO DO IOPID-1382
+// SPECIFY SPECIFIC TOKEN TYPE TAG TYPE
+
 const ExchangeTag = t.type({
   DateTime: t.string,
   FatherIDToken: t.string,
