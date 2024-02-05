@@ -8,6 +8,7 @@ import {
 } from "@azure/storage-blob";
 import { enumType } from "@pagopa/ts-commons/lib/types";
 import { OperationTypes } from "./enums/OperationTypes";
+import { BaseJwtPayload } from "./jwt";
 
 /**
  * File name pattern "${hash(CF)}-${UTCDateTime}-tokentype-IdToken-randomBytes(3)".
@@ -35,51 +36,65 @@ const AuditExchangeDoc = t.type({
 });
 
 const AuditActionDoc = t.type({
-  family_name: t.string,
-  fiscal_number: t.string,
   ip: t.string,
-  name: t.string
+  jwtPayload: BaseJwtPayload
 });
 
-const BaseAuditLogTags = t.type({
+// TO DO IOPID-1382
+// SPECIFY SPECIFIC TOKEN TYPE TAG TYPE
+
+const ExchangeTag = t.type({
   DateTime: t.string,
+  FatherIDToken: t.string,
   FiscalCode: t.string,
   IDToken: t.string,
+  Ip: t.string,
   Type: enumType(OperationTypes, "operationType")
 });
 
-const FatherIDTokenAuditLogTags = t.intersection([
-  BaseAuditLogTags,
-  t.type({ FatherIDToken: t.string })
-]);
-
-const IpAuditLogTags = t.intersection([
-  BaseAuditLogTags,
-  t.type({ Ip: t.string })
-]);
-
-const AuditLogTags = t.union([FatherIDTokenAuditLogTags, IpAuditLogTags]);
+const ActionTag = t.type({
+  DateTime: t.string,
+  FiscalCode: t.string,
+  IDToken: t.string,
+  Ip: t.string,
+  Type: enumType(OperationTypes, "operationType")
+});
 
 export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
-export type AuditLogTags = t.TypeOf<typeof AuditLogTags>;
 export type AuditActionDoc = t.TypeOf<typeof AuditActionDoc>;
 
-const encodeAuditLogDoc = (doc: AuditExchangeDoc | AuditActionDoc): string => {
-  if (AuditExchangeDoc.is(doc)) {
-    return JSON.stringify(AuditExchangeDoc.encode(doc));
-  } else if (AuditActionDoc.is(doc)) {
-    return JSON.stringify(AuditActionDoc.encode(doc));
+export type ExchangeTag = t.TypeOf<typeof ExchangeTag>;
+export type ActionTag = t.TypeOf<typeof ActionTag>;
+
+export type AuditLogContent = t.TypeOf<typeof AuditLogContent>;
+const AuditLogContent = t.union([AuditActionDoc, AuditExchangeDoc]);
+
+const encodeAuditLogDoc = (doc: AuditLogContent): string => {
+  if (AuditLogContent.is(doc)) {
+    return JSON.stringify(AuditLogContent.encode(doc));
   } else {
     throw new Error("Invalid type");
   }
 };
 
-export const storeAuditLog = (
+export function storeAuditLog(
+  containerClient: ContainerClient,
+  auditLogDoc: AuditExchangeDoc,
+  tags: ExchangeTag
+): TE.TaskEither<RestError, BlockBlobUploadResponse>;
+
+export function storeAuditLog(
+  containerClient: ContainerClient,
+  auditLogDoc: AuditActionDoc,
+  tags: ActionTag
+): TE.TaskEither<RestError, BlockBlobUploadResponse>;
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+export function storeAuditLog(
   containerClient: ContainerClient,
   auditLogDoc: AuditExchangeDoc | AuditActionDoc,
-  tags: AuditLogTags
-): TE.TaskEither<RestError, BlockBlobUploadResponse> =>
-  TE.tryCatch(
+  tags: ExchangeTag | ActionTag
+): TE.TaskEither<RestError, BlockBlobUploadResponse> {
+  return TE.tryCatch(
     () => {
       const content = encodeAuditLogDoc(auditLogDoc);
       const blockBlobClient = containerClient.getBlockBlobClient(
@@ -89,3 +104,4 @@ export const storeAuditLog = (
     },
     err => (err instanceof RestError ? err : new RestError(String(err)))
   );
+}

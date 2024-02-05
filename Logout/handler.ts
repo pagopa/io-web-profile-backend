@@ -93,10 +93,8 @@ export const logoutHandler = (
                 storeAuditLog(
                   containerClient,
                   {
-                    family_name: user_data.family_name,
-                    fiscal_number: user_data.fiscal_number,
                     ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
-                    name: user_data.name
+                    jwtPayload: user_data
                   },
                   {
                     DateTime: new Date(user_data.iat * 1000).toISOString(),
