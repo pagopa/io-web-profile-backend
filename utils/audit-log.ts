@@ -8,6 +8,7 @@ import {
 } from "@azure/storage-blob";
 import { enumType } from "@pagopa/ts-commons/lib/types";
 import { OperationTypes } from "./enums/OperationTypes";
+import { BaseJwtPayload } from "./jwt";
 
 /**
  * File name pattern "${hash(CF)}-${UTCDateTime}-tokentype-IdToken-randomBytes(3)".
@@ -35,10 +36,8 @@ const AuditExchangeDoc = t.type({
 });
 
 const AuditActionDoc = t.type({
-  family_name: t.string,
-  fiscal_number: t.string,
   ip: t.string,
-  name: t.string
+  jwtPayload: BaseJwtPayload
 });
 
 const BaseAuditLogTags = t.type({
@@ -64,11 +63,12 @@ export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
 export type AuditLogTags = t.TypeOf<typeof AuditLogTags>;
 export type AuditActionDoc = t.TypeOf<typeof AuditActionDoc>;
 
-const encodeAuditLogDoc = (doc: AuditExchangeDoc | AuditActionDoc): string => {
-  if (AuditExchangeDoc.is(doc)) {
-    return JSON.stringify(AuditExchangeDoc.encode(doc));
-  } else if (AuditActionDoc.is(doc)) {
-    return JSON.stringify(AuditActionDoc.encode(doc));
+export type AuditLogContent = t.TypeOf<typeof AuditLogContent>;
+const AuditLogContent = t.union([AuditActionDoc, AuditExchangeDoc]);
+
+const encodeAuditLogDoc = (doc: AuditLogContent): string => {
+  if (AuditLogContent.is(doc)) {
+    return JSON.stringify(AuditLogContent.encode(doc));
   } else {
     throw new Error("Invalid type");
   }
@@ -76,7 +76,7 @@ const encodeAuditLogDoc = (doc: AuditExchangeDoc | AuditActionDoc): string => {
 
 export const storeAuditLog = (
   containerClient: ContainerClient,
-  auditLogDoc: AuditExchangeDoc | AuditActionDoc,
+  auditLogDoc: AuditLogContent,
   tags: AuditLogTags
 ): TE.TaskEither<RestError, BlockBlobUploadResponse> =>
   TE.tryCatch(
