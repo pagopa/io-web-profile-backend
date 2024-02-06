@@ -16,6 +16,8 @@ import { IConfig } from "./config";
 export const BaseJwtPayload = t.type({
   family_name: NonEmptyString,
   fiscal_number: FiscalCode,
+  iat: t.number,
+  jti: NonEmptyString,
   name: NonEmptyString
 });
 export type BaseJwtPayload = t.TypeOf<typeof BaseJwtPayload>;

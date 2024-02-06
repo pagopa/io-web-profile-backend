@@ -2,7 +2,6 @@ import * as express from "express";
 import * as TE from "fp-ts/TaskEither";
 import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/lib/function";
-import * as t from "io-ts";
 import * as jsonwebtoken from "jsonwebtoken";
 import {
   ClientIp,
@@ -37,21 +36,12 @@ import { magicLinkJweValidationMiddleware } from "../utils/middlewares/magic-lin
 import { storeAuditLog } from "../utils/audit-log";
 import { BaseJwtPayload } from "../utils/jwt";
 
-export type JwtPayloadExtended = t.TypeOf<typeof JwtPayloadExtended>;
-export const JwtPayloadExtended = t.intersection([
-  BaseJwtPayload,
-  t.type({
-    iat: t.number,
-    jti: NonEmptyString
-  })
-]);
-
 export const decodeToken = (
   token: NonEmptyString
-): TE.TaskEither<Error, JwtPayloadExtended> =>
+): TE.TaskEither<Error, BaseJwtPayload> =>
   pipe(
     jsonwebtoken.decode(token),
-    JwtPayloadExtended.decode,
+    BaseJwtPayload.decode,
     TE.fromEither,
     TE.mapLeft(() => new Error("Unable to decode JWT"))
   );
