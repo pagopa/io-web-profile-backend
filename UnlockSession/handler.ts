@@ -26,6 +26,12 @@ import * as TE from "fp-ts/TaskEither";
 import { readableReportSimplified } from "@pagopa/ts-commons/lib/reporters";
 import { defaultLog } from "@pagopa/winston-ts";
 import { flow, pipe } from "fp-ts/lib/function";
+import {
+  ClientIp,
+  ClientIpMiddleware
+} from "@pagopa/io-functions-commons/dist/src/utils/middlewares/client_ip_middleware";
+import { ContainerClient } from "@azure/storage-blob";
+import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
 import { UnlockSessionData } from "../generated/definitions/external/UnlockSessionData";
 import { IConfig } from "../utils/config";
 import { verifyUserEligibilityMiddleware } from "../utils/middlewares/user-eligibility-middleware";
@@ -37,6 +43,8 @@ import {
   HslJwtPayloadExtended,
   hslJwtValidationMiddleware
 } from "../utils/middlewares/hsl-jwt-validation-middleware";
+import { storeAuditLog } from "../utils/audit-log";
+import { OperationTypes } from "../utils/enums/OperationTypes";
 
 type UnlockSessionErrorResponsesT =
   | IResponseErrorForbiddenNotAuthorized
@@ -46,7 +54,8 @@ type UnlockSessionErrorResponsesT =
 
 type UnlockSessionHandlerT = (
   user: HslJwtPayloadExtended,
-  payload: UnlockSessionData
+  payload: UnlockSessionData,
+  maybeClientIp: ClientIp
 ) => Promise<IResponseSuccessNoContent | UnlockSessionErrorResponsesT>;
 
 type UnlockSessionClient = Client<"ApiKeyAuth">;
@@ -60,10 +69,12 @@ const canUnlock = (
     (user.spid_level === SpidLevel.L2 && O.isSome(unlock_code)));
 
 export const unlockSessionHandler = (
-  client: UnlockSessionClient
+  client: UnlockSessionClient,
+  containerClient: ContainerClient
 ): UnlockSessionHandlerT => (
   reqJwtData,
-  reqPayload
+  reqPayload,
+  maybeClientIp
 ): ReturnType<UnlockSessionHandlerT> =>
   pipe(
     TE.Do,
@@ -114,7 +125,28 @@ export const unlockSessionHandler = (
         TE.chainW(response => {
           switch (response.status) {
             case 204:
-              return TE.right(ResponseSuccessNoContent());
+              return pipe(
+                storeAuditLog(
+                  containerClient,
+                  {
+                    ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
+                    jwtPayload: reqJwtData
+                  },
+                  {
+                    DateTime: new Date(reqJwtData.iat * 1000).toISOString(),
+                    FiscalCode: hashFiscalCode(reqJwtData.fiscal_number),
+                    IDToken: reqJwtData.jti,
+                    Ip: O.getOrElse(() => "UNKNOWN")(maybeClientIp),
+                    Type: OperationTypes.UNLOCK
+                  }
+                ),
+                TE.mapLeft(err =>
+                  ResponseErrorInternal(
+                    `Cannot store audit log | ERROR= ${err.message}`
+                  )
+                ),
+                TE.map(_ => ResponseSuccessNoContent())
+              );
             case 403:
               return TE.left<
                 UnlockSessionErrorResponsesT,
@@ -153,17 +185,21 @@ export const unlockSessionHandler = (
 
 export const getUnlockSessionHandler = (
   client: UnlockSessionClient,
-  config: IConfig
+  config: IConfig,
+  containerClient: ContainerClient
 ): express.RequestHandler => {
-  const handler = unlockSessionHandler(client);
+  const handler = unlockSessionHandler(client, containerClient);
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
+    ClientIpMiddleware,
     verifyUserEligibilityMiddleware(config),
     hslJwtValidationMiddleware(config),
     RequiredBodyPayloadMiddleware(UnlockSessionData)
   );
 
   return wrapRequestHandler(
-    middlewaresWrap((_, __, user, payload) => handler(user, payload))
+    middlewaresWrap((_, clientIp, __, user, payload) =>
+      handler(user, payload, clientIp)
+    )
   );
 };

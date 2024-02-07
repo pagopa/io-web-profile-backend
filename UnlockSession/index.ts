@@ -6,6 +6,7 @@ import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src
 import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/express";
 import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import * as express from "express";
+import { BlobServiceClient } from "@azure/storage-blob";
 import { getFastLoginClient } from "../clients/fastLoginClient";
 import { getConfigOrThrow } from "../utils/config";
 import { getUnlockSessionHandler } from "./handler";
@@ -23,6 +24,10 @@ useWinstonFor({
 const app = express();
 secureExpressApp(app);
 
+const containerClient = BlobServiceClient.fromConnectionString(
+  config.AUDIT_LOG_CONNECTION_STRING
+).getContainerClient(config.AUDIT_LOG_CONTAINER);
+
 app.post(
   "/api/v1/unlock-session",
   getUnlockSessionHandler(
@@ -30,7 +35,8 @@ app.post(
       config.FAST_LOGIN_API_KEY,
       config.FAST_LOGIN_CLIENT_BASE_URL
     ),
-    config
+    config,
+    containerClient
   )
 );
 
