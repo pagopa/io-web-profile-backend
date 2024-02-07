@@ -7,6 +7,7 @@ import { config as mockedConfig } from "../../../__mocks__/config.mock";
 import { FiscalCode } from '@pagopa/ts-commons/lib/strings';
 import { TokenTypes } from '../../enums/TokenTypes';
 import { isLeft, isRight } from 'fp-ts/lib/Either';
+import { OperationTypes } from '../../enums/OperationTypes';
 
 const config = { ...mockedConfig }
 
@@ -24,7 +25,7 @@ describe('Audit Logs Utils' , () => {
     DateTime: '2022-01-01T12:00:00Z',
     IDToken: 'token123',
     Ip: '127.0.0.1',
-    Type: 'exchange' as TokenTypes,
+    Type: 'exchange' as OperationTypes.EXCHANGE,
   };
 
   const containerClient = BlobServiceClient.fromConnectionString(
