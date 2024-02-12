@@ -55,7 +55,8 @@ const ActionTag = t.type({
   Ip: t.string,
   Type: t.union([
     t.literal(OperationTypes.LOGOUT),
-    t.literal(OperationTypes.LOCK)
+    t.literal(OperationTypes.LOCK),
+    t.literal(OperationTypes.UNLOCK)
   ])
 });
 

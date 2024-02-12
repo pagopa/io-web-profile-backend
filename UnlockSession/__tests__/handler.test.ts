@@ -6,9 +6,12 @@ import { unlockSessionHandler } from "../handler";
 import { SpidLevel } from "../../utils/enums/SpidLevels";
 import { Client } from "../../generated/definitions/fast-login/client";
 import { UnlockSessionData } from "../../generated/definitions/external/UnlockSessionData";
-import { ExchangeJwtPayloadExtended } from "../../utils/middlewares/exchange-jwt-validation-middleware";
-import { TokenTypes } from "../../utils/enums/TokenTypes";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { IPString, NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { config as mockedConfig } from "../../__mocks__/config.mock";
+import { BlobServiceClient, BlockBlobUploadResponse, RestError } from "@azure/storage-blob";
+import * as O from "fp-ts/Option";
+import * as auditLog from "../../utils/audit-log";
+import * as TE from "fp-ts/TaskEither";
 
 // #region mocks
 const unlockSessionMock = jest.fn(async () =>
@@ -52,6 +55,11 @@ const aValidL3User: HslJwtPayloadExtended = {
 };
 
 const aValidL3Payload: UnlockSessionData = {};
+
+const containerClient = BlobServiceClient.fromConnectionString(
+  mockedConfig.AUDIT_LOG_CONNECTION_STRING
+).getContainerClient(mockedConfig.AUDIT_LOG_CONTAINER);
+
 // #endregion
 
 // #region tests
@@ -60,14 +68,44 @@ describe("UnlockSession", () => {
     jest.clearAllMocks();
   });
 
+  test(`GIVEN a valid payload and a valid user decoded from JWT
+        WHEN audit logfail
+        THEN the response is 500`, async () => {
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
+
+    const mockAuditLog = jest
+      .spyOn(auditLog, "storeAuditLog")
+      .mockReturnValueOnce(TE.left({} as RestError));
+
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
+
+    expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(mockAuditLog).toHaveBeenCalledTimes(1);
+    expect(unlockSessionMock).toHaveBeenCalledWith({
+      body: {
+        fiscal_code: aValidL2User.fiscal_number,
+        unlock_code: aValidL2Payload.unlock_code
+      }
+    });
+    expect(res).toMatchObject({
+      kind: "IResponseErrorInternal"
+    });
+  });
+
   test(`GIVEN a valid payload and a valid L2 user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const mockAuditLog = jest
+      .spyOn(auditLog, "storeAuditLog")
+      .mockReturnValueOnce(TE.right({} as BlockBlobUploadResponse));
+
+
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(mockAuditLog).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
       body: {
         fiscal_code: aValidL2User.fiscal_number,
@@ -82,11 +120,17 @@ describe("UnlockSession", () => {
   test(`GIVEN a valid payload and a valid L3 user decoded from JWT
         WHEN all checks passed
         THEN the response is 204`, async () => {
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL3User, aValidL3Payload);
+    const mockAuditLog = jest
+      .spyOn(auditLog, "storeAuditLog")
+      .mockReturnValueOnce(TE.right({} as BlockBlobUploadResponse));
+
+    const res = await handler(aValidL3User, aValidL3Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
+    expect(mockAuditLog).toHaveBeenCalledTimes(1);
+
     expect(unlockSessionMock).toHaveBeenCalledWith({
       body: {
         fiscal_code: aValidL3User.fiscal_number,
@@ -102,9 +146,9 @@ describe("UnlockSession", () => {
         WHEN fast-login returns 403
         THEN the response is 403`, async () => {
     unlockSessionMock.mockResolvedValueOnce(E.right({ status: 403 }));
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
@@ -123,9 +167,9 @@ describe("UnlockSession", () => {
         WHEN fast-login returns 502
         THEN the response is 502`, async () => {
     unlockSessionMock.mockResolvedValueOnce(E.right({ status: 502 }));
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
@@ -144,9 +188,9 @@ describe("UnlockSession", () => {
         WHEN fast-login returns 504
         THEN the response is 504`, async () => {
     unlockSessionMock.mockResolvedValueOnce(E.right({ status: 504 }));
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
@@ -168,9 +212,9 @@ describe("UnlockSession", () => {
         THEN the response is 500`, async () => {
     const errorStatus = 429;
     unlockSessionMock.mockResolvedValueOnce(E.right({ status: errorStatus }));
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
@@ -191,9 +235,9 @@ describe("UnlockSession", () => {
         WHEN fast-login doesn't respond
         THEN the response is 500`, async () => {
     unlockSessionMock.mockRejectedValueOnce("Error");
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL2User, aValidL2Payload);
+    const res = await handler(aValidL2User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(1);
     expect(unlockSessionMock).toHaveBeenCalledWith({
@@ -211,9 +255,9 @@ describe("UnlockSession", () => {
   test(`GIVEN a valid payload and a valid L1 user decoded from JWT
         WHEN checks don't pass
         THEN the response is 403`, async () => {
-    const handler = unlockSessionHandler(fastLoginClientMock);
+    const handler = unlockSessionHandler(fastLoginClientMock, containerClient);
 
-    const res = await handler(aValidL1User, aValidL2Payload);
+    const res = await handler(aValidL1User, aValidL2Payload, O.some("127.0.0.1" as IPString));
 
     expect(unlockSessionMock).toHaveBeenCalledTimes(0);
     expect(res).toMatchObject({
