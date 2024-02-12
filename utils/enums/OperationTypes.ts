@@ -2,5 +2,6 @@ export enum OperationTypes {
   EXCHANGE = "exchange",
   LOGOUT = "logout",
   LOCK = "lock",
-  UNLOCK = "unlock"
+  UNLOCK = "unlock",
+  ISSUING = "issuing"
 }

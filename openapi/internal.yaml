@@ -140,10 +140,14 @@ components:
         name:
           type: string
           minLength: 1
+        ip:
+          type: string
+          default: UNKNOWN
       required:
         - family_name
         - fiscal_number
         - name
+        - ip
     MagicLinkToken:
       type: object
       properties:
