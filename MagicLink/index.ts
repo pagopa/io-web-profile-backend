@@ -31,7 +31,6 @@ app.post(
   "/api/v1/magic-link",
   getMagicLinkHandler(
     config.MAGIC_LINK_JWE_ISSUER,
-    config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
     config.MAGIC_LINK_JWE_PRIMARY_PUB_KEY,
     config.MAGIC_LINK_JWE_TTL,
     config.MAGIC_LINK_BASE_URL,

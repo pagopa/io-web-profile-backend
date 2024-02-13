@@ -1,4 +1,5 @@
 import * as E from "fp-ts/Either";
+import * as crypto from "crypto";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
@@ -10,6 +11,8 @@ describe(`getGenerateJWE`, () => {
   it("should return a valid JWE", async () => {
     const issuer = "pagopa" as NonEmptyString;
     const ttl = 900 as Second;
+    const jti = crypto.randomUUID() as NonEmptyString;
+    const iat = Date.now();
 
     const aValidPayload = {
       family_name: "fn",
@@ -19,6 +22,8 @@ describe(`getGenerateJWE`, () => {
 
     const result = await getGenerateJWE(
       issuer,
+      jti,
+      iat,
       config.MAGIC_LINK_JWE_PRIMARY_PUB_KEY
     )(aValidPayload, ttl)();
 
