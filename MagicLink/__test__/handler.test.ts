@@ -20,7 +20,7 @@ const containerClient = BlobServiceClient.fromConnectionString(
 const aValidPayload = {
   family_name: "Rossi" as NonEmptyString,
   fiscal_number: "ISPXNB32R82Y766D" as FiscalCode,
-  ip: "127.0.0.1",
+  ip: "127.0.0.1" as NonEmptyString,
   name: "Carla" as NonEmptyString
 };
 

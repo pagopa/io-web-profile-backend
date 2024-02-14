@@ -19,18 +19,18 @@ paths:
         Retrieve current application info to confirm the application is up and
         able to serve requests. Errors mean the application is broken.
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationInfo'
-        '500':
+                $ref: "#/components/schemas/ApplicationInfo"
+        "500":
           description: Generic server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemJson'
+                $ref: "#/components/schemas/ProblemJson"
   /magic-link:
     post:
       operationId: getMagicLinkToken
@@ -41,32 +41,32 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MagicLinkData'
+              $ref: "#/components/schemas/MagicLinkData"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MagicLinkToken'
-        '400':
+                $ref: "#/components/schemas/MagicLinkToken"
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadRequest' 
-        '401':
+                $ref: "#/components/schemas/BadRequest"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Unauthorized'
-        '500':
+                $ref: "#/components/schemas/Unauthorized"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
+                $ref: "#/components/schemas/InternalServerError"
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -86,7 +86,7 @@ components:
         - version
     InternalServerError:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -101,7 +101,7 @@ components:
             - status
     BadRequest:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -116,7 +116,7 @@ components:
             - status
     Unauthorized:
       allOf:
-        - $ref: '#/components/schemas/ProblemJson'
+        - $ref: "#/components/schemas/ProblemJson"
         - type: object
           properties:
             status:
@@ -142,6 +142,7 @@ components:
           minLength: 1
         ip:
           type: string
+          minLength: 1
           default: UNKNOWN
       required:
         - family_name
@@ -160,7 +161,7 @@ components:
       type: string
       description: User's fiscal code.
       format: FiscalCode
-      x-import: '@pagopa/ts-commons/lib/strings'
+      x-import: "@pagopa/ts-commons/lib/strings"
       example: SPNDNL80R13C555X
     ProblemJson:
       type: object
