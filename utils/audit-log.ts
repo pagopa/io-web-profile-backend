@@ -39,6 +39,10 @@ const AuditActionDoc = t.type({
   jwtPayload: BaseJwtPayload
 });
 
+const AuditIssuingDoc = t.type({
+  ip: t.string
+});
+
 const ExchangeTag = t.type({
   DateTime: t.string,
   FatherIDToken: t.string,
@@ -60,14 +64,27 @@ const ActionTag = t.type({
   ])
 });
 
+const IssuingTag = t.type({
+  DateTime: t.string,
+  FiscalCode: t.string,
+  IDToken: t.string,
+  Type: t.literal(OperationTypes.ISSUING)
+});
+
 export type AuditExchangeDoc = t.TypeOf<typeof AuditExchangeDoc>;
 export type AuditActionDoc = t.TypeOf<typeof AuditActionDoc>;
+export type AuditIssuingDoc = t.TypeOf<typeof AuditIssuingDoc>;
 
 export type ExchangeTag = t.TypeOf<typeof ExchangeTag>;
 export type ActionTag = t.TypeOf<typeof ActionTag>;
+export type IssuingTag = t.TypeOf<typeof IssuingTag>;
 
 export type AuditLogContent = t.TypeOf<typeof AuditLogContent>;
-const AuditLogContent = t.union([AuditActionDoc, AuditExchangeDoc]);
+const AuditLogContent = t.union([
+  AuditActionDoc,
+  AuditExchangeDoc,
+  AuditIssuingDoc
+]);
 
 const encodeAuditLogDoc = (doc: AuditLogContent): string => {
   if (AuditLogContent.is(doc)) {
@@ -76,6 +93,12 @@ const encodeAuditLogDoc = (doc: AuditLogContent): string => {
     throw new Error("Invalid type");
   }
 };
+
+export function storeAuditLog(
+  containerClient: ContainerClient,
+  auditLogDoc: AuditIssuingDoc,
+  tags: IssuingTag
+): TE.TaskEither<RestError, BlockBlobUploadResponse>;
 
 export function storeAuditLog(
   containerClient: ContainerClient,
@@ -91,8 +114,8 @@ export function storeAuditLog(
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function storeAuditLog(
   containerClient: ContainerClient,
-  auditLogDoc: AuditExchangeDoc | AuditActionDoc,
-  tags: ExchangeTag | ActionTag
+  auditLogDoc: AuditExchangeDoc | AuditActionDoc | AuditIssuingDoc,
+  tags: ExchangeTag | ActionTag | IssuingTag
 ): TE.TaskEither<RestError, BlockBlobUploadResponse> {
   return TE.tryCatch(
     () => {
