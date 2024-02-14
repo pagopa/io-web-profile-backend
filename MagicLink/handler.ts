@@ -19,9 +19,7 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { Second } from "@pagopa/ts-commons/lib/units";
 
 import { ContainerClient } from "@azure/storage-blob";
-import * as O from "fp-ts/Option";
 import { hashFiscalCode } from "@pagopa/ts-commons/lib/hash";
-import { fromNullable } from "fp-ts/Option";
 import { MagicLinkData } from "../generated/definitions/internal/MagicLinkData";
 import { MagicLinkToken } from "../generated/definitions/internal/MagicLinkToken";
 import { getGenerateJWE } from "../utils/jwe";
@@ -43,7 +41,7 @@ export const magicLinkHandler = (
   // eslint-disable-next-line max-params
 ): MagicLinkHandlerT => (reqPayload): ReturnType<MagicLinkHandlerT> => {
   const jti = crypto.randomUUID() as NonEmptyString;
-  const iat = Date.now();
+  const iat = Date.now() / 1000;
   return pipe(
     getGenerateJWE(issuer, jti, iat, publicKey)(reqPayload, ttl as Second),
     TE.mapLeft(e =>
@@ -56,10 +54,10 @@ export const magicLinkHandler = (
         storeAuditLog(
           containerClient,
           {
-            ip: O.getOrElse(() => "UNKNOWN")(fromNullable(reqPayload.ip))
+            ip: reqPayload.ip
           },
           {
-            DateTime: new Date(iat).toISOString(),
+            DateTime: new Date(iat * 1000).toISOString(),
             FiscalCode: hashFiscalCode(reqPayload.fiscal_number),
             IDToken: jti,
             Type: OperationTypes.ISSUING
