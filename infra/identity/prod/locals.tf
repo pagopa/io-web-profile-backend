@@ -5,8 +5,6 @@ locals {
   domain    = "web-profile-backend"
   repo_name = "io-web-profile-backend"
 
-  session_manager_environment = "session-manager-prod"
-
   tags = {
     CostCenter     = "TS310 - PAGAMENTI & SERVIZI"
     CreatedBy      = "Terraform"
