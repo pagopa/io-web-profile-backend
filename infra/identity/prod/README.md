@@ -1,4 +1,4 @@
-# IO FIMS - GitHub federated Managed Identities
+# IO Web Profile Backend - GitHub federated Managed Identities
 
 <!-- markdownlint-disable -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
