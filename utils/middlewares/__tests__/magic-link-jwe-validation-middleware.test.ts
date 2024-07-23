@@ -123,12 +123,40 @@ describe("MagicLinkJweValidationMiddleware", () => {
       })
     });
   });
+
+  it("GIVEN a valid jwePayload WHEN the JTI is blacklisted THEN it should return an error", async () => {
+    const token = await new jose.EncryptJWT(aJwePayload)
+      .setProtectedHeader(jweProtectedHeader)
+      .setIssuer(jweIssuer)
+      .setIssuedAt()
+      .setExpirationTime(getUnixTime(addSeconds(today, 3000)))
+      .encrypt(primaryPublicKey);
+
+    const mockReq = ({
+      headers: {
+        authorization: `Bearer ${token}`
+      }
+    } as unknown) as express.Request;
+
+    const middleware = getMagicLinkValidationMiddleware([aJwePayload.jti]);
+
+    await expect(middleware(mockReq)).resolves.toMatchObject({
+      _tag: "Left",
+      left: expect.objectContaining({
+        kind: "IResponseErrorForbiddenNotAuthorized",
+        detail: expect.stringContaining(`Blacklisted token`)
+      })
+    });
+  });
 });
 
-const getMagicLinkValidationMiddleware = () => {
+const getMagicLinkValidationMiddleware = (
+  blacklist?: ReadonlyArray<string>
+) => {
   return magicLinkJweValidationMiddleware(
     config.BEARER_AUTH_HEADER,
     config.MAGIC_LINK_JWE_ISSUER,
+    blacklist || config.BLACKLISTED_JTI_LIST,
     config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
     config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
   );

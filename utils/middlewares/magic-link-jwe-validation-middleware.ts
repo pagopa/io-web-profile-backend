@@ -14,6 +14,7 @@ import { getValidateJWE } from "../jwe";
 
 export const magicLinkJweValidation = (
   issuer: NonEmptyString,
+  blacklistedJTIList: ReadonlyArray<string>,
   primaryPrivateKey: NonEmptyString,
   secondaryPrivateKey?: NonEmptyString
 ) => (
@@ -21,12 +22,19 @@ export const magicLinkJweValidation = (
 ): TE.TaskEither<IResponseErrorForbiddenNotAuthorized, MagicLinkPayload> =>
   pipe(
     getValidateJWE(issuer, primaryPrivateKey, secondaryPrivateKey)(token),
+    TE.chain(
+      TE.fromPredicate(
+        _ => !blacklistedJTIList.includes(_.jti),
+        () => new Error("Blacklisted token")
+      )
+    ),
     TE.mapLeft(error => getResponseErrorForbiddenNotAuthorized(error.message))
   );
 
 export const magicLinkJweValidationMiddleware = (
   authHeader: NonEmptyString,
   issuer: NonEmptyString,
+  blacklistedJTIList: ReadonlyArray<string>,
   primaryPrivateKey: NonEmptyString,
   secondaryPrivateKey?: NonEmptyString
 ): IRequestMiddleware<
@@ -48,6 +56,7 @@ export const magicLinkJweValidationMiddleware = (
     TE.chain(token =>
       magicLinkJweValidation(
         issuer,
+        blacklistedJTIList,
         primaryPrivateKey,
         secondaryPrivateKey
       )(token)

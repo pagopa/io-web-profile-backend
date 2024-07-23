@@ -119,6 +119,7 @@ export const getExchangeHandler = (
     magicLinkJweValidationMiddleware(
       config.BEARER_AUTH_HEADER,
       config.MAGIC_LINK_JWE_ISSUER,
+      config.BLACKLISTED_JTI_LIST,
       config.MAGIC_LINK_JWE_PRIMARY_PRIVATE_KEY,
       config.MAGIC_LINK_JWE_SECONDARY_PRIVATE_KEY
     )
