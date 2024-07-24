@@ -14,8 +14,9 @@ import { FeatureFlagEnum } from "../utils/featureFlags/featureFlags";
 const aFiscalCode = "ISPXNB32R82Y766D";
 const aName = "Carla";
 const aFamilyName = "Rossi";
-const auditLogConnectionString="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
-const auditLogContainer="logs"
+const auditLogConnectionString =
+  "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
+const auditLogContainer = "logs";
 const iconfig = {
   AzureWebJobsStorage: "azureWebJobsStorage" as NonEmptyString,
   BETA_TESTERS: [aFiscalCode],
@@ -89,13 +90,19 @@ const exchangeIssuer = "pagopa";
 const magicLinkIssuer = "pagopa";
 
 const jwt = sign(
-  { name: aName, family_name: aFamilyName, fiscal_number: aFiscalCode, jti: "AAA" },
+  {
+    name: aName,
+    family_name: aFamilyName,
+    fiscal_number: aFiscalCode,
+    jti: "AAA"
+  },
   hslPrivateKey,
   { algorithm: "RS256", issuer: hslIssuer }
 );
 
 export const jwtConfig: JWTConfig = {
   BEARER_AUTH_HEADER: "authorization" as NonEmptyString,
+  BLACKLISTED_JTI_LIST: [],
   HUB_SPID_LOGIN_JWT_ISSUER: hslIssuer as NonEmptyString,
   HUB_SPID_LOGIN_JWT_PUB_KEY: hslPublicKey as NonEmptyString,
   EXCHANGE_JWT_ISSUER: exchangeIssuer as NonEmptyString,
