@@ -9,7 +9,7 @@ resource "github_repository_environment" "github_repository_environment_opex_pro
 }
 
 resource "github_actions_environment_secret" "env_opex_prod_ci_secrets" {
-  for_each = local.ci.secrets
+  for_each = local.opex_ci.secrets
 
   repository      = github_repository.this.name
   environment     = github_repository_environment.github_repository_environment_opex_prod_ci.environment
