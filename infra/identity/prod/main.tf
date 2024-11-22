@@ -26,6 +26,7 @@ module "federated_identities_opex" {
   env_short    = local.env_short
   env          = "opex-${local.env}"
   domain       = "${local.domain}-opex"
+  location     = local.location
   repositories = [local.repo_name]
 
   continuos_integration = {
@@ -60,4 +61,31 @@ module "federated_identities_opex" {
   }
 
   tags = local.tags
+}
+
+module "federated_identities" {
+  source = "github.com/pagopa/dx//infra/modules/azure_federated_identity_with_github?ref=main"
+
+  prefix       = local.prefix
+  env_short    = local.env_short
+  env          = local.env
+  domain       = local.domain
+  location     = local.itn_location
+  repositories = [local.repo_name]
+  tags         = local.tags
+
+  continuos_delivery = {
+    enable = true
+    roles = {
+      subscription = ["Contributor"]
+      resource_groups = {
+        terraform-state-rg = [
+          "Storage Blob Data Contributor"
+        ],
+        io-p-itn-auth-webprof-rg-01 = [
+          "Role Based Access Control Administrator"
+        ]
+      }
+    }
+  }
 }

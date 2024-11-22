@@ -4,6 +4,8 @@ locals {
   env       = "prod"
   domain    = "web-profile-backend"
   repo_name = "io-web-profile-backend"
+  location  = "westeurope"
+  itn_location  = "italynorth"
 
   tags = {
     CostCenter     = "TS310 - PAGAMENTI & SERVIZI"
