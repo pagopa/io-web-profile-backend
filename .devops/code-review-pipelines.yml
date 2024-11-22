@@ -29,7 +29,7 @@ stages:
     jobs:
       - job: make_build
         pool:
-          vmImage: 'ubuntu-latest'         
+          vmImage: 'ubuntu-latest'
         steps:
         - template: templates/node-job-setup/template.yaml@pagopaCommons
         - script: |
@@ -39,14 +39,14 @@ stages:
   - stage: Static_analysis
     dependsOn: []
     jobs:
-      - job: lint     
+      - job: lint
         steps:
         - template: templates/node-job-setup/template.yaml@pagopaCommons
         - script: |
             yarn lint
           displayName: 'Lint'
 
-      - job: lint_api     
+      - job: lint_api
         steps:
         - template: templates/node-job-setup/template.yaml@pagopaCommons
         - script: |
